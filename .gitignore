@@ -1,8 +1,6 @@
 *~
 *.swp
 *.pyc
-*.c
-*.cpp
 *.so
 bin
 eggs
