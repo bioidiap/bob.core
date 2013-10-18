@@ -16,31 +16,36 @@ PyObject* inner_convert (PyBlitzArrayObject* src,
     PyObject* dst_min, PyObject* dst_max,
     PyObject* src_min, PyObject* src_max) {
 
+  using bob::core::array::convert;
+  using bob::core::array::convertFromRange;
+  using bob::core::array::convertToRange;
+
   Tdst c_dst_min = dst_min ? PyBlitzArrayCxx_AsCScalar<Tdst>(dst_min) : 0;
   Tdst c_dst_max = dst_max ? PyBlitzArrayCxx_AsCScalar<Tdst>(dst_max) : 0;
   Tsrc c_src_min = src_min ? PyBlitzArrayCxx_AsCScalar<Tsrc>(src_min) : 0;
   Tsrc c_src_max = src_max ? PyBlitzArrayCxx_AsCScalar<Tsrc>(src_max) : 0;
+  auto bz_src = cast<Tsrc,N>(src);
 
   if (src_min) {
 
     if (dst_min) { //both src_range and dst_range are valid
-      auto bz = bob::core::array::convert<Tdst,Tsrc>(*reinterpret_cast<blitz::Array<Tsrc,N>*>(src->bzarr), c_dst_min, c_dst_max, c_src_min, c_src_max);
-      return PyBlitzArrayCxx_NewFromArray(bz);
+      auto bz_dst = convert<Tdst,Tsrc>(bz_src, c_dst_min, c_dst_max, c_src_min, c_src_max);
+      return PyBlitzArrayCxx_NewFromArray(bz_dst);
     }
 
     //only src_range is valid
-    auto bz = bob::core::array::convertFromRange<Tdst,Tsrc>(*reinterpret_cast<blitz::Array<Tsrc,N>*>(src->bzarr), c_src_min, c_src_max);
-    return PyBlitzArrayCxx_NewFromArray(bz);
+    auto bz_dst = convertFromRange<Tdst,Tsrc>(bz_src, c_src_min, c_src_max);
+    return PyBlitzArrayCxx_NewFromArray(bz_dst);
   }
 
   else if (dst_min) { //only dst_range is valid
-    auto bz = bob::core::array::convertToRange<Tdst,Tsrc>(*reinterpret_cast<blitz::Array<Tsrc,N>*>(src->bzarr), c_dst_min, c_dst_max);
-    return PyBlitzArrayCxx_NewFromArray(bz);
+    auto bz_dst = convertToRange<Tdst,Tsrc>(bz_src, c_dst_min, c_dst_max);
+    return PyBlitzArrayCxx_NewFromArray(bz_dst);
   }
   
   //use all defaults
-  auto bz = bob::core::array::convert<Tdst,Tsrc>(*reinterpret_cast<blitz::Array<Tsrc,N>*>(src->bzarr));
-  return PyBlitzArrayCxx_NewFromArray(bz);
+  auto bz_dst = convert<Tdst,Tsrc>(bz_src);
+  return PyBlitzArrayCxx_NewFromArray(bz_dst);
 
 }
 
@@ -142,8 +147,8 @@ static PyObject* py_convert(PyObject*, PyObject* args, PyObject* kwds) {
   static const char* const_kwlist[] = {
     "src", 
     "dtype", 
-    "dst_range", 
-    "src_range", 
+    "dest_range", 
+    "source_range",
     0 /* Sentinel */
   };
   static char** kwlist = const_cast<char**>(const_kwlist);
@@ -156,7 +161,7 @@ static PyObject* py_convert(PyObject*, PyObject* args, PyObject* kwds) {
   PyObject* src_min = 0;
   PyObject* src_max = 0;
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&O&|(O,O)(O,O)",
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&O&|(OO)(OO)",
         kwlist, 
         &PyBlitzArray_Converter, &src,
         &PyBlitzArray_TypenumConverter, &type_num_p,
@@ -218,10 +223,10 @@ Keyword Parameters:\n\
     :py:class:`numpy.dtype`. Controls the output element type for the\n\
     returned array.\n\
   \n\
-  dst_range\n\
+  dest_range\n\
     (tuple) Determines the range to be deployed at the returned array.\n\
   \n\
-  src_range\n\
+  source_range\n\
     (tuple) Determines the input range that will be used for scaling.\n\
   \n\
 Returns a new array with the same shape as this one, but re-scaled and\n\
@@ -246,7 +251,7 @@ PyMODINIT_FUNC init_convert(void)
 {
   PyObject* m;
 
-  m = Py_InitModule3("convert", convert_methods,
+  m = Py_InitModule3("_convert", convert_methods,
       "bob::core::array::convert bindings");
 
   /* imports the NumPy C-API */
