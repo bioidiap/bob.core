@@ -26,7 +26,6 @@ for k in system_includes: extra_compile_args += ['-isystem', k]
 # NumPy API macros necessary?
 define_macros=[
     ("PY_ARRAY_UNIQUE_SYMBOL", blitz.get_numpy_api()),
-    ("NO_IMPORT_ARRAY", "1"),
     ]
 
 import numpy

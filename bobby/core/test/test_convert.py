@@ -11,16 +11,15 @@ import numpy
 
 def test_default_ranges():
 
-  x = numpy.array(range(6), 'uint8').reshape(2,3)
+  x = numpy.array([0,255,0,255,0,255], 'uint8').reshape(2,3)
   c = convert(x, 'uint16')
-  print x, c
-  assert numpy.array_equal(x.astype('uint16'), c)
+  assert numpy.array_equal(65535*(x.astype('uint16')/255), c)
 
 def test_from_range():
 
-  x = numpy.array(range(6), 'uint8').reshape(2,3)
-  c = convert(x, 'uint16', source_range=(0,255))
-  assert numpy.array_equal(x.astype('float64'), c)
+  x = numpy.array([0, 0.2, 0.4, 0.6, 0.8, 1.0], 'float64')
+  c = convert(x, 'uint8', source_range=(0,1))
+  assert numpy.array_equal(c, (255*x).astype('uint8'))
 
 def test_to_range():
 

@@ -5,10 +5,7 @@
  * @brief Pythonic bindings to C++ constructs on bob.core
  */
 
-#ifdef NO_IMPORT_ARRAY
-#undef NO_IMPORT_ARRAY
 #include <blitz.array/cppapi.h>
-#endif
 #include <bob/core/array_convert.h>
 
 template <typename Tdst, typename Tsrc, int N>
@@ -24,27 +21,27 @@ PyObject* inner_convert (PyBlitzArrayObject* src,
   Tdst c_dst_max = dst_max ? PyBlitzArrayCxx_AsCScalar<Tdst>(dst_max) : 0;
   Tsrc c_src_min = src_min ? PyBlitzArrayCxx_AsCScalar<Tsrc>(src_min) : 0;
   Tsrc c_src_max = src_max ? PyBlitzArrayCxx_AsCScalar<Tsrc>(src_max) : 0;
-  auto bz_src = cast<Tsrc,N>(src);
+  auto bz_src = PyBlitzArrayCxx_AsBlitz<Tsrc,N>(src);
 
   if (src_min) {
 
     if (dst_min) { //both src_range and dst_range are valid
-      auto bz_dst = convert<Tdst,Tsrc>(bz_src, c_dst_min, c_dst_max, c_src_min, c_src_max);
+      auto bz_dst = convert<Tdst,Tsrc>(*bz_src, c_dst_min, c_dst_max, c_src_min, c_src_max);
       return PyBlitzArrayCxx_NewFromArray(bz_dst);
     }
 
     //only src_range is valid
-    auto bz_dst = convertFromRange<Tdst,Tsrc>(bz_src, c_src_min, c_src_max);
+    auto bz_dst = convertFromRange<Tdst,Tsrc>(*bz_src, c_src_min, c_src_max);
     return PyBlitzArrayCxx_NewFromArray(bz_dst);
   }
 
   else if (dst_min) { //only dst_range is valid
-    auto bz_dst = convertToRange<Tdst,Tsrc>(bz_src, c_dst_min, c_dst_max);
+    auto bz_dst = convertToRange<Tdst,Tsrc>(*bz_src, c_dst_min, c_dst_max);
     return PyBlitzArrayCxx_NewFromArray(bz_dst);
   }
   
   //use all defaults
-  auto bz_dst = convert<Tdst,Tsrc>(bz_src);
+  auto bz_dst = convert<Tdst,Tsrc>(*bz_src);
   return PyBlitzArrayCxx_NewFromArray(bz_dst);
 
 }
@@ -190,10 +187,6 @@ static PyObject* py_convert(PyObject*, PyObject* args, PyObject* kwds) {
   }
 
   Py_DECREF(src);
-  Py_XDECREF(dst_min);
-  Py_XDECREF(dst_max);
-  Py_XDECREF(src_min);
-  Py_XDECREF(src_max);
 
   if (!retval) return retval;
 
