@@ -69,7 +69,7 @@ setup(
       ],
 
     ext_modules = [
-      Extension("bobby.core.convert",
+      Extension("bobby.core._convert",
         [
           "bobby/core/convert.cpp",
           ],
