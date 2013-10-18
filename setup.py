@@ -36,7 +36,6 @@ if StrictVersion(numpy.__version__) >= StrictVersion('1.7'):
 
 # Compilation options
 import platform
-extra_compile_args += ['-O0', '-g']
 if platform.system() == 'Darwin':
   extra_compile_args += ['-std=c++11', '-stdlib=libc++', '-Wno-#warnings']
 else:
