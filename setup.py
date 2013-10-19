@@ -77,6 +77,17 @@ setup(
         library_dirs=bob_pkg.library_directories(),
         libraries=bob_pkg.libraries(),
         language="c++",
+        ),
+      Extension("bobby.core._logging",
+        [
+          "bobby/core/logging.cpp",
+          ],
+        define_macros=define_macros,
+        include_dirs=bob_pkg.include_directories(), 
+        extra_compile_args=extra_compile_args,
+        library_dirs=bob_pkg.library_directories(),
+        libraries=bob_pkg.libraries(),
+        language="c++",
         )
       ],
 
