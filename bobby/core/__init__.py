@@ -1,2 +1,2 @@
 from ._convert import convert
-from . import logging
+from . import log

@@ -12,7 +12,9 @@
 
 #define PYTHON_LOGGING_DEBUG 0
 
-static boost::iostreams::stream<bob::core::AutoOutputDevice> static_log("stdout");
+#if PYTHON_LOGGING_DEBUG != 0
+static bob::core::OutputStream static_log("stdout");
+#endif
 
 static void pyobject_destructor(PyObject* o) {
   Py_XDECREF(o);
@@ -132,22 +134,19 @@ struct PythonLoggingOutputDevice: public bob::core::OutputDevice {
 
 };
 
-// Note: Replace bob::core::OutputStream& by
-// boost::iostreams::stream<bob::core::AutoOutputDevice>& s for bob-1.3.x
-static int set_stream(bob::core::OutputStream& s, PyObject* o, const char* n) {
+static int set_stream(boost::iostreams::stream<bob::core::AutoOutputDevice>& s, 
+    PyObject* o, const char* n) {
 
   // if no argument or None, write everything else to stderr
   if (!o || o == Py_None) {
-    //s.close(); // bob > 1.3.x
+    s.close();
     //s.open("stderr");
-    s.reset("stderr");
     return 1;
   }
 
   if (PyCallable_Check(o)) {
-    //s.close(); // bob > 1.3.x
-    //s.open(boost::make_shared<PythonLoggingOutputDevice>(o));
-    s.reset(boost::make_shared<PythonLoggingOutputDevice>(o));
+    s.close();
+    s.open(boost::make_shared<PythonLoggingOutputDevice>(o));
     return 1;
   }
 
@@ -157,7 +156,7 @@ static int set_stream(bob::core::OutputStream& s, PyObject* o, const char* n) {
 
 }
 
-static PyObject* set_streams(PyObject*, PyObject* args, PyObject* kwds) {
+static PyObject* reset(PyObject*, PyObject* args, PyObject* kwds) {
 
   /* Parses input arguments in a single shot */
   static const char* const_kwlist[] = {
@@ -230,25 +229,39 @@ struct message_info_t {
 };
 
 static void* log_message_inner(void* cookie) {
+
   message_info_t* mi = (message_info_t*)cookie;
+
+# if PYTHON_LOGGING_DEBUG != 0
   if (PyEval_ThreadsInitialized()) {
     static_log << "(thread " << mi->thread_id << ") Python threads initialized correctly for this thread" << std::endl;
   }
   else {
     static_log << "(thread " << mi->thread_id << ") Python threads NOT INITIALIZED correctly for this thread" << std::endl;
   }
+# endif
+
   for (unsigned int i=0; i<(mi->ntimes); ++i) {
+
+#   if PYTHON_LOGGING_DEBUG != 0
     static_log << "(thread " << mi->thread_id << ") Injecting message `" << mi->message << " (thread " << mi->thread_id << "; iteration " << i << ")'" << std::endl;
+#   endif
+
     *(mi->s) << mi->message << " (thread " << mi->thread_id << "; iteration " << i << ")" << std::endl;
     mi->s->flush();
   }
   if (mi->exit) {
+#   if PYTHON_LOGGING_DEBUG != 0
     static_log << "(thread " << mi->thread_id << ") Exiting this thread" << std::endl;
+#   endif
     pthread_exit(0);
   }
+
+# if PYTHON_LOGGING_DEBUG != 0
   if (mi->exit) {
     static_log << "(thread " << mi->thread_id << ") Returning 0" << std::endl;
   }
+# endif
   return 0;
 }
 
@@ -274,9 +287,7 @@ static PyObject* log_message(PyObject*, PyObject* args, PyObject* kwds) {
         kwlist, &ntimes, &stream, &message)) return 0;
 
   // implements: if stream not in ('debug', 'info', 'warn', 'error')
-
   boost::iostreams::stream<bob::core::AutoOutputDevice>* s = 0;
-
   if (strncmp(stream, "debug", 5)) s = &bob::core::debug;
   else if (strncmp(stream, "info", 4)) s = &bob::core::info;
   else if (strncmp(stream, "warn", 4)) s = &bob::core::warn;
@@ -291,7 +302,9 @@ static PyObject* log_message(PyObject*, PyObject* args, PyObject* kwds) {
 
   message_info_t mi = {s, message, false, ntimes, 0};
   log_message_inner((void*)&mi);
+# if PYTHON_LOGGING_DEBUG != 0
   static_log << "(thread 0) Returning to caller" << std::endl;
+# endif
 
   PyEval_RestoreThread(no_gil);
 
@@ -362,24 +375,40 @@ static PyObject* log_message_mt(PyObject*, PyObject* args, PyObject* kwds) {
     message_info_t mi = {s, message, true, ntimes, i+1};
     infos[i] = mi;
   }
-
+ 
+# if PYTHON_LOGGING_DEBUG != 0
   static_log << "(thread 0) Launching " << nthreads << " thread(s)" << std::endl;
+# endif
 
   for (unsigned int i=0; i<nthreads; ++i) {
+
+#   if PYTHON_LOGGING_DEBUG != 0
     static_log << "(thread 0) Launch thread " << (i+1) << ": `" << message << "'" << std::endl;
+#   endif
+
     pthread_create(&threads[i], NULL, &log_message_inner, (void*)&infos[i]);
+
+#   if PYTHON_LOGGING_DEBUG != 0
     static_log << "(thread 0) thread " << (i+1)
       << " == 0x" << std::hex << threads[i] << std::dec
       << " launched" << std::endl;
+#   endif
+
   }
 
   void* status;
+# if PYTHON_LOGGING_DEBUG != 0
   static_log << "(thread 0) Waiting " << nthreads << " thread(s)" << std::endl;
+# endif
   for (unsigned int i=0; i<nthreads; ++i) {
     pthread_join(threads[i], &status);
+#   if PYTHON_LOGGING_DEBUG != 0
     static_log << "(thread 0) Waiting on thread " << (i+1) << std::endl;
+#   endif
   }
+# if PYTHON_LOGGING_DEBUG != 0
   static_log << "(thread 0) Returning to caller" << std::endl;
+# endif
 
   PyEval_RestoreThread(no_gil);
 
@@ -413,7 +442,7 @@ Keyword parameters:\n\
 static PyMethodDef logging_methods[] = {
     {
       s_reset_str,
-      (PyCFunction)set_streams,
+      (PyCFunction)reset,
       METH_VARARGS|METH_KEYWORDS,
       s_reset__doc__
     },

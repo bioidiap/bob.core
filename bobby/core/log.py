@@ -6,8 +6,9 @@
 """Sets-up logging, centrally for Bob.
 """
 
+import sys
 import logging
-from . import _logging as cxx_logging
+from ._logging import reset
 
 # get the default logger of Bob
 logger = logging.getLogger('bob')
@@ -29,21 +30,13 @@ del debug_info, InfoFilter
 
 # this will setup divergence from C++ into python.logging correctly
 cxx_logger = logging.getLogger('bob.c++')
-cxx_logging.set_streams(
-    debug=cxx_logger.debug, 
-    info=cxx_logger.info, 
-    warn=cxx_logger.warn,
-    error=cxx_logger.error
-    )
+reset(debug=cxx_logger.debug, info=cxx_logger.info, warn=cxx_logger.warn, error=cxx_logger.error)
 del cxx_logger, logger
-
-# save a handle for this function
-set_streams = cxx_logging.set_streams
 
 # this will make sure we don't fiddle with python callables after
 # termination. See: http://stackoverflow.com/questions/18184209/holding-python-produced-value-in-a-c-static-boostshared-ptr
 import atexit
-atexit.register(cxx_logger.set_streams)
-del cxx_logging, atexit
+atexit.register(reset)
+del atexit
 
-__all__ = ['set_streams']
+__all__ = ['reset']

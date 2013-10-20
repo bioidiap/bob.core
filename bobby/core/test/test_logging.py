@@ -6,12 +6,12 @@
 """Tests for the logging subsystem
 """
 
-from .. import _core, info
+from .. import _logging
 
 def test_from_cxx():
 
-  _core.__log_message__(1, info, "this is a test message")
+  _logging.__log_message__(1, 'info', "this is a test message")
 
 def test_from_cxx_multithreaded():
 
-  _core.__log_message_mt__(2, 1, info, "this is a test message")
+  _logging.__log_message_mt__(2, 1, 'info', "this is a test message")
