@@ -44,7 +44,7 @@ else:
 # parameters that define our package.
 setup(
 
-    name='bobby.core',
+    name='xbob.core',
     version='2.0.0a0',
     description='Bindings for bob.core',
     url='http://github.com/anjos/bob.core',
@@ -63,13 +63,13 @@ setup(
     ],
 
     namespace_packages=[
-      "bobby",
+      "xbob",
       ],
 
     ext_modules = [
-      Extension("bobby.core._convert",
+      Extension("xbob.core._convert",
         [
-          "bobby/core/convert.cpp",
+          "xbob/core/convert.cpp",
           ],
         define_macros=define_macros,
         include_dirs=bob_pkg.include_directories(), 
@@ -78,9 +78,9 @@ setup(
         libraries=bob_pkg.libraries(),
         language="c++",
         ),
-      Extension("bobby.core._logging",
+      Extension("xbob.core._logging",
         [
-          "bobby/core/logging.cpp",
+          "xbob/core/logging.cpp",
           ],
         define_macros=define_macros,
         include_dirs=bob_pkg.include_directories(), 
