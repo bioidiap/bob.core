@@ -132,19 +132,22 @@ struct PythonLoggingOutputDevice: public bob::core::OutputDevice {
 
 };
 
-static int set_stream(boost::iostreams::stream<bob::core::AutoOutputDevice>& s, 
-    PyObject* o, const char* n) {
+// Note: Replace bob::core::OutputStream& by
+// boost::iostreams::stream<bob::core::AutoOutputDevice>& s for bob-1.3.x
+static int set_stream(bob::core::OutputStream& s, PyObject* o, const char* n) {
 
   // if no argument or None, write everything else to stderr
   if (!o || o == Py_None) {
-    s.close();
-    s.open("stderr");
+    //s.close(); // bob > 1.3.x
+    //s.open("stderr");
+    s.reset("stderr");
     return 1;
   }
 
   if (PyCallable_Check(o)) {
-    s.close();
-    s.open(boost::make_shared<PythonLoggingOutputDevice>(o));
+    //s.close(); // bob > 1.3.x
+    //s.open(boost::make_shared<PythonLoggingOutputDevice>(o));
+    s.reset(boost::make_shared<PythonLoggingOutputDevice>(o));
     return 1;
   }
 
@@ -271,7 +274,9 @@ static PyObject* log_message(PyObject*, PyObject* args, PyObject* kwds) {
         kwlist, &ntimes, &stream, &message)) return 0;
 
   // implements: if stream not in ('debug', 'info', 'warn', 'error')
+
   boost::iostreams::stream<bob::core::AutoOutputDevice>* s = 0;
+
   if (strncmp(stream, "debug", 5)) s = &bob::core::debug;
   else if (strncmp(stream, "info", 4)) s = &bob::core::info;
   else if (strncmp(stream, "warn", 4)) s = &bob::core::warn;
