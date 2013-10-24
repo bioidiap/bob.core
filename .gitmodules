@@ -1,0 +1,6 @@
+[submodule "src/pypkg"]
+	path = src/pypkg
+	url = git@github.com:anjos/pypkg
+[submodule "src/blitz.array"]
+	path = src/blitz.array
+	url = git@github.com:anjos/blitz.array
