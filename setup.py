@@ -11,6 +11,7 @@ dist.Distribution(dict(setup_requires=['pypkg', 'numpy', 'blitz.array']))
 import pypkg
 import numpy
 import blitz
+import platform
 
 # Minimum version requirements for pkg-config packages
 MINIMAL_BLITZ_VERSION_REQUIRED = '0.10'
@@ -26,7 +27,12 @@ if bob_pkg < MINIMAL_BOB_VERSION_REQUIRED:
   raise RuntimeError("This package requires Bob %s or superior, but you have %s" % (MINIMAL_BOB_VERSION_REQUIRED, bob_pkg.version))
 
 # Make-up the names of versioned Bob libraries we must link against
-bob_libraries=['%s.%s' % (k, bob_pkg.version) for k in bob_pkg.libraries()]
+if platform.system() == 'Darwin':
+  bob_libraries=['%s.%s' % (k, bob_pkg.version) for k in bob_pkg.libraries()]
+elif platform.system() == 'Linux':
+  bob_libraries=[':lib%s.so.%s' % (k, bob_pkg.version) for k in bob_pkg.libraries()]
+else:
+  raise RuntimeError("This package currently only supports MacOSX and Linux builds")
 
 # Add system include directories
 extra_compile_args = []
@@ -47,7 +53,6 @@ if StrictVersion(numpy.__version__) >= StrictVersion('1.7'):
   define_macros.append(("NPY_NO_DEPRECATED_API", "NPY_1_7_API_VERSION"))
 
 # Compilation options
-import platform
 if platform.system() == 'Darwin':
   extra_compile_args += ['-std=c++11', '-Wno-#warnings']
 else:
@@ -85,7 +90,7 @@ setup(
           "xbob/core/convert.cpp",
           ],
         define_macros=define_macros,
-        include_dirs=bob_pkg.include_directories(), 
+        include_dirs=bob_pkg.include_directories(),
         extra_compile_args=extra_compile_args,
         library_dirs=bob_pkg.library_directories(),
         runtime_library_dirs=bob_pkg.library_directories(),
@@ -97,7 +102,7 @@ setup(
           "xbob/core/logging.cpp",
           ],
         define_macros=define_macros,
-        include_dirs=bob_pkg.include_directories(), 
+        include_dirs=bob_pkg.include_directories(),
         extra_compile_args=extra_compile_args,
         library_dirs=bob_pkg.library_directories(),
         runtime_library_dirs=bob_pkg.library_directories(),
@@ -115,5 +120,5 @@ setup(
       'Programming Language :: Python :: 3',
       'Topic :: Software Development :: Libraries :: Python Modules',
       ],
- 
+
     )
