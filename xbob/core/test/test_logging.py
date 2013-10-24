@@ -10,8 +10,8 @@ from .. import _logging
 
 def test_from_cxx():
 
-  _logging.__log_message__(1, 'info', "this is a test message")
+  _logging.__log_message__(1, 'error', 'this is a test message')
 
 def test_from_cxx_multithreaded():
 
-  _logging.__log_message_mt__(2, 1, 'info', "this is a test message")
+  _logging.__log_message_mt__(2, 1, 'error', 'this is a test message')

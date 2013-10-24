@@ -13,63 +13,47 @@
 #define PYTHON_LOGGING_DEBUG 0
 
 #if PYTHON_LOGGING_DEBUG != 0
-static bob::core::OutputStream static_log("stdout");
+#include <boost/algorithm/string.hpp>
+static boost::iostreams::stream<bob::core::AutoOutputDevice> static_log("stdout");
 #endif
-
-static void pyobject_destructor(PyObject* o) {
-  Py_XDECREF(o);
-}
 
 /**
  * Objects of this class are able to redirect the data injected into a
- * bob::core::OutputStream to be re-injected in a given python callable object,
- * that is given upon construction. The key idea is that you feed in something
- * like logging.debug to the constructor, for the debug stream, logging.info
- * for the info stream and so on.
+ * boost::iostreams::stream<bob::core::AutoOutputDevice> to be re-injected in a
+ * given python callable object, that is given upon construction. The key idea
+ * is that you feed in something like logging.debug to the constructor, for the
+ * debug stream, logging.info for the info stream and so on.
  */
 struct PythonLoggingOutputDevice: public bob::core::OutputDevice {
 
-  std::shared_ptr<PyObject> m_callable; ///< to stream the data out
+  PyObject* m_logger; ///< to stream the data out
+  PyObject* m_name; ///< the name of the method to call on the object
 
   /**
    * Builds a new OutputDevice from a given callable
    *
-   * @param callable A python callable object. Can be a function or an object
-   * that implements the __call__() slot.
+   * @param logger Is a logging.logger-style object.
+   * @param name Is the name of the method to call for logging.
    *
    * This method is called from Python, so the GIL is on
    */
-  PythonLoggingOutputDevice(PyObject* callable) {
+  PythonLoggingOutputDevice(PyObject* logger, const char* name):
+    m_logger(0), m_name(0)
+  {
 
-      if (callable && callable != Py_None) {
-        m_callable.reset(callable, &pyobject_destructor);
-        Py_INCREF(callable);
+      if (logger && logger != Py_None) {
+        m_logger = logger;
+        Py_INCREF(m_logger);
+        m_name = Py_BuildValue("s", name);
       }
 
 #if   PYTHON_LOGGING_DEBUG != 0
       pthread_t thread_id = pthread_self();
-      static_log << "(0x" << std::hex << thread_id << std::dec
-        << ") Constructing new PythonLoggingOutputDevice from callable"
-        << std::endl;
-#endif
-
-    }
-
-  /**
-   * Copy constructor
-   *
-   * This method does not require the GIL since it does not deal with any
-   * interpreter information. The value stored in ``m_callable`` is managed by
-   * our std::shared_ptr object.
-   */
-  PythonLoggingOutputDevice(const PythonLoggingOutputDevice& other):
-    m_callable(other.m_callable) {
-
-#if   PYTHON_LOGGING_DEBUG != 0
-      pthread_t thread_id = pthread_self();
-      static_log << "(0x" << std::hex << thread_id << std::dec
-        << ") Copy-constructing PythonLoggingOutputDevice"
-        << std::endl;
+      static_log << "(" << std::hex << thread_id << std::dec
+        << ") Constructing new PythonLoggingOutputDevice from logger `logging.logger('"
+        << PyString_AsString(PyObject_GetAttrString(m_logger, "name")) << "')."
+        << name << "' (@" << std::hex << m_logger << std::dec 
+        << ")" << std::endl;
 #endif
 
     }
@@ -78,14 +62,37 @@ struct PythonLoggingOutputDevice: public bob::core::OutputDevice {
    * D'tor
    */
   virtual ~PythonLoggingOutputDevice() {
-    close();
+#if   PYTHON_LOGGING_DEBUG != 0
+      pthread_t thread_id = pthread_self();
+      const char* _name = "null";
+      if (m_logger) {
+        _name = PyString_AsString(PyObject_GetAttrString(m_logger, "name"));
+      }
+      static_log << "(" << std::hex << thread_id << std::dec
+        << ") Destroying PythonLoggingOutputDevice with logger `" << _name 
+        << "' (" << std::hex << m_logger << std::dec << ")" << std::endl;
+#endif
+    if (m_logger) close();
   }
 
   /**
    * Closes this stream for good
    */
   virtual void close() {
-    m_callable.reset();
+#if   PYTHON_LOGGING_DEBUG != 0
+      pthread_t thread_id = pthread_self();
+      const char* _name = "null";
+      if (m_logger) {
+        _name = PyString_AsString(PyObject_GetAttrString(m_logger, "name"));
+      }
+      static_log << "(" << std::hex << thread_id << std::dec
+        << ") Closing PythonLoggingOutputDevice with logger `" << _name 
+        << "' (" << std::hex << m_logger << std::dec << ")" << std::endl;
+#endif
+    Py_XDECREF(m_logger);
+    m_logger = 0;
+    Py_XDECREF(m_name);
+    m_name = 0;
   }
 
   /**
@@ -98,60 +105,73 @@ struct PythonLoggingOutputDevice: public bob::core::OutputDevice {
 
     auto gil = PyGILState_Ensure();
 
-    if (!m_callable || m_callable.get() == Py_None) {
+    if (!m_logger || m_logger == Py_None) {
       PyGILState_Release(gil);
       return 0;
     }
 
 #if   PYTHON_LOGGING_DEBUG != 0
     pthread_t thread_id = pthread_self();
-    static_log << "(0x" << std::hex << thread_id << std::dec
-      << ") Processing message `" << value << "' (size = " << n << ")" << std::endl;
+    std::string message(s, n);
+    static_log << "(" << std::hex << thread_id << std::dec
+      << ") Processing message `" << boost::algorithm::trim_right_copy(message)
+      << "' (size = " << n << ") with method `logging.logger('"
+      << PyString_AsString(PyObject_GetAttrString(m_logger, "name")) << "')."
+      << PyString_AsString(m_name) << "'" << std::endl;
 #endif
 
-    int len = strlen(s);
+    int len = n;
     while (std::isspace(s[len-1])) len -= 1;
-    PyObject* value = Py_BuildValue("s#", s, len);
 
-    PyObject* result = PyObject_CallFunctionObjArgs(m_callable.get(), value, 0);
+    PyObject* value = Py_BuildValue("s#", s, len);
+    PyObject* result = PyObject_CallMethodObjArgs(m_logger, m_name, value, 0);
     Py_DECREF(value);
+
     if (!result) len = 0;
     else Py_DECREF(result);
 
-#if   PYTHON_LOGGING_DEBUG != 0
-    result = PyObject_CallMethod(m_callable.get(), "flush", 0);
-    Py_XDECREF(result);
-#endif
-
     PyGILState_Release(gil);
 
-    return len;
-  }
-
-  virtual std::shared_ptr<bob::core::OutputDevice> clone() const {
-    return std::make_shared<PythonLoggingOutputDevice>(*this);
+    return n;
   }
 
 };
 
-static int set_stream(boost::iostreams::stream<bob::core::AutoOutputDevice>& s, 
-    PyObject* o, const char* n) {
+static int set_stream(boost::iostreams::stream<bob::core::AutoOutputDevice>& s, PyObject* o, const char* n) {
 
   // if no argument or None, write everything else to stderr
   if (!o || o == Py_None) {
+
+#if   PYTHON_LOGGING_DEBUG != 0
+    pthread_t thread_id = pthread_self();
+    static_log << "(" << std::hex << thread_id << std::dec
+      << ") Resetting stream `" << n << "' to stderr" << std::endl;
+#endif
     s.close();
-    //s.open("stderr");
+    s.open("stderr");
     return 1;
   }
 
-  if (PyCallable_Check(o)) {
-    s.close();
-    s.open(boost::make_shared<PythonLoggingOutputDevice>(o));
-    return 1;
+  if (PyObject_HasAttrString(o, n)) {
+    PyObject* callable = PyObject_GetAttrString(o, n);
+    if (callable && PyCallable_Check(callable)) {
+
+#if   PYTHON_LOGGING_DEBUG != 0
+    pthread_t thread_id = pthread_self();
+    static_log << "(" << std::hex << thread_id << std::dec
+      << ") Setting stream `" << n << "' to logger at " << std::hex 
+      << o << std::dec << std::endl;
+#endif
+
+      s.close();
+      s.open(boost::make_shared<PythonLoggingOutputDevice>(o, n));
+      Py_DECREF(callable);
+      return 1;
+    }
   }
 
   // if you get to this point, set an error
-  PyErr_Format(PyExc_ValueError, "argument to set stream `%s' is optional, but if set, it needs to be either None or a callable", n);
+  PyErr_Format(PyExc_ValueError, "argument to set stream `%s' needs to be either None or an object with a callable named `%s'", n, n);
   return 0;
 
 }
@@ -160,26 +180,20 @@ static PyObject* reset(PyObject*, PyObject* args, PyObject* kwds) {
 
   /* Parses input arguments in a single shot */
   static const char* const_kwlist[] = {
-    "debug", 
-    "info", 
-    "warn", 
-    "error",
+    "logger", 
     0 /* Sentinel */
   };
   static char** kwlist = const_cast<char**>(const_kwlist);
 
-  PyObject* debug = 0;
-  PyObject* info = 0;
-  PyObject* warn = 0;
-  PyObject* error = 0;
+  PyObject* logger = 0;
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OOOO",
-        kwlist, &debug, &info, &warn, &error)) return 0;
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|O",
+        kwlist, &logger)) return 0;
 
-  if (!set_stream(bob::core::debug, debug, "debug")) return 0;
-  if (!set_stream(bob::core::info, info, "info")) return 0;
-  if (!set_stream(bob::core::warn, warn, "warn")) return 0;
-  if (!set_stream(bob::core::error, error, "error")) return 0;
+  if (!set_stream(bob::core::debug, logger, "debug")) return 0;
+  if (!set_stream(bob::core::info, logger, "info")) return 0;
+  if (!set_stream(bob::core::warn, logger, "warn")) return 0;
+  if (!set_stream(bob::core::error, logger, "error")) return 0;
 
   Py_RETURN_NONE;
 }
@@ -247,7 +261,12 @@ static void* log_message_inner(void* cookie) {
     static_log << "(thread " << mi->thread_id << ") Injecting message `" << mi->message << " (thread " << mi->thread_id << "; iteration " << i << ")'" << std::endl;
 #   endif
 
-    *(mi->s) << mi->message << " (thread " << mi->thread_id << "; iteration " << i << ")" << std::endl;
+    *(mi->s) << mi->message
+#     if PYTHON_LOGGING_DEBUG != 0
+      << " (thread " << mi->thread_id << "; iteration " << i << ")" 
+#     endif
+      << std::endl;
+
     mi->s->flush();
   }
   if (mi->exit) {
@@ -272,7 +291,7 @@ static PyObject* log_message(PyObject*, PyObject* args, PyObject* kwds) {
 
   /* Parses input arguments in a single shot */
   static const char* const_kwlist[] = {
-    "ntimes", 
+    "ntimes",
     "stream",
     "message",
     0 /* Sentinel */
@@ -288,12 +307,13 @@ static PyObject* log_message(PyObject*, PyObject* args, PyObject* kwds) {
 
   // implements: if stream not in ('debug', 'info', 'warn', 'error')
   boost::iostreams::stream<bob::core::AutoOutputDevice>* s = 0;
-  if (strncmp(stream, "debug", 5)) s = &bob::core::debug;
-  else if (strncmp(stream, "info", 4)) s = &bob::core::info;
-  else if (strncmp(stream, "warn", 4)) s = &bob::core::warn;
-  else if (strncmp(stream, "error", 5)) s = &bob::core::error;
+  if (strncmp(stream, "debug", 5) == 0) s = &bob::core::debug;
+  else if (strncmp(stream, "info", 4) == 0) s = &bob::core::info;
+  else if (strncmp(stream, "warn", 4) == 0) s = &bob::core::warn;
+  else if (strncmp(stream, "error", 5) == 0) s = &bob::core::error;
+  else if (strncmp(stream, "fatal", 5) == 0) s = &bob::core::error;
   else {
-    PyErr_SetString(PyExc_ValueError, "parameter `stream' must be one of 'debug', 'info', 'warn' or 'error'");
+    PyErr_SetString(PyExc_ValueError, "parameter `stream' must be one of 'debug', 'info', 'warn', 'error' or 'fatal' (synomym for 'error')");
     return 0;
   }
 
@@ -313,7 +333,9 @@ static PyObject* log_message(PyObject*, PyObject* args, PyObject* kwds) {
 
 PyDoc_STRVAR(s_logmsg_str, "__log_message__");
 PyDoc_STRVAR(s_logmsg__doc__,
-"Logs a message into Bob's logging system from C++.\n\
+"__log_message__(ntimes, stream, message) -> None\n\
+\n\
+Logs a message into Bob's logging system from C++.\n\
 \n\
 This method is included for testing purposes only and should not be\n\
 considered part of the Python API for Bob.\n\
@@ -390,7 +412,7 @@ static PyObject* log_message_mt(PyObject*, PyObject* args, PyObject* kwds) {
 
 #   if PYTHON_LOGGING_DEBUG != 0
     static_log << "(thread 0) thread " << (i+1)
-      << " == 0x" << std::hex << threads[i] << std::dec
+      << " == " << std::hex << threads[i] << std::dec
       << " launched" << std::endl;
 #   endif
 
@@ -417,7 +439,9 @@ static PyObject* log_message_mt(PyObject*, PyObject* args, PyObject* kwds) {
 
 PyDoc_STRVAR(s_logmsg_mt_str, "__log_message_mt__");
 PyDoc_STRVAR(s_logmsg_mt__doc__,
-"Logs a message into Bob's logging system from C++, in a separate thread.\n\
+"__log_message_mt__(nthreads, ntimes, stream, message) -> None\n\
+\n\
+Logs a message into Bob's logging system from C++, in a separate thread.\n\
 \n\
 This method is included for testing purposes only and should not be\n\
 considered part of the Python API for Bob.\n\

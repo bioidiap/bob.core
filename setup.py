@@ -5,15 +5,28 @@
 
 from setuptools import setup, find_packages, dist
 from distutils.extension import Extension
+from distutils.version import LooseVersion
 
 dist.Distribution(dict(setup_requires=['pypkg', 'numpy', 'blitz.array']))
 import pypkg
 import numpy
 import blitz
 
+# Minimum version requirements for pkg-config packages
+MINIMAL_BLITZ_VERSION_REQUIRED = '0.10'
+MINIMAL_BOB_VERSION_REQUIRED = '1.3'
+
 # Pkg-config dependencies
 blitz_pkg = pypkg.pkgconfig('blitz')
+if blitz_pkg < MINIMAL_BLITZ_VERSION_REQUIRED:
+  raise RuntimeError("This package requires Blitz++ %s or superior, but you have %s" % (MINIMAL_BLITZ_VERSION_REQUIRED, blitz_pkg.version))
+
 bob_pkg = pypkg.pkgconfig('bob-core')
+if bob_pkg < MINIMAL_BOB_VERSION_REQUIRED:
+  raise RuntimeError("This package requires Bob %s or superior, but you have %s" % (MINIMAL_BOB_VERSION_REQUIRED, bob_pkg.version))
+
+# Make-up the names of versioned Bob libraries we must link against
+bob_libraries=['%s.%s' % (k, bob_pkg.version) for k in bob_pkg.libraries()]
 
 # Add system include directories
 extra_compile_args = []
@@ -36,7 +49,7 @@ if StrictVersion(numpy.__version__) >= StrictVersion('1.7'):
 # Compilation options
 import platform
 if platform.system() == 'Darwin':
-  extra_compile_args += ['-std=c++11', '-stdlib=libc++', '-Wno-#warnings']
+  extra_compile_args += ['-std=c++11', '-Wno-#warnings']
 else:
   extra_compile_args += ['-std=c++11']
 
@@ -75,7 +88,8 @@ setup(
         include_dirs=bob_pkg.include_directories(), 
         extra_compile_args=extra_compile_args,
         library_dirs=bob_pkg.library_directories(),
-        libraries=bob_pkg.libraries(),
+        runtime_library_dirs=bob_pkg.library_directories(),
+        libraries=bob_libraries,
         language="c++",
         ),
       Extension("xbob.core._logging",
@@ -86,7 +100,8 @@ setup(
         include_dirs=bob_pkg.include_directories(), 
         extra_compile_args=extra_compile_args,
         library_dirs=bob_pkg.library_directories(),
-        libraries=bob_pkg.libraries(),
+        runtime_library_dirs=bob_pkg.library_directories(),
+        libraries=bob_libraries,
         language="c++",
         )
       ],
