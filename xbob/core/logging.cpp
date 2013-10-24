@@ -62,15 +62,15 @@ struct PythonLoggingOutputDevice: public bob::core::OutputDevice {
    * D'tor
    */
   virtual ~PythonLoggingOutputDevice() {
-#if   PYTHON_LOGGING_DEBUG != 0
-      pthread_t thread_id = pthread_self();
-      const char* _name = "null";
-      if (m_logger) {
-        _name = PyString_AsString(PyObject_GetAttrString(m_logger, "name"));
-      }
-      static_log << "(" << std::hex << thread_id << std::dec
-        << ") Destroying PythonLoggingOutputDevice with logger `" << _name 
-        << "' (" << std::hex << m_logger << std::dec << ")" << std::endl;
+#if PYTHON_LOGGING_DEBUG != 0
+    pthread_t thread_id = pthread_self();
+    const char* _name = "null";
+    if (m_logger) {
+      _name = PyString_AsString(PyObject_GetAttrString(m_logger, "name"));
+    }
+    static_log << "(" << std::hex << thread_id << std::dec
+      << ") Destroying PythonLoggingOutputDevice with logger `" << _name
+      << "' (" << std::hex << m_logger << std::dec << ")" << std::endl;
 #endif
     if (m_logger) close();
   }
@@ -79,15 +79,15 @@ struct PythonLoggingOutputDevice: public bob::core::OutputDevice {
    * Closes this stream for good
    */
   virtual void close() {
-#if   PYTHON_LOGGING_DEBUG != 0
-      pthread_t thread_id = pthread_self();
-      const char* _name = "null";
-      if (m_logger) {
-        _name = PyString_AsString(PyObject_GetAttrString(m_logger, "name"));
-      }
-      static_log << "(" << std::hex << thread_id << std::dec
-        << ") Closing PythonLoggingOutputDevice with logger `" << _name 
-        << "' (" << std::hex << m_logger << std::dec << ")" << std::endl;
+#if PYTHON_LOGGING_DEBUG != 0
+    pthread_t thread_id = pthread_self();
+    const char* _name = "null";
+    if (m_logger) {
+      _name = PyString_AsString(PyObject_GetAttrString(m_logger, "name"));
+    }
+    static_log << "(" << std::hex << thread_id << std::dec
+      << ") Closing PythonLoggingOutputDevice with logger `" << _name
+      << "' (" << std::hex << m_logger << std::dec << ")" << std::endl;
 #endif
     Py_XDECREF(m_logger);
     m_logger = 0;
