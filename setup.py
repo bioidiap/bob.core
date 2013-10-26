@@ -108,7 +108,16 @@ setup(
         runtime_library_dirs=bob_pkg.library_directories(),
         libraries=bob_libraries,
         language="c++",
-        )
+        ),
+      Extension("xbob.core._random",
+        [
+          "xbob/core/random.cpp",
+          ],
+        define_macros=define_macros,
+        include_dirs=bob_pkg.include_directories(),
+        extra_compile_args=extra_compile_args,
+        language="c++",
+        ),
       ],
 
     classifiers = [
