@@ -1,17 +1,13 @@
 /**
  * @author Andre Anjos <andre.anjos@idiap.ch>
- * @date Fri 25 Oct 16:54:55 2013
+ * @date Sun 27 Oct 09:01:04 2013
  *
- * @brief Bindings to boost::random
+ * @brief Bindings for the MT19937 random number generator
  */
 
+#include <mt19937.h>
 #include <blitz.array/cppapi.h>
 #include <boost/random.hpp>
-
-#if BOOST_VERSION >= 104700
-#include <boost/random/discrete_distribution.hpp>
-#include <bob/python/ndarray.h>
-#endif
 
 PyDoc_STRVAR(s_prefix_str, "xbob.core");
 PyDoc_STRVAR(s_module_str, "random");
@@ -48,7 +44,7 @@ void PyBoostMt19937_Delete (PyBoostMt19937Object* o) {
 /**
  * Formal initialization of a BoostMt19937 object
  */
-static int PyBoostMt19937__init__(PyBoostMt19937Object* self, PyObject *args,
+static int PyBoostMt19937_Init(PyBoostMt19937Object* self, PyObject *args,
     PyObject* kwds) {
 
   /* Parses input arguments in a single shot */
@@ -182,28 +178,14 @@ PyTypeObject PyBoostMt19937_Type = {
     0,                                          /* tp_descr_get */
     0,                                          /* tp_descr_set */
     0,                                          /* tp_dictoffset */
-    (initproc)PyBoostMt19937__init__,           /* tp_init */
+    (initproc)PyBoostMt19937_Init,              /* tp_init */
     0,                                          /* tp_alloc */
     PyBoostMt19937_New,                         /* tp_new */
 };
 
-static PyMethodDef random_methods[] = {
-    {0}  /* Sentinel */
-};
+void PyBoostMt19937_Register(PyObject* module) {
 
-#ifndef PyMODINIT_FUNC	/* declarations for DLL import/export */
-#define PyMODINIT_FUNC void
-#endif
-PyMODINIT_FUNC init_random(void)
-{
-  PyBoostMt19937_Type.tp_new = PyType_GenericNew;
-  if (PyType_Ready(&PyBoostMt19937_Type) < 0) return;
-
-  PyObject* m; 
-  m = Py_InitModule3("_random", random_methods, 
-      "boost::random classes and methods");
-
-  /* register the type object to python */
   Py_INCREF(&PyBoostMt19937_Type);
-  PyModule_AddObject(m, s_mt19937_str, (PyObject *)&PyBoostMt19937_Type);
+  PyModule_AddObject(module, s_mt19937_str, (PyObject *)&PyBoostMt19937_Type);
+
 }

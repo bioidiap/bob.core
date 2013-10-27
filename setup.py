@@ -58,6 +58,10 @@ if platform.system() == 'Darwin':
 else:
   extra_compile_args += ['-std=c++11']
 
+# Include directories which are specific for each sub-package
+random_includes = bob_pkg.include_directories()
+random_includes.insert(0, os.path.join('xbob', 'core', 'random'))
+
 # The only thing we do in this file is to call the setup() function with all
 # parameters that define our package.
 setup(
@@ -111,10 +115,11 @@ setup(
         ),
       Extension("xbob.core._random",
         [
-          "xbob/core/random.cpp",
+          "xbob/core/random/mt19937.cpp",
+          "xbob/core/random/main.cpp",
           ],
         define_macros=define_macros,
-        include_dirs=bob_pkg.include_directories(),
+        include_dirs=random_includes,
         extra_compile_args=extra_compile_args,
         language="c++",
         ),
