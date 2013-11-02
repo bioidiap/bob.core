@@ -4,3 +4,6 @@
 [submodule "src/blitz.array"]
 	path = src/blitz.array
 	url = git@github.com:anjos/blitz.array
+[submodule "src/xbob.buildout"]
+	path = src/xbob.buildout
+	url = git@github.com:bioidiap/xbob.buildout
