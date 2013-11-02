@@ -7,7 +7,6 @@
 
 #define XBOB_CORE_RANDOM_MODULE
 #include <xbob.core/random.h>
-#include <blitz.array/cppapi.h>
 
 #define MT19937_NAME mt19937
 PyDoc_STRVAR(s_mt19937_str, BOOST_PP_STRINGIZE(XBOB_CORE_RANDOM_MODULE_NAME) "." BOOST_PP_STRINGIZE(MT19937_NAME));

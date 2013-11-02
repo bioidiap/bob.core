@@ -16,11 +16,11 @@ PyDoc_STRVAR(module_docstr,
 "boost::random classes and methods"
 );
 
-#ifndef PyMODINIT_FUNC	/* declarations for DLL import/export */
-#define PyMODINIT_FUNC void
-#endif
-PyMODINIT_FUNC init_random(void)
-{
+#define ENTRY_FUNCTION_INNER(a) init ## a
+#define ENTRY_FUNCTION(a) ENTRY_FUNCTION_INNER(a)
+
+PyMODINIT_FUNC ENTRY_FUNCTION(XBOB_CORE_RANDOM_MODULE_NAME) (void) {
+
   PyBoostMt19937_Type.tp_new = PyType_GenericNew;
   if (PyType_Ready(&PyBoostMt19937_Type) < 0) return;
 
