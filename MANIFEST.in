@@ -1,2 +1,2 @@
-include README.rst bootstrap.py buildout.cfg
-recursive-exclude src *
+include LICENSE README.rst bootstrap.py buildout.cfg
+recursive-include xbob *.cpp *.h

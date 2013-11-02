@@ -5,25 +5,15 @@
  * @brief Bindings for the MT19937 random number generator
  */
 
-#include <mt19937.h>
+#define XBOB_CORE_RANDOM_MODULE
+#include <xbob.core/random.h>
 #include <blitz.array/cppapi.h>
-#include <boost/random.hpp>
 
-PyDoc_STRVAR(s_prefix_str, "xbob.core");
-PyDoc_STRVAR(s_module_str, "random");
-PyDoc_STRVAR(s_mt19937_str, "mt19937");
-
-/* Type definition for PyBoostMt19937Object */
-typedef struct {
-  PyObject_HEAD
-
-  /* Type-specific fields go here. */
-  boost::random::mt19937* rng;
-
-} PyBoostMt19937Object;
+#define MT19937_NAME mt19937
+PyDoc_STRVAR(s_mt19937_str, BOOST_PP_STRINGIZE(XBOB_CORE_RANDOM_MODULE_NAME) "." BOOST_PP_STRINGIZE(MT19937_NAME));
 
 /* How to create a new PyBoostMt19937Object */
-PyObject* PyBoostMt19937_New(PyTypeObject* type, PyObject*, PyObject*) {
+static PyObject* PyBoostMt19937_New(PyTypeObject* type, PyObject*, PyObject*) {
 
   /* Allocates the python object itself */
   PyBoostMt19937Object* self = (PyBoostMt19937Object*)type->tp_alloc(type, 0);
@@ -33,17 +23,46 @@ PyObject* PyBoostMt19937_New(PyTypeObject* type, PyObject*, PyObject*) {
   return reinterpret_cast<PyObject*>(self);
 }
 
-/* How to delete a PyBoostMt19937Object */
-void PyBoostMt19937_Delete (PyBoostMt19937Object* o) {
+PyObject* PyBoostMt19937_SimpleNew () {
+
+  PyBoostMt19937Object* retval = (PyBoostMt19937Object*)PyBoostMt19937_New(&PyBoostMt19937_Type, 0, 0);
+
+  retval->rng = new boost::random::mt19937;
+
+  return reinterpret_cast<PyObject*>(retval);
+
+}
+
+PyObject* PyBoostMt19937_NewWithSeed (Py_ssize_t seed) {
+
+  PyBoostMt19937Object* retval = (PyBoostMt19937Object*)PyBoostMt19937_New(&PyBoostMt19937_Type, 0, 0);
+
+  retval->rng = new boost::random::mt19937(seed);
+
+  return reinterpret_cast<PyObject*>(retval);
+
+}
+
+int PyBoostMt19937_Check(PyObject* o) {
+  if (!o) return 0;
+  return PyObject_IsInstance(o, reinterpret_cast<PyObject*>(&PyBoostMt19937_Type));
+}
+
+int PyBoostMt19937_Converter(PyObject* o, PyBoostMt19937Object** a) {
+  if (!PyBoostMt19937_Check(o)) return 0;
+  Py_INCREF(o);
+  (*a) = reinterpret_cast<PyBoostMt19937Object*>(o);
+  return 1;
+}
+
+static void PyBoostMt19937_Delete (PyBoostMt19937Object* o) {
 
   delete o->rng;
   o->ob_type->tp_free((PyObject*)o);
 
 }
 
-/**
- * Formal initialization of a BoostMt19937 object
- */
+/* The __init__(self) method */
 static int PyBoostMt19937_Init(PyBoostMt19937Object* self, PyObject *args,
     PyObject* kwds) {
 
@@ -68,7 +87,7 @@ static int PyBoostMt19937_Init(PyBoostMt19937Object* self, PyObject *args,
   return 0; ///< SUCCESS
 }
 
-PyDoc_STRVAR(s_BoostMt19937__doc__,
+PyDoc_STRVAR(s_mt19937_doc,
 "A Mersenne-Twister Random Number Generator (RNG)\n\
 \n\
 A Random Number Generator (RNG) based on the work 'Mersenne Twister: A\n\
@@ -137,14 +156,13 @@ static PyObject* PyBoostMt19937_RichCompare(PyBoostMt19937Object* self,
 }
 
 static PyObject* PyBoostMt19937_Repr(PyBoostMt19937Object* self) {
-  return PyString_FromFormat("%s.%s.%s()", s_prefix_str, s_module_str,
-      s_mt19937_str);
+  return PyUnicode_FromFormat("%s()", s_mt19937_str);
 }
 
 PyTypeObject PyBoostMt19937_Type = {
     PyObject_HEAD_INIT(0)
     0,                                          /*ob_size*/
-    "xbob.core.random.mt19937",                 /*tp_name*/
+    s_mt19937_str,                              /*tp_name*/
     sizeof(PyBoostMt19937Object),               /*tp_basicsize*/
     0,                                          /*tp_itemsize*/
     (destructor)PyBoostMt19937_Delete,          /*tp_dealloc*/
@@ -163,7 +181,7 @@ PyTypeObject PyBoostMt19937_Type = {
     0,                                          /*tp_setattro*/
     0,                                          /*tp_as_buffer*/
     Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,   /*tp_flags*/
-    s_BoostMt19937__doc__,                      /* tp_doc */
+    s_mt19937_doc,                              /* tp_doc */
     0,		                                      /* tp_traverse */
     0,		                                      /* tp_clear */
     (richcmpfunc)PyBoostMt19937_RichCompare,    /* tp_richcompare */
@@ -182,10 +200,3 @@ PyTypeObject PyBoostMt19937_Type = {
     0,                                          /* tp_alloc */
     PyBoostMt19937_New,                         /* tp_new */
 };
-
-void PyBoostMt19937_Register(PyObject* module) {
-
-  Py_INCREF(&PyBoostMt19937_Type);
-  PyModule_AddObject(module, s_mt19937_str, (PyObject *)&PyBoostMt19937_Type);
-
-}

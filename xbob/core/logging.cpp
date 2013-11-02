@@ -9,7 +9,10 @@
 #include <boost/shared_array.hpp>
 #include <boost/make_shared.hpp>
 #include <bob/core/logging.h>
+#include <xbob.core/config.h>
+#include <boost/preprocessor/stringize.hpp>
 
+#define MODULE_NAME _logging
 #define PYTHON_LOGGING_DEBUG 0
 
 #if PYTHON_LOGGING_DEBUG != 0
@@ -485,12 +488,12 @@ static PyMethodDef logging_methods[] = {
     {0}  /* Sentinel */
 };
 
-#ifndef PyMODINIT_FUNC	/* declarations for DLL import/export */
-#define PyMODINIT_FUNC void
-#endif
-PyMODINIT_FUNC init_logging(void)
+#define ENTRY_FUNCTION_INNER(a) init ## a
+#define ENTRY_FUNCTION(a) ENTRY_FUNCTION_INNER(a)
+
+PyMODINIT_FUNC ENTRY_FUNCTION(MODULE_NAME) (void)
 {
-  PyObject* m;
-  
-  m = Py_InitModule3("_logging", logging_methods, "C++ logging handling");
+  PyObject* m = Py_InitModule3(BOOST_PP_STRINGIZE(MODULE_NAME), logging_methods, "C++ logging handling");
+  PyModule_AddIntConstant(m, "__api_version__", XBOB_CORE_API_VERSION);
+  PyModule_AddStringConstant(m, "__version__", BOOST_PP_STRINGIZE(XBOB_CORE_VERSION));
 }

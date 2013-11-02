@@ -58,16 +58,22 @@ if platform.system() == 'Darwin':
 else:
   extra_compile_args += ['-std=c++11']
 
-# Include directories which are specific for each sub-package
-random_includes = bob_pkg.include_directories()
-random_includes.insert(0, os.path.join('xbob', 'core', 'random'))
+# Local include directory
+import os
+package_dir = os.path.dirname(os.path.realpath(__file__))
+package_dir = os.path.join(package_dir, 'xbob', 'core', 'include')
+include_dirs = [package_dir]
 
-# The only thing we do in this file is to call the setup() function with all
-# parameters that define our package.
+# Define package version
+version = '2.0.0a0'
+define_macros += [
+    ("XBOB_CORE_VERSION", version),
+    ]
+
 setup(
 
     name='xbob.core',
-    version='2.0.0a0',
+    version=version,
     description='Bindings for bob.core',
     url='http://github.com/anjos/bob.core',
     license='BSD',
@@ -94,7 +100,7 @@ setup(
           "xbob/core/convert.cpp",
           ],
         define_macros=define_macros,
-        include_dirs=bob_pkg.include_directories(),
+        include_dirs=include_dirs + bob_pkg.include_directories(),
         extra_compile_args=extra_compile_args,
         library_dirs=bob_pkg.library_directories(),
         runtime_library_dirs=bob_pkg.library_directories(),
@@ -106,20 +112,21 @@ setup(
           "xbob/core/logging.cpp",
           ],
         define_macros=define_macros,
-        include_dirs=bob_pkg.include_directories(),
+        include_dirs=include_dirs + bob_pkg.include_directories(),
         extra_compile_args=extra_compile_args,
         library_dirs=bob_pkg.library_directories(),
         runtime_library_dirs=bob_pkg.library_directories(),
         libraries=bob_libraries,
         language="c++",
         ),
-      Extension("xbob.core._random",
+      Extension("xbob.core.random._library",
         [
           "xbob/core/random/mt19937.cpp",
+          "xbob/core/random/uniform.cpp",
           "xbob/core/random/main.cpp",
           ],
         define_macros=define_macros,
-        include_dirs=random_includes,
+        include_dirs=include_dirs + bob_pkg.include_directories(),
         extra_compile_args=extra_compile_args,
         language="c++",
         ),
