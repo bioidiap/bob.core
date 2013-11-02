@@ -102,6 +102,7 @@ typedef struct {
   /*****************************************
    * Bindings for xbob.core.random.uniform *
    *****************************************/
+
   extern PyBoostUniform_Type_TYPE PyBoostUniform_Type;
 
   PyBoostUniform_Check_RET PyBoostUniform_Check PyBoostUniform_Check_PROTO;

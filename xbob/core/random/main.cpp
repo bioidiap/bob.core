@@ -25,6 +25,8 @@ PyMODINIT_FUNC ENTRY_FUNCTION(XBOB_CORE_RANDOM_MODULE_NAME) (void) {
   if (PyType_Ready(&PyBoostMt19937_Type) < 0) return;
 
   PyObject* m = Py_InitModule3("_library", module_methods, module_docstr);
+  PyModule_AddIntConstant(m, "__api_version__", XBOB_CORE_API_VERSION);
+  PyModule_AddStringConstant(m, "__version__", BOOST_PP_STRINGIZE(XBOB_CORE_VERSION));
 
   /* register the types to python */
   Py_INCREF(&PyBoostMt19937_Type);
@@ -67,5 +69,4 @@ PyMODINIT_FUNC ENTRY_FUNCTION(XBOB_CORE_RANDOM_MODULE_NAME) (void) {
 #endif
 
   if (c_api_object) PyModule_AddObject(m, "_C_API", c_api_object);
-
 }
