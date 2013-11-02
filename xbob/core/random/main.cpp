@@ -24,7 +24,12 @@ PyMODINIT_FUNC ENTRY_FUNCTION(XBOB_CORE_RANDOM_MODULE_NAME) (void) {
   PyBoostMt19937_Type.tp_new = PyType_GenericNew;
   if (PyType_Ready(&PyBoostMt19937_Type) < 0) return;
 
+  PyBoostUniform_Type.tp_new = PyType_GenericNew;
+  if (PyType_Ready(&PyBoostUniform_Type) < 0) return;
+
   PyObject* m = Py_InitModule3("_library", module_methods, module_docstr);
+
+  /* register some constants */
   PyModule_AddIntConstant(m, "__api_version__", XBOB_CORE_API_VERSION);
   PyModule_AddStringConstant(m, "__version__", BOOST_PP_STRINGIZE(XBOB_CORE_VERSION));
 

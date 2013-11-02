@@ -5,10 +5,14 @@
  * @brief Pythonic bindings to C++ constructs on bob.core
  */
 
-#include <blitz.array/cppapi.h>
 #include <bob/core/array_convert.h>
-#include <xbob.core/config.h>
 #include <boost/preprocessor/stringize.hpp>
+
+#include <xbob.core/config.h>
+#ifdef NO_IMPORT_ARRAY
+#undef NO_IMPORT_ARRAY
+#endif
+#include <blitz.array/cppapi.h>
 
 #define MODULE_NAME _convert
 
