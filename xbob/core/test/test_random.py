@@ -11,3 +11,15 @@ from ..random import mt19937, uniform
 def test_mt19937_creation():
 
   x = mt19937()
+  y = mt19937()
+  assert x == y
+
+def test_mt19937_comparison():
+
+  x = mt19937(10)
+  y = mt19937(11)
+  assert x != y
+
+def test_uniform_creation():
+
+  x = uniform('int8')

@@ -8,6 +8,11 @@
 #define XBOB_CORE_RANDOM_MODULE
 #include <xbob.core/random.h>
 
+#ifdef NO_IMPORT_ARRAY
+#undef NO_IMPORT_ARRAY
+#endif
+#include <blitz.array/capi.h>
+
 static PyMethodDef module_methods[] = {
     {0}  /* Sentinel */
 };
@@ -27,7 +32,8 @@ PyMODINIT_FUNC ENTRY_FUNCTION(XBOB_CORE_RANDOM_MODULE_NAME) (void) {
   PyBoostUniform_Type.tp_new = PyType_GenericNew;
   if (PyType_Ready(&PyBoostUniform_Type) < 0) return;
 
-  PyObject* m = Py_InitModule3("_library", module_methods, module_docstr);
+  PyObject* m = Py_InitModule3(BOOST_PP_STRINGIZE(XBOB_CORE_RANDOM_MODULE_NAME),
+      module_methods, module_docstr);
 
   /* register some constants */
   PyModule_AddIntConstant(m, "__api_version__", XBOB_CORE_API_VERSION);
@@ -74,4 +80,11 @@ PyMODINIT_FUNC ENTRY_FUNCTION(XBOB_CORE_RANDOM_MODULE_NAME) (void) {
 #endif
 
   if (c_api_object) PyModule_AddObject(m, "_C_API", c_api_object);
+  
+  /* imports the NumPy C-API */
+  import_array();
+
+  /* imports blitz.array C-API */
+  import_blitz_array();
+
 }

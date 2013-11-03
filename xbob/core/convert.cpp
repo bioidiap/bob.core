@@ -159,7 +159,7 @@ static PyObject* py_convert(PyObject*, PyObject* args, PyObject* kwds) {
   static char** kwlist = const_cast<char**>(const_kwlist);
 
   PyBlitzArrayObject* src = 0;
-  int type_num = -1;
+  int type_num = NPY_NOTYPE;
   int* type_num_p = &type_num;
   PyObject* dst_min = 0;
   PyObject* dst_max = 0;

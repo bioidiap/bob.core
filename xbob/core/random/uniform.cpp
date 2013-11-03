@@ -11,13 +11,14 @@
 #include <boost/make_shared.hpp>
 
 #define UNIFORM_NAME uniform
-PyDoc_STRVAR(s_uniform_str, BOOST_PP_STRINGIZE(XBOB_CORE_RANDOM_MODULE_NAME) "." BOOST_PP_STRINGIZE(UNIFORM_NAME));
+PyDoc_STRVAR(s_uniform_str, BOOST_PP_STRINGIZE(XBOB_CORE_RANDOM_MODULE_PREFIX) "." BOOST_PP_STRINGIZE(UNIFORM_NAME));
 
 /* How to create a new PyBoostUniformObject */
 static PyObject* PyBoostUniform_New(PyTypeObject* type, PyObject*, PyObject*) {
 
   /* Allocates the python object itself */
   PyBoostUniformObject* self = (PyBoostUniformObject*)type->tp_alloc(type, 0);
+  self->type_num = NPY_NOTYPE;
   self->distro.reset();
 
   return reinterpret_cast<PyObject*>(self);
@@ -415,10 +416,13 @@ static PyObject* PyBoostUniform_Repr(PyBoostUniformObject* self) {
 }
 
 PyDoc_STRVAR(s_uniform_doc,
-"Models a random uniform distribution\n\
+"uniform(dtype, [min, max]]) -> new uniform distribution\n\
+\n\
+Models a random uniform distribution\n\
 \n\
 On each invocation, it returns a random value uniformly distributed\n\
 in the set of numbers [min, max[.\n\
+\n\
 "
 );
 
