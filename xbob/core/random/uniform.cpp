@@ -32,11 +32,15 @@ static void PyBoostUniform_Delete (PyBoostUniformObject* o) {
 
 }
 
+static boost::shared_ptr<void> make_uniform_bool() {
+  return boost::make_shared<boost::uniform_smallint<uint8_t>>(0, 1);
+}
+
 template <typename T>
 boost::shared_ptr<void> make_uniform_int(PyObject* min, PyObject* max) {
   T cmin = 0;
   if (min) cmin = PyBlitzArrayCxx_AsCScalar<T>(min);
-  T cmax = 10;
+  T cmax = 9;
   if (max) cmax = PyBlitzArrayCxx_AsCScalar<T>(max);
   return boost::make_shared<boost::uniform_int<T>>(cmin, cmax);
 }
@@ -52,12 +56,19 @@ boost::shared_ptr<void> make_uniform_real(PyObject* min, PyObject* max) {
 
 PyObject* PyBoostUniform_SimpleNew (int type_num, PyObject* min, PyObject* max) {
 
+  if (type_num == NPY_BOOL && (min || max)) {
+    PyErr_Format(PyExc_ValueError, "uniform distributions of boolean scalars cannot have a maximum or minimum");
+    return 0;
+  }
+
   PyBoostUniformObject* retval = (PyBoostUniformObject*)PyBoostUniform_New(&PyBoostUniform_Type, 0, 0);
 
   retval->type_num = type_num;
 
   switch(type_num) {
-
+    case NPY_BOOL:
+      retval->distro = make_uniform_bool();
+      break;
     case NPY_UINT8:
       retval->distro = make_uniform_int<uint8_t>(min, max);
       break;
@@ -111,7 +122,15 @@ int PyBoostUniform_Init(PyBoostUniformObject* self, PyObject *args, PyObject* kw
 
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&|OO", kwlist, &PyBlitzArray_TypenumConverter, &type_num_p, &min, &max)) return -1; ///< FAILURE
 
+  if (self->type_num == NPY_BOOL && (min || max)) {
+    PyErr_Format(PyExc_ValueError, "uniform distributions of boolean scalars cannot have a maximum or minimum");
+    return -1;
+  }
+
   switch(self->type_num) {
+    case NPY_BOOL:
+      self->distro = make_uniform_bool();
+      break;
     case NPY_UINT8:
       self->distro = make_uniform_int<uint8_t>(min, max);
       break;
@@ -175,6 +194,8 @@ template <typename T> PyObject* get_minimum_real(PyBoostUniformObject* self) {
  */
 static PyObject* PyBoostUniform_GetMin(PyBoostUniformObject* self) {
   switch (self->type_num) {
+    case NPY_BOOL:
+      Py_RETURN_FALSE;
     case NPY_UINT8:
       return get_minimum_int<uint8_t>(self);
     case NPY_UINT16:
@@ -214,6 +235,8 @@ template <typename T> PyObject* get_maximum_real(PyBoostUniformObject* self) {
  */
 static PyObject* PyBoostUniform_GetMax(PyBoostUniformObject* self) {
   switch (self->type_num) {
+    case NPY_BOOL:
+      Py_RETURN_TRUE;
     case NPY_UINT8:
       return get_maximum_int<uint8_t>(self);
     case NPY_UINT16:
@@ -240,6 +263,18 @@ static PyObject* PyBoostUniform_GetMax(PyBoostUniformObject* self) {
   }
 }
 
+/**
+ * Accesses the datatype
+ */
+static PyObject* PyBoostUniform_GetDtype(PyBoostUniformObject* self) {
+  return reinterpret_cast<PyObject*>(PyArray_DescrFromType(self->type_num));
+}
+
+template <typename T> PyObject* reset_smallint(PyBoostUniformObject* self) {
+  boost::static_pointer_cast<boost::uniform_smallint<T>>(self->distro)->reset();
+  Py_RETURN_NONE;
+}
+
 template <typename T> PyObject* reset_int(PyBoostUniformObject* self) {
   boost::static_pointer_cast<boost::uniform_int<T>>(self->distro)->reset();
   Py_RETURN_NONE;
@@ -256,6 +291,8 @@ template <typename T> PyObject* reset_real(PyBoostUniformObject* self) {
  */
 static PyObject* PyBoostUniform_Reset(PyBoostUniformObject* self) {
   switch (self->type_num) {
+    case NPY_BOOL:
+      return reset_smallint<uint8_t>(self);
     case NPY_UINT8:
       return reset_int<uint8_t>(self);
     case NPY_UINT16:
@@ -282,6 +319,11 @@ static PyObject* PyBoostUniform_Reset(PyBoostUniformObject* self) {
   }
 }
 
+static PyObject* call_bool(PyBoostUniformObject* self, PyBoostMt19937Object* rng) {
+  if (boost::static_pointer_cast<boost::uniform_smallint<uint8_t>>(self->distro)->operator()(*rng->rng)) Py_RETURN_TRUE;
+  Py_RETURN_FALSE;
+}
+
 template <typename T> PyObject* call_int(PyBoostUniformObject* self, PyBoostMt19937Object* rng) {
   return PyBlitzArrayCxx_FromCScalar(boost::static_pointer_cast<boost::uniform_int<T>>(self->distro)->operator()(*rng->rng));
 }
@@ -305,6 +347,9 @@ PyObject* PyBoostUniform_Call(PyBoostUniformObject* self, PyObject *args, PyObje
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&", kwlist, &PyBoostMt19937_Converter, &rng)) return 0; ///< FAILURE
 
   switch(self->type_num) {
+    case NPY_BOOL:
+      return call_bool(self, rng);
+      break;
     case NPY_UINT8:
       return call_int<uint8_t>(self, rng);
       break;
@@ -362,6 +407,14 @@ static PyMethodDef PyBoostUniform_methods[] = {
     {0}  /* Sentinel */
 };
 
+PyDoc_STRVAR(s_dtype_str, "dtype");
+PyDoc_STRVAR(s_dtype_doc, 
+"x.dtype -> numpy dtype\n\
+\n\
+The type of scalars produced by this uniform distribution.\n\
+"
+);
+
 PyDoc_STRVAR(s_min_str, "min");
 PyDoc_STRVAR(s_min_doc, 
 "x.min -> scalar\n\
@@ -376,13 +429,19 @@ PyDoc_STRVAR(s_max_doc,
 "x.max -> scalar\n\
 \n\
 This value corresponds to the largest value that the distribution\n\
-can produce. The uniform distribution is bound at [min, max[.\n\
-Therefore, a distribution whose maximum value is ``max`` produces\n\
-values which are at most, but excluding ``max``.\n\
+can produce. Integer uniform distributions are bound at [min, max],\n\
+while real-valued distributions are bound at [min, max[.\n\
 "
 );
 
 static PyGetSetDef PyBoostUniform_getseters[] = {
+    {
+      s_dtype_str,
+      (getter)PyBoostUniform_GetDtype,
+      0,
+      s_dtype_doc,
+      0,
+    },
     {
       s_min_str,
       (getter)PyBoostUniform_GetMin,
@@ -421,7 +480,7 @@ PyDoc_STRVAR(s_uniform_doc,
 Models a random uniform distribution\n\
 \n\
 On each invocation, it returns a random value uniformly distributed\n\
-in the set of numbers [min, max[.\n\
+in the set of numbers [min, max] (integer) and [min, max[ (real-valued).\n\
 \n\
 "
 );
