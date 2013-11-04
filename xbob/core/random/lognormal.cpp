@@ -286,18 +286,61 @@ static PyGetSetDef PyBoostLogNormal_getseters[] = {
 };
 
 /**
+ * Converts a scalar, that will be stolen, into a str/bytes
+ */
+static PyObject* scalar_to_bytes(PyObject* s) {
+# if PY_VERSION_HEX >= 0x03000000
+  PyObject* b = PyObject_Bytes(s);
+# else
+  PyObject* b = PyObject_Str(s);
+# endif
+  Py_DECREF(s);
+  return b;
+}
+
+/**
+ * Accesses the char* buffer on a str/bytes object
+ */
+static const char* bytes_to_charp(PyObject* s) {
+# if PY_VERSION_HEX >= 0x03000000
+  return PyBytes_AS_STRING(s);
+# else
+  return PyString_AS_STRING(s);
+# endif
+}
+
+/**
  * String representation and print out
  */
 static PyObject* PyBoostLogNormal_Repr(PyBoostLogNormalObject* self) {
+
   PyObject* mean = PyBoostLogNormal_GetMean(self);
   if (!mean) return 0;
   PyObject* sigma = PyBoostLogNormal_GetSigma(self);
   if (!sigma) return 0;
-  PyObject* retval = PyUnicode_FromFormat("%s(dtype='%s', mean=%S, sigma=%S)",
-      s_lognormal_str, PyBlitzArray_TypenumAsString(self->type_num), mean, sigma);
-  Py_DECREF(mean);
-  Py_DECREF(sigma);
+
+  PyObject* smean = scalar_to_bytes(mean);
+  if (!smean) return 0;
+  PyObject* ssigma = scalar_to_bytes(sigma);
+  if (!ssigma) return 0;
+  
+  PyObject* retval = 
+# if PY_VERSION_HEX >= 0x03000000
+    PyUnicode_FromFormat
+#else
+    PyString_FromFormat
+#endif
+      (
+       "%s(dtype='%s', mean=%s, sigma=%s)",
+       s_lognormal_str, PyBlitzArray_TypenumAsString(self->type_num),
+       bytes_to_charp(smean), bytes_to_charp(ssigma)
+      );
+
+  Py_DECREF(smean);
+  Py_DECREF(ssigma);
+
   return retval;
+
 }
 
 PyDoc_STRVAR(s_lognormal_doc,

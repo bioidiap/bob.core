@@ -140,4 +140,12 @@ def test_binomial():
 def test_repr():
 
   x = random.uniform(float)
-  print x
+  repr(x)
+  x = random.normal(float)
+  repr(x)
+  x = random.lognormal(float)
+  repr(x)
+  x = random.gamma(float)
+  repr(x)
+  x = random.binomial(float)
+  repr(x)

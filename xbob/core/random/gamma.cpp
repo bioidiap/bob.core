@@ -286,18 +286,61 @@ static PyGetSetDef PyBoostGamma_getseters[] = {
 };
 
 /**
+ * Converts a scalar, that will be stolen, into a str/bytes
+ */
+static PyObject* scalar_to_bytes(PyObject* s) {
+# if PY_VERSION_HEX >= 0x03000000
+  PyObject* b = PyObject_Bytes(s);
+# else
+  PyObject* b = PyObject_Str(s);
+# endif
+  Py_DECREF(s);
+  return b;
+}
+
+/**
+ * Accesses the char* buffer on a str/bytes object
+ */
+static const char* bytes_to_charp(PyObject* s) {
+# if PY_VERSION_HEX >= 0x03000000
+  return PyBytes_AS_STRING(s);
+# else
+  return PyString_AS_STRING(s);
+# endif
+}
+
+/**
  * String representation and print out
  */
 static PyObject* PyBoostGamma_Repr(PyBoostGammaObject* self) {
+  
   PyObject* alpha = PyBoostGamma_GetAlpha(self);
   if (!alpha) return 0;
   PyObject* beta = PyBoostGamma_GetBeta(self);
   if (!beta) return 0;
-  PyObject* retval = PyUnicode_FromFormat("%s(dtype='%s', alpha=%S, beta=%S)",
-      s_gamma_str, PyBlitzArray_TypenumAsString(self->type_num), alpha, beta);
-  Py_DECREF(alpha);
-  Py_DECREF(beta);
+
+  PyObject* salpha = scalar_to_bytes(alpha);
+  if (!salpha) return 0;
+  PyObject* sbeta = scalar_to_bytes(beta);
+  if (!sbeta) return 0;
+  
+  PyObject* retval = 
+# if PY_VERSION_HEX >= 0x03000000
+    PyUnicode_FromFormat
+#else
+    PyString_FromFormat
+#endif
+      (
+       "%s(dtype='%s', alpha=%s, beta=%s)",
+       s_gamma_str, PyBlitzArray_TypenumAsString(self->type_num),
+       bytes_to_charp(salpha), bytes_to_charp(sbeta)
+      );
+
+  Py_DECREF(salpha);
+  Py_DECREF(sbeta);
+
   return retval;
+
 }
 
 PyDoc_STRVAR(s_gamma_doc,

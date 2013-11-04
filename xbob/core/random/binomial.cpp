@@ -292,18 +292,61 @@ static PyGetSetDef PyBoostBinomial_getseters[] = {
 };
 
 /**
+ * Converts a scalar, that will be stolen, into a str/bytes
+ */
+static PyObject* scalar_to_bytes(PyObject* s) {
+# if PY_VERSION_HEX >= 0x03000000
+  PyObject* b = PyObject_Bytes(s);
+# else
+  PyObject* b = PyObject_Str(s);
+# endif
+  Py_DECREF(s);
+  return b;
+}
+
+/**
+ * Accesses the char* buffer on a str/bytes object
+ */
+static const char* bytes_to_charp(PyObject* s) {
+# if PY_VERSION_HEX >= 0x03000000
+  return PyBytes_AS_STRING(s);
+# else
+  return PyString_AS_STRING(s);
+# endif
+}
+
+/**
  * String representation and print out
  */
 static PyObject* PyBoostBinomial_Repr(PyBoostBinomialObject* self) {
+
   PyObject* t = PyBoostBinomial_GetT(self);
   if (!t) return 0;
   PyObject* p = PyBoostBinomial_GetP(self);
   if (!p) return 0;
-  PyObject* retval = PyUnicode_FromFormat("%s(dtype='%s', t=%S, p=%S)",
-      s_binomial_str, PyBlitzArray_TypenumAsString(self->type_num), t, p);
-  Py_DECREF(t);
-  Py_DECREF(p);
+
+  PyObject* st = scalar_to_bytes(t);
+  if (!st) return 0;
+  PyObject* sp = scalar_to_bytes(p);
+  if (!sp) return 0;
+  
+  PyObject* retval = 
+# if PY_VERSION_HEX >= 0x03000000
+    PyUnicode_FromFormat
+#else
+    PyString_FromFormat
+#endif
+      (
+       "%s(dtype='%s', t=%s, p=%s)",
+       s_binomial_str, PyBlitzArray_TypenumAsString(self->type_num),
+       bytes_to_charp(st), bytes_to_charp(sp)
+      );
+
+  Py_DECREF(st);
+  Py_DECREF(sp);
+
   return retval;
+
 }
 
 PyDoc_STRVAR(s_binomial_doc,

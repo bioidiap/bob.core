@@ -472,18 +472,61 @@ static PyGetSetDef PyBoostUniform_getseters[] = {
 };
 
 /**
+ * Converts a scalar, that will be stolen, into a str/bytes
+ */
+static PyObject* scalar_to_bytes(PyObject* s) {
+# if PY_VERSION_HEX >= 0x03000000
+  PyObject* b = PyObject_Bytes(s);
+# else
+  PyObject* b = PyObject_Str(s);
+# endif
+  Py_DECREF(s);
+  return b;
+}
+
+/**
+ * Accesses the char* buffer on a str/bytes object
+ */
+static const char* bytes_to_charp(PyObject* s) {
+# if PY_VERSION_HEX >= 0x03000000
+  return PyBytes_AS_STRING(s);
+# else
+  return PyString_AS_STRING(s);
+# endif
+}
+
+/**
  * String representation and print out
  */
 static PyObject* PyBoostUniform_Repr(PyBoostUniformObject* self) {
+  
   PyObject* min = PyBoostUniform_GetMin(self);
   if (!min) return 0;
   PyObject* max = PyBoostUniform_GetMax(self);
   if (!max) return 0;
-  PyObject* retval = PyUnicode_FromFormat("%s(dtype='%s', min=%S, max=%S)",
-      s_uniform_str, PyBlitzArray_TypenumAsString(self->type_num), min, max);
-  Py_DECREF(min);
-  Py_DECREF(max);
+
+  PyObject* smin = scalar_to_bytes(min);
+  if (!smin) return 0;
+  PyObject* smax = scalar_to_bytes(max);
+  if (!smax) return 0;
+  
+  PyObject* retval = 
+# if PY_VERSION_HEX >= 0x03000000
+    PyUnicode_FromFormat
+#else
+    PyString_FromFormat
+#endif
+      (
+       "%s(dtype='%s', min=%s, max=%s)",
+       s_uniform_str, PyBlitzArray_TypenumAsString(self->type_num),
+       bytes_to_charp(smin), bytes_to_charp(smax)
+      );
+
+  Py_DECREF(smin);
+  Py_DECREF(smax);
+
   return retval;
+
 }
 
 PyDoc_STRVAR(s_uniform_doc,
