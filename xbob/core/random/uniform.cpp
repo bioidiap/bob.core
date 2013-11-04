@@ -63,6 +63,8 @@ PyObject* PyBoostUniform_SimpleNew (int type_num, PyObject* min, PyObject* max) 
 
   PyBoostUniformObject* retval = (PyBoostUniformObject*)PyBoostUniform_New(&PyBoostUniform_Type, 0, 0);
 
+  if (!retval) return 0;
+
   retval->type_num = type_num;
 
   switch(type_num) {
@@ -101,6 +103,7 @@ PyObject* PyBoostUniform_SimpleNew (int type_num, PyObject* min, PyObject* max) 
       break;
     default:
       PyErr_Format(PyExc_NotImplementedError, "cannot create %s(T) with T having an unsupported numpy type number of %d", s_uniform_str, retval->type_num);
+      Py_DECREF(retval);
       return 0;
   }
 
@@ -391,9 +394,9 @@ PyDoc_STRVAR(s_reset_str, "reset");
 PyDoc_STRVAR(s_reset_doc, 
 "x.reset() -> None\n\
 \n\
-After calling this method, subsequent uses of the distribution do not\n\
-depend on values produced by any random number generator prior to\n\
-invoking reset.\n\
+After calling this method, subsequent uses of the distribution do\n\
+not depend on values produced by any random number generator prior\n\
+to invoking reset.\n\
 "
 );
 
@@ -475,12 +478,17 @@ static PyObject* PyBoostUniform_Repr(PyBoostUniformObject* self) {
 }
 
 PyDoc_STRVAR(s_uniform_doc,
-"uniform(dtype, [min, max]]) -> new uniform distribution\n\
+"uniform(dtype, [min=m, max=M]]) -> new uniform distribution\n\
 \n\
 Models a random uniform distribution\n\
 \n\
-On each invocation, it returns a random value uniformly distributed\n\
-in the set of numbers [min, max] (integer) and [min, max[ (real-valued).\n\
+On each invocation, it returns a random value uniformly\n\
+distributed in the set of numbers [min, max] (integer) and\n\
+[min, max[ (real-valued).\n\
+\n\
+If the values ``min`` and ``max`` are not given they are assumed\n\
+to be ``min=0`` and ``max=9``, for integral distributions and\n\
+``min=0.0`` and ``max=1.0`` for real-valued distributions.\n\
 \n\
 "
 );

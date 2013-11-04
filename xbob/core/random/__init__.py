@@ -1,4 +1,4 @@
-from ._library import __doc__, mt19937, uniform
+from ._library import __doc__, mt19937, uniform, normal, lognormal
 import numpy
 
 class variate_generator:
@@ -7,12 +7,13 @@ class variate_generator:
   Keyword parameters:
 
   engine
-    An instance of the RNG you would like to use. This has to be an object of
-    the class :py:class:`xbob.core.random.mt19937`, already initialized.
+    An instance of the RNG you would like to use. This has to be an 
+    object of the class :py:class:`xbob.core.random.mt19937`, already
+    initialized.
 
   distribution
-    The distribution to respect when generating scalars using the engine. The
-    distribution object should be previously initialized.
+    The distribution to respect when generating scalars using the engine.
+    The distribution object should be previously initialized.
   """
 
   def __init__(self, engine, distribution):

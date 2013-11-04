@@ -26,6 +26,8 @@ PyObject* PyBoostMt19937_SimpleNew () {
 
   PyBoostMt19937Object* retval = (PyBoostMt19937Object*)PyBoostMt19937_New(&PyBoostMt19937_Type, 0, 0);
 
+  if (!retval) return 0;
+
   retval->rng = new boost::random::mt19937;
 
   return reinterpret_cast<PyObject*>(retval);
@@ -35,6 +37,8 @@ PyObject* PyBoostMt19937_SimpleNew () {
 PyObject* PyBoostMt19937_NewWithSeed (Py_ssize_t seed) {
 
   PyBoostMt19937Object* retval = (PyBoostMt19937Object*)PyBoostMt19937_New(&PyBoostMt19937_Type, 0, 0);
+  
+  if (!retval) return 0;
 
   retval->rng = new boost::random::mt19937(seed);
 
@@ -134,8 +138,8 @@ PyDoc_STRVAR(s_seed_doc,
 \n\
 Sets the seed for this random number generator\n\
 \n\
-This method sets the seed for this random number generator. The input\n\
-value needs to be convertible to a long integer.\n\
+This method sets the seed for this random number generator. The\n\
+input value needs to be convertible to a long integer.\n\
 "
 );
 

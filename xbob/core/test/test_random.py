@@ -7,7 +7,7 @@
 """
 
 from __future__ import division
-from ..random import variate_generator, mt19937, uniform
+from ..random import variate_generator, mt19937, uniform, normal, lognormal
 import numpy
 import nose.tools
 
@@ -101,3 +101,21 @@ def test_variate_generator_2d():
   m = x((10,10))
   assert m.shape == (10,10)
   assert m.dtype == numpy.uint16
+
+def test_normal():
+
+  x = variate_generator(mt19937(), normal('float64', mean=0.5, sigma=2.0))
+  assert x.distribution.mean == 0.5
+  assert x.distribution.sigma == 2.0
+  m = x(10000)
+  assert abs(m.mean() - 0.5) < 0.1
+  assert abs(m.std() - 2.) < 0.1
+
+def test_lognormal():
+  
+  x = variate_generator(mt19937(), lognormal('float64', mean=0.5, sigma=2.0))
+  assert x.distribution.mean == 0.5
+  assert x.distribution.sigma == 2.0
+  m = x(10000)
+  assert abs(m.mean() - 0.5) < 0.1
+

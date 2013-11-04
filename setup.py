@@ -124,6 +124,8 @@ setup(
         [
           "xbob/core/random/mt19937.cpp",
           "xbob/core/random/uniform.cpp",
+          "xbob/core/random/normal.cpp",
+          "xbob/core/random/lognormal.cpp",
           "xbob/core/random/main.cpp",
           ],
         define_macros=define_macros,

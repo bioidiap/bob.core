@@ -78,8 +78,66 @@ typedef struct {
 #define PyBoostUniform_SimpleNew_RET PyObject*
 #define PyBoostUniform_SimpleNew_PROTO (int type_num, PyObject* min, PyObject* max)
 
+/****************************************
+ * Bindings for xbob.core.random.normal *
+ ****************************************/
+
+/* Type definition for PyBoostNormalObject */
+typedef struct {
+  PyObject_HEAD
+
+  /* Type-specific fields go here. */
+  int type_num;
+  boost::shared_ptr<void> distro;
+
+} PyBoostNormalObject;
+
+#define PyBoostNormal_Type_NUM 9
+#define PyBoostNormal_Type_TYPE PyTypeObject
+
+#define PyBoostNormal_Check_NUM 10
+#define PyBoostNormal_Check_RET int
+#define PyBoostNormal_Check_PROTO (PyObject* o)
+
+#define PyBoostNormal_Converter_NUM 11
+#define PyBoostNormal_Converter_RET int
+#define PyBoostNormal_Converter_PROTO (PyObject* o, PyBoostNormalObject** a)
+
+#define PyBoostNormal_SimpleNew_NUM 12
+#define PyBoostNormal_SimpleNew_RET PyObject*
+#define PyBoostNormal_SimpleNew_PROTO (int type_num, PyObject* mean, PyObject* sigma)
+
+/*******************************************
+ * Bindings for xbob.core.random.lognormal *
+ *******************************************/
+
+/* Type definition for PyBoostLogNormalObject */
+typedef struct {
+  PyObject_HEAD
+
+  /* Type-specific fields go here. */
+  int type_num;
+  boost::shared_ptr<void> distro;
+
+} PyBoostLogNormalObject;
+
+#define PyBoostLogNormal_Type_NUM 13
+#define PyBoostLogNormal_Type_TYPE PyTypeObject
+
+#define PyBoostLogNormal_Check_NUM 14
+#define PyBoostLogNormal_Check_RET int
+#define PyBoostLogNormal_Check_PROTO (PyObject* o)
+
+#define PyBoostLogNormal_Converter_NUM 15
+#define PyBoostLogNormal_Converter_RET int
+#define PyBoostLogNormal_Converter_PROTO (PyObject* o, PyBoostLogNormalObject** a)
+
+#define PyBoostLogNormal_SimpleNew_NUM 16
+#define PyBoostLogNormal_SimpleNew_RET PyObject*
+#define PyBoostLogNormal_SimpleNew_PROTO (int type_num, PyObject* mean, PyObject* sigma)
+
 /* Total number of C API pointers */
-#define PyXbobCoreRandom_API_pointers 9
+#define PyXbobCoreRandom_API_pointers 17
 
 #ifdef XBOB_CORE_RANDOM_MODULE
 
@@ -110,6 +168,30 @@ typedef struct {
   PyBoostUniform_Converter_RET PyBoostUniform_Converter PyBoostUniform_Converter_PROTO;
 
   PyBoostUniform_SimpleNew_RET PyBoostUniform_SimpleNew PyBoostUniform_SimpleNew_PROTO;
+
+  /****************************************
+   * Bindings for xbob.core.random.normal *
+   ****************************************/
+
+  extern PyBoostNormal_Type_TYPE PyBoostNormal_Type;
+
+  PyBoostNormal_Check_RET PyBoostNormal_Check PyBoostNormal_Check_PROTO;
+
+  PyBoostNormal_Converter_RET PyBoostNormal_Converter PyBoostNormal_Converter_PROTO;
+
+  PyBoostNormal_SimpleNew_RET PyBoostNormal_SimpleNew PyBoostNormal_SimpleNew_PROTO;
+
+  /*******************************************
+   * Bindings for xbob.core.random.lognormal *
+   *******************************************/
+
+  extern PyBoostLogNormal_Type_TYPE PyBoostLogNormal_Type;
+
+  PyBoostLogNormal_Check_RET PyBoostLogNormal_Check PyBoostLogNormal_Check_PROTO;
+
+  PyBoostLogNormal_Converter_RET PyBoostLogNormal_Converter PyBoostLogNormal_Converter_PROTO;
+
+  PyBoostLogNormal_SimpleNew_RET PyBoostLogNormal_SimpleNew PyBoostLogNormal_SimpleNew_PROTO;
 
 #else
 
@@ -142,6 +224,30 @@ typedef struct {
 # define PyBoostUniform_Converter (*(PyBoostUniform_Converter_RET (*)PyBoostUniform_Converter_PROTO) PyXbobCoreRandom_API[PyBoostUniform_Converter_NUM])
 
 # define PyBoostUniform_SimpleNew (*(PyBoostUniform_SimpleNew_RET (*)PyBoostUniform_SimpleNew_PROTO) PyXbobCoreRandom_API[PyBoostUniform_SimpleNew_NUM])
+
+  /****************************************
+   * Bindings for xbob.core.random.normal *
+   ****************************************/
+
+# define PyBoostNormal_Type (*(PyBoostNormal_Type_TYPE *)PyXbobCoreRandom_API[PyBoostNormal_Type_NUM])
+
+# define PyBoostNormal_Check (*(PyBoostNormal_Check_RET (*)PyBoostNormal_Check_PROTO) PyXbobCoreRandom_API[PyBoostNormal_Check_NUM])
+
+# define PyBoostNormal_Converter (*(PyBoostNormal_Converter_RET (*)PyBoostNormal_Converter_PROTO) PyXbobCoreRandom_API[PyBoostNormal_Converter_NUM])
+
+# define PyBoostNormal_SimpleNew (*(PyBoostNormal_SimpleNew_RET (*)PyBoostNormal_SimpleNew_PROTO) PyXbobCoreRandom_API[PyBoostNormal_SimpleNew_NUM])
+
+  /*******************************************
+   * Bindings for xbob.core.random.lognormal *
+   *******************************************/
+
+# define PyBoostLogNormal_Type (*(PyBoostLogNormal_Type_TYPE *)PyXbobCoreRandom_API[PyBoostLogNormal_Type_NUM])
+
+# define PyBoostLogNormal_Check (*(PyBoostLogNormal_Check_RET (*)PyBoostLogNormal_Check_PROTO) PyXbobCoreRandom_API[PyBoostLogNormal_Check_NUM])
+
+# define PyBoostLogNormal_Converter (*(PyBoostLogNormal_Converter_RET (*)PyBoostLogNormal_Converter_PROTO) PyXbobCoreRandom_API[PyBoostLogNormal_Converter_NUM])
+
+# define PyBoostLogNormal_SimpleNew (*(PyBoostLogNormal_SimpleNew_RET (*)PyBoostLogNormal_SimpleNew_PROTO) PyXbobCoreRandom_API[PyBoostLogNormal_SimpleNew_NUM])
 
   /**
    * Returns -1 on error, 0 on success. PyCapsule_Import will set an exception
