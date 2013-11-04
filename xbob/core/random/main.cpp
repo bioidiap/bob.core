@@ -38,6 +38,12 @@ PyMODINIT_FUNC ENTRY_FUNCTION(XBOB_CORE_RANDOM_MODULE_NAME) (void) {
   PyBoostLogNormal_Type.tp_new = PyType_GenericNew;
   if (PyType_Ready(&PyBoostLogNormal_Type) < 0) return;
 
+  PyBoostGamma_Type.tp_new = PyType_GenericNew;
+  if (PyType_Ready(&PyBoostGamma_Type) < 0) return;
+
+  PyBoostBinomial_Type.tp_new = PyType_GenericNew;
+  if (PyType_Ready(&PyBoostBinomial_Type) < 0) return;
+
   PyObject* m = Py_InitModule3(BOOST_PP_STRINGIZE(XBOB_CORE_RANDOM_MODULE_NAME),
       module_methods, module_docstr);
 
@@ -57,6 +63,12 @@ PyMODINIT_FUNC ENTRY_FUNCTION(XBOB_CORE_RANDOM_MODULE_NAME) (void) {
 
   Py_INCREF(&PyBoostLogNormal_Type);
   PyModule_AddObject(m, "lognormal", (PyObject *)&PyBoostLogNormal_Type);
+
+  Py_INCREF(&PyBoostGamma_Type);
+  PyModule_AddObject(m, "gamma", (PyObject *)&PyBoostGamma_Type);
+
+  Py_INCREF(&PyBoostBinomial_Type);
+  PyModule_AddObject(m, "binomial", (PyObject *)&PyBoostBinomial_Type);
 
   static void* PyXbobCoreRandom_API[PyXbobCoreRandom_API_pointers];
 
@@ -96,6 +108,24 @@ PyMODINIT_FUNC ENTRY_FUNCTION(XBOB_CORE_RANDOM_MODULE_NAME) (void) {
   PyXbobCoreRandom_API[PyBoostLogNormal_Check_NUM] = (void *)PyBoostLogNormal_Check;
   PyXbobCoreRandom_API[PyBoostLogNormal_Converter_NUM] = (void *)PyBoostLogNormal_Converter;
   PyXbobCoreRandom_API[PyBoostLogNormal_SimpleNew_NUM] = (void *)PyBoostLogNormal_SimpleNew;
+
+  /***************************************
+   * Bindings for xbob.core.random.gamma *
+   ***************************************/
+
+  PyXbobCoreRandom_API[PyBoostGamma_Type_NUM] = (void *)&PyBoostGamma_Type;
+  PyXbobCoreRandom_API[PyBoostGamma_Check_NUM] = (void *)PyBoostGamma_Check;
+  PyXbobCoreRandom_API[PyBoostGamma_Converter_NUM] = (void *)PyBoostGamma_Converter;
+  PyXbobCoreRandom_API[PyBoostGamma_SimpleNew_NUM] = (void *)PyBoostGamma_SimpleNew;
+
+  /******************************************
+   * Bindings for xbob.core.random.binomial *
+   ******************************************/
+
+  PyXbobCoreRandom_API[PyBoostBinomial_Type_NUM] = (void *)&PyBoostBinomial_Type;
+  PyXbobCoreRandom_API[PyBoostBinomial_Check_NUM] = (void *)PyBoostBinomial_Check;
+  PyXbobCoreRandom_API[PyBoostBinomial_Converter_NUM] = (void *)PyBoostBinomial_Converter;
+  PyXbobCoreRandom_API[PyBoostBinomial_SimpleNew_NUM] = (void *)PyBoostBinomial_SimpleNew;
 
 #if PY_VERSION_HEX >= 0x02070000
 

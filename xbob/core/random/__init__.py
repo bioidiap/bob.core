@@ -1,4 +1,4 @@
-from ._library import __doc__, mt19937, uniform, normal, lognormal
+from ._library import __doc__, mt19937, uniform, normal, lognormal, gamma, binomial
 import numpy
 
 class variate_generator:

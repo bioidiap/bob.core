@@ -136,8 +136,66 @@ typedef struct {
 #define PyBoostLogNormal_SimpleNew_RET PyObject*
 #define PyBoostLogNormal_SimpleNew_PROTO (int type_num, PyObject* mean, PyObject* sigma)
 
+/***************************************
+ * Bindings for xbob.core.random.gamma *
+ ***************************************/
+
+/* Type definition for PyBoostGammaObject */
+typedef struct {
+  PyObject_HEAD
+
+  /* Type-specific fields go here. */
+  int type_num;
+  boost::shared_ptr<void> distro;
+
+} PyBoostGammaObject;
+
+#define PyBoostGamma_Type_NUM 17
+#define PyBoostGamma_Type_TYPE PyTypeObject
+
+#define PyBoostGamma_Check_NUM 18
+#define PyBoostGamma_Check_RET int
+#define PyBoostGamma_Check_PROTO (PyObject* o)
+
+#define PyBoostGamma_Converter_NUM 19
+#define PyBoostGamma_Converter_RET int
+#define PyBoostGamma_Converter_PROTO (PyObject* o, PyBoostGammaObject** a)
+
+#define PyBoostGamma_SimpleNew_NUM 20
+#define PyBoostGamma_SimpleNew_RET PyObject*
+#define PyBoostGamma_SimpleNew_PROTO (int type_num, PyObject* alpha, PyObject* beta)
+
+/******************************************
+ * Bindings for xbob.core.random.binomial *
+ ******************************************/
+
+/* Type definition for PyBoostBinomialObject */
+typedef struct {
+  PyObject_HEAD
+
+  /* Type-specific fields go here. */
+  int type_num;
+  boost::shared_ptr<void> distro;
+
+} PyBoostBinomialObject;
+
+#define PyBoostBinomial_Type_NUM 21
+#define PyBoostBinomial_Type_TYPE PyTypeObject
+
+#define PyBoostBinomial_Check_NUM 22
+#define PyBoostBinomial_Check_RET int
+#define PyBoostBinomial_Check_PROTO (PyObject* o)
+
+#define PyBoostBinomial_Converter_NUM 23
+#define PyBoostBinomial_Converter_RET int
+#define PyBoostBinomial_Converter_PROTO (PyObject* o, PyBoostBinomialObject** a)
+
+#define PyBoostBinomial_SimpleNew_NUM 24
+#define PyBoostBinomial_SimpleNew_RET PyObject*
+#define PyBoostBinomial_SimpleNew_PROTO (int type_num, PyObject* alpha, PyObject* beta)
+
 /* Total number of C API pointers */
-#define PyXbobCoreRandom_API_pointers 17
+#define PyXbobCoreRandom_API_pointers 25
 
 #ifdef XBOB_CORE_RANDOM_MODULE
 
@@ -192,6 +250,30 @@ typedef struct {
   PyBoostLogNormal_Converter_RET PyBoostLogNormal_Converter PyBoostLogNormal_Converter_PROTO;
 
   PyBoostLogNormal_SimpleNew_RET PyBoostLogNormal_SimpleNew PyBoostLogNormal_SimpleNew_PROTO;
+
+  /***************************************
+   * Bindings for xbob.core.random.gamma *
+   ***************************************/
+
+  extern PyBoostGamma_Type_TYPE PyBoostGamma_Type;
+
+  PyBoostGamma_Check_RET PyBoostGamma_Check PyBoostGamma_Check_PROTO;
+
+  PyBoostGamma_Converter_RET PyBoostGamma_Converter PyBoostGamma_Converter_PROTO;
+
+  PyBoostGamma_SimpleNew_RET PyBoostGamma_SimpleNew PyBoostGamma_SimpleNew_PROTO;
+
+  /******************************************
+   * Bindings for xbob.core.random.binomial *
+   ******************************************/
+
+  extern PyBoostBinomial_Type_TYPE PyBoostBinomial_Type;
+
+  PyBoostBinomial_Check_RET PyBoostBinomial_Check PyBoostBinomial_Check_PROTO;
+
+  PyBoostBinomial_Converter_RET PyBoostBinomial_Converter PyBoostBinomial_Converter_PROTO;
+
+  PyBoostBinomial_SimpleNew_RET PyBoostBinomial_SimpleNew PyBoostBinomial_SimpleNew_PROTO;
 
 #else
 
@@ -248,6 +330,30 @@ typedef struct {
 # define PyBoostLogNormal_Converter (*(PyBoostLogNormal_Converter_RET (*)PyBoostLogNormal_Converter_PROTO) PyXbobCoreRandom_API[PyBoostLogNormal_Converter_NUM])
 
 # define PyBoostLogNormal_SimpleNew (*(PyBoostLogNormal_SimpleNew_RET (*)PyBoostLogNormal_SimpleNew_PROTO) PyXbobCoreRandom_API[PyBoostLogNormal_SimpleNew_NUM])
+
+  /***************************************
+   * Bindings for xbob.core.random.gamma *
+   ***************************************/
+
+# define PyBoostGamma_Type (*(PyBoostGamma_Type_TYPE *)PyXbobCoreRandom_API[PyBoostGamma_Type_NUM])
+
+# define PyBoostGamma_Check (*(PyBoostGamma_Check_RET (*)PyBoostGamma_Check_PROTO) PyXbobCoreRandom_API[PyBoostGamma_Check_NUM])
+
+# define PyBoostGamma_Converter (*(PyBoostGamma_Converter_RET (*)PyBoostGamma_Converter_PROTO) PyXbobCoreRandom_API[PyBoostGamma_Converter_NUM])
+
+# define PyBoostGamma_SimpleNew (*(PyBoostGamma_SimpleNew_RET (*)PyBoostGamma_SimpleNew_PROTO) PyXbobCoreRandom_API[PyBoostGamma_SimpleNew_NUM])
+
+  /******************************************
+   * Bindings for xbob.core.random.binomial *
+   ******************************************/
+
+# define PyBoostBinomial_Type (*(PyBoostBinomial_Type_TYPE *)PyXbobCoreRandom_API[PyBoostBinomial_Type_NUM])
+
+# define PyBoostBinomial_Check (*(PyBoostBinomial_Check_RET (*)PyBoostBinomial_Check_PROTO) PyXbobCoreRandom_API[PyBoostBinomial_Check_NUM])
+
+# define PyBoostBinomial_Converter (*(PyBoostBinomial_Converter_RET (*)PyBoostBinomial_Converter_PROTO) PyXbobCoreRandom_API[PyBoostBinomial_Converter_NUM])
+
+# define PyBoostBinomial_SimpleNew (*(PyBoostBinomial_SimpleNew_RET (*)PyBoostBinomial_SimpleNew_PROTO) PyXbobCoreRandom_API[PyBoostBinomial_SimpleNew_NUM])
 
   /**
    * Returns -1 on error, 0 on success. PyCapsule_Import will set an exception

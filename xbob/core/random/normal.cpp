@@ -62,6 +62,11 @@ PyObject* PyBoostNormal_SimpleNew (int type_num, PyObject* mean, PyObject* sigma
       return 0;
   }
 
+  if (!retval->distro) { // a problem occurred
+    Py_DECREF(retval);
+    return 0;
+  }
+
   return reinterpret_cast<PyObject*>(retval);
 
 }
@@ -90,6 +95,10 @@ int PyBoostNormal_Init(PyBoostNormalObject* self, PyObject *args, PyObject* kwds
     default:
       PyErr_Format(PyExc_NotImplementedError, "cannot create %s(T) with T having an unsupported numpy type number of %d (it only supports numpy.float32 or numpy.float64)", s_normal_str, self->type_num);
       return -1;
+  }
+
+  if (!self->distro) { // a problem occurred
+    return -1;
   }
 
   return 0; ///< SUCCESS

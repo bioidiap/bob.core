@@ -7,34 +7,34 @@
 """
 
 from __future__ import division
-from ..random import variate_generator, mt19937, uniform, normal, lognormal
+from .. import random
 import numpy
 import nose.tools
 
 def test_mt19937_creation():
 
-  x = mt19937()
-  y = mt19937()
+  x = random.mt19937()
+  y = random.mt19937()
   assert x == y
 
 def test_mt19937_comparison():
 
-  x = mt19937(10)
-  y = mt19937(11)
+  x = random.mt19937(10)
+  y = random.mt19937(11)
   assert x != y
 
 def test_uniform_creation():
 
-  x = uniform('int8')
+  x = random.uniform('int8')
   assert x.dtype == numpy.int8
   assert x.min == 0
   assert x.max == 9
 
 def test_uniform_int8():
   
-  x = uniform('uint8', min=0, max=7)
+  x = random.uniform('uint8', min=0, max=7)
   assert x.dtype == numpy.uint8
-  rng = mt19937()
+  rng = random.mt19937()
   l = [x(rng) for k in range(10000)]
   assert min(l) == 0
   assert max(l) == 7
@@ -42,9 +42,9 @@ def test_uniform_int8():
 
 def test_uniform_float64():
 
-  x = uniform('float64', min=-1, max=+1)
+  x = random.uniform('float64', min=-1, max=+1)
   assert x.dtype == numpy.float64
-  rng = mt19937()
+  rng = random.mt19937()
   l = [x(rng) for k in range(10000)]
   assert min(l) >= -1.0
   assert max(l) < 1.0
@@ -52,10 +52,10 @@ def test_uniform_float64():
 
 def test_uniform_bool():
 
-  x = uniform(bool)
+  x = random.uniform(bool)
   assert x.min == False
   assert x.max == True
-  rng = mt19937()
+  rng = random.mt19937()
   l = [x(rng) for k in range(1000)]
   assert min(l) == False
   assert max(l) == True
@@ -63,26 +63,26 @@ def test_uniform_bool():
 @nose.tools.raises(ValueError)
 def test_uniform_bool_raises():
 
-  x = uniform(bool, True, True)
+  x = random.uniform(bool, True, True)
 
 @nose.tools.raises(NotImplementedError)
 def test_uniform_complex():
 
-  x = uniform('complex64')
+  x = random.uniform('complex64')
 
 def test_mt19937_same_sequence():
   
-  x = uniform('float64', min=-1, max=+1)
-  rng1 = mt19937(17)
-  rng2 = mt19937(17)
+  x = random.uniform('float64', min=-1, max=+1)
+  rng1 = random.mt19937(17)
+  rng2 = random.mt19937(17)
   check = [x(rng1) == x(rng2) for k in range(1000)]
   assert numpy.all(check)
 
 def test_mt19937_different_sequences():
   
-  x = uniform('float64', min=-1, max=+1)
-  rng1 = mt19937(17)
-  rng2 = mt19937(-3)
+  x = random.uniform('float64', min=-1, max=+1)
+  rng1 = random.mt19937(17)
+  rng2 = random.mt19937(-3)
   check = [x(rng1) == x(rng2) for k in range(1000)]
   assert not numpy.all(check)
 
@@ -90,21 +90,21 @@ def test_variate_generator_1d():
   
   import math
 
-  x = variate_generator(mt19937(), uniform('float32', min=0, max=2*math.pi))
+  x = random.variate_generator(random.mt19937(), random.uniform('float32', min=0, max=2*math.pi))
   m = x(10)
   assert m.shape == (10,)
   assert m.dtype == numpy.float32
 
 def test_variate_generator_2d():
 
-  x = variate_generator(mt19937(), uniform('uint16', min=0, max=65535))
+  x = random.variate_generator(random.mt19937(), random.uniform('uint16', min=0, max=65535))
   m = x((10,10))
   assert m.shape == (10,10)
   assert m.dtype == numpy.uint16
 
 def test_normal():
 
-  x = variate_generator(mt19937(), normal('float64', mean=0.5, sigma=2.0))
+  x = random.variate_generator(random.mt19937(), random.normal('float64', mean=0.5, sigma=2.0))
   assert x.distribution.mean == 0.5
   assert x.distribution.sigma == 2.0
   m = x(10000)
@@ -113,9 +113,31 @@ def test_normal():
 
 def test_lognormal():
   
-  x = variate_generator(mt19937(), lognormal('float64', mean=0.5, sigma=2.0))
+  x = random.variate_generator(random.mt19937(), random.lognormal('float64', mean=0.5, sigma=2.0))
   assert x.distribution.mean == 0.5
   assert x.distribution.sigma == 2.0
   m = x(10000)
   assert abs(m.mean() - 0.5) < 0.1
 
+def test_gamma():
+
+  x = random.variate_generator(random.mt19937(), random.gamma('float64', alpha=0.5, beta=2.0))
+  assert x.distribution.alpha == 0.5
+  assert x.distribution.beta == 2.0
+  m = x(10000)
+  assert abs(m.mean() - 1.0) < 0.1
+  assert abs(m.std() - 1.4) < 0.1
+
+def test_binomial():
+
+  x = random.variate_generator(random.mt19937(), random.binomial('float64', t=3.0, p=0.1))
+  assert x.distribution.t == 3.0
+  assert x.distribution.p == 0.1
+  m = x(10000)
+  assert abs(m.mean() - 0.30) < 0.1
+  assert abs(m.std() - 0.52) < 0.1
+
+def test_repr():
+
+  x = random.uniform(float)
+  print x

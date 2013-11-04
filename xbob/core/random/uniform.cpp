@@ -107,6 +107,11 @@ PyObject* PyBoostUniform_SimpleNew (int type_num, PyObject* min, PyObject* max) 
       return 0;
   }
 
+  if (!retval->distro) { // a problem occurred
+    Py_DECREF(retval);
+    return 0;
+  }
+
   return reinterpret_cast<PyObject*>(retval);
 
 }
@@ -167,6 +172,10 @@ int PyBoostUniform_Init(PyBoostUniformObject* self, PyObject *args, PyObject* kw
     default:
       PyErr_Format(PyExc_NotImplementedError, "cannot create %s(T) with T having an unsupported numpy type number of %d", s_uniform_str, self->type_num);
       return -1;
+  }
+
+  if (!self->distro) { // a problem occurred
+    return -1;
   }
 
   return 0; ///< SUCCESS
