@@ -21,6 +21,8 @@ PyDoc_STRVAR(module_docstr,
 "boost::random classes and methods"
 );
 
+int PyXbobCoreRandom_APIVersion = XBOB_CORE_API_VERSION;
+
 #define ENTRY_FUNCTION_INNER(a) init ## a
 #define ENTRY_FUNCTION(a) ENTRY_FUNCTION_INNER(a)
 
@@ -71,6 +73,9 @@ PyMODINIT_FUNC ENTRY_FUNCTION(XBOB_CORE_RANDOM_MODULE_NAME) (void) {
   PyModule_AddObject(m, "binomial", (PyObject *)&PyBoostBinomial_Type);
 
   static void* PyXbobCoreRandom_API[PyXbobCoreRandom_API_pointers];
+
+  /* exhaustive list of C APIs */
+  PyXbobCoreRandom_API[PyXbobCoreRandom_APIVersion_NUM] = (void *)&PyXbobCoreRandom_APIVersion;
 
   /*****************************************
    * Bindings for xbob.core.random.mt19937 *

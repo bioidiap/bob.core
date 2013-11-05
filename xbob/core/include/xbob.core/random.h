@@ -17,6 +17,13 @@
 #define XBOB_CORE_RANDOM_MODULE_PREFIX xbob.core.random
 #define XBOB_CORE_RANDOM_MODULE_NAME _library
 
+/*******************
+ * C API functions *
+ *******************/
+
+#define PyXbobCoreRandom_APIVersion_NUM 0
+#define PyXbobCoreRandom_APIVersion_TYPE int
+
 /*****************************************
  * Bindings for xbob.core.random.mt19937 *
  *****************************************/
@@ -30,22 +37,22 @@ typedef struct {
 
 } PyBoostMt19937Object;
 
-#define PyBoostMt19937_Type_NUM 0
+#define PyBoostMt19937_Type_NUM 1
 #define PyBoostMt19937_Type_TYPE PyTypeObject
 
-#define PyBoostMt19937_Check_NUM 1
+#define PyBoostMt19937_Check_NUM 2
 #define PyBoostMt19937_Check_RET int
 #define PyBoostMt19937_Check_PROTO (PyObject* o)
 
-#define PyBoostMt19937_Converter_NUM 2
+#define PyBoostMt19937_Converter_NUM 3
 #define PyBoostMt19937_Converter_RET int
 #define PyBoostMt19937_Converter_PROTO (PyObject* o, PyBoostMt19937Object** a)
 
-#define PyBoostMt19937_SimpleNew_NUM 3
+#define PyBoostMt19937_SimpleNew_NUM 4
 #define PyBoostMt19937_SimpleNew_RET PyObject*
 #define PyBoostMt19937_SimpleNew_PROTO ()
 
-#define PyBoostMt19937_NewWithSeed_NUM 4
+#define PyBoostMt19937_NewWithSeed_NUM 5
 #define PyBoostMt19937_NewWithSeed_RET PyObject*
 #define PyBoostMt19937_NewWithSeed_PROTO (Py_ssize_t seed)
 
@@ -63,18 +70,18 @@ typedef struct {
 
 } PyBoostUniformObject;
 
-#define PyBoostUniform_Type_NUM 5
+#define PyBoostUniform_Type_NUM 6
 #define PyBoostUniform_Type_TYPE PyTypeObject
 
-#define PyBoostUniform_Check_NUM 6
+#define PyBoostUniform_Check_NUM 7
 #define PyBoostUniform_Check_RET int
 #define PyBoostUniform_Check_PROTO (PyObject* o)
 
-#define PyBoostUniform_Converter_NUM 7
+#define PyBoostUniform_Converter_NUM 8
 #define PyBoostUniform_Converter_RET int
 #define PyBoostUniform_Converter_PROTO (PyObject* o, PyBoostUniformObject** a)
 
-#define PyBoostUniform_SimpleNew_NUM 8
+#define PyBoostUniform_SimpleNew_NUM 9
 #define PyBoostUniform_SimpleNew_RET PyObject*
 #define PyBoostUniform_SimpleNew_PROTO (int type_num, PyObject* min, PyObject* max)
 
@@ -92,18 +99,18 @@ typedef struct {
 
 } PyBoostNormalObject;
 
-#define PyBoostNormal_Type_NUM 9
+#define PyBoostNormal_Type_NUM 10
 #define PyBoostNormal_Type_TYPE PyTypeObject
 
-#define PyBoostNormal_Check_NUM 10
+#define PyBoostNormal_Check_NUM 11
 #define PyBoostNormal_Check_RET int
 #define PyBoostNormal_Check_PROTO (PyObject* o)
 
-#define PyBoostNormal_Converter_NUM 11
+#define PyBoostNormal_Converter_NUM 12
 #define PyBoostNormal_Converter_RET int
 #define PyBoostNormal_Converter_PROTO (PyObject* o, PyBoostNormalObject** a)
 
-#define PyBoostNormal_SimpleNew_NUM 12
+#define PyBoostNormal_SimpleNew_NUM 13
 #define PyBoostNormal_SimpleNew_RET PyObject*
 #define PyBoostNormal_SimpleNew_PROTO (int type_num, PyObject* mean, PyObject* sigma)
 
@@ -121,18 +128,18 @@ typedef struct {
 
 } PyBoostLogNormalObject;
 
-#define PyBoostLogNormal_Type_NUM 13
+#define PyBoostLogNormal_Type_NUM 14
 #define PyBoostLogNormal_Type_TYPE PyTypeObject
 
-#define PyBoostLogNormal_Check_NUM 14
+#define PyBoostLogNormal_Check_NUM 15
 #define PyBoostLogNormal_Check_RET int
 #define PyBoostLogNormal_Check_PROTO (PyObject* o)
 
-#define PyBoostLogNormal_Converter_NUM 15
+#define PyBoostLogNormal_Converter_NUM 16
 #define PyBoostLogNormal_Converter_RET int
 #define PyBoostLogNormal_Converter_PROTO (PyObject* o, PyBoostLogNormalObject** a)
 
-#define PyBoostLogNormal_SimpleNew_NUM 16
+#define PyBoostLogNormal_SimpleNew_NUM 17
 #define PyBoostLogNormal_SimpleNew_RET PyObject*
 #define PyBoostLogNormal_SimpleNew_PROTO (int type_num, PyObject* mean, PyObject* sigma)
 
@@ -150,18 +157,18 @@ typedef struct {
 
 } PyBoostGammaObject;
 
-#define PyBoostGamma_Type_NUM 17
+#define PyBoostGamma_Type_NUM 18
 #define PyBoostGamma_Type_TYPE PyTypeObject
 
-#define PyBoostGamma_Check_NUM 18
+#define PyBoostGamma_Check_NUM 19
 #define PyBoostGamma_Check_RET int
 #define PyBoostGamma_Check_PROTO (PyObject* o)
 
-#define PyBoostGamma_Converter_NUM 19
+#define PyBoostGamma_Converter_NUM 20
 #define PyBoostGamma_Converter_RET int
 #define PyBoostGamma_Converter_PROTO (PyObject* o, PyBoostGammaObject** a)
 
-#define PyBoostGamma_SimpleNew_NUM 20
+#define PyBoostGamma_SimpleNew_NUM 21
 #define PyBoostGamma_SimpleNew_RET PyObject*
 #define PyBoostGamma_SimpleNew_PROTO (int type_num, PyObject* alpha, PyObject* beta)
 
@@ -179,23 +186,23 @@ typedef struct {
 
 } PyBoostBinomialObject;
 
-#define PyBoostBinomial_Type_NUM 21
+#define PyBoostBinomial_Type_NUM 22
 #define PyBoostBinomial_Type_TYPE PyTypeObject
 
-#define PyBoostBinomial_Check_NUM 22
+#define PyBoostBinomial_Check_NUM 23
 #define PyBoostBinomial_Check_RET int
 #define PyBoostBinomial_Check_PROTO (PyObject* o)
 
-#define PyBoostBinomial_Converter_NUM 23
+#define PyBoostBinomial_Converter_NUM 24
 #define PyBoostBinomial_Converter_RET int
 #define PyBoostBinomial_Converter_PROTO (PyObject* o, PyBoostBinomialObject** a)
 
-#define PyBoostBinomial_SimpleNew_NUM 24
+#define PyBoostBinomial_SimpleNew_NUM 25
 #define PyBoostBinomial_SimpleNew_RET PyObject*
 #define PyBoostBinomial_SimpleNew_PROTO (int type_num, PyObject* alpha, PyObject* beta)
 
 /* Total number of C API pointers */
-#define PyXbobCoreRandom_API_pointers 25
+#define PyXbobCoreRandom_API_pointers 26
 
 #ifdef XBOB_CORE_RANDOM_MODULE
 
