@@ -1,4 +1,4 @@
-from ._convert import convert
+from ._convert import convert, __version__, __api_version__
 from . import log
 from . import random
 
