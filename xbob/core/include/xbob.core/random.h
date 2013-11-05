@@ -21,6 +21,10 @@
  * C API functions *
  *******************/
 
+/**************
+ * Versioning *
+ **************/
+
 #define PyXbobCoreRandom_APIVersion_NUM 0
 #define PyXbobCoreRandom_APIVersion_TYPE int
 
@@ -208,6 +212,10 @@ typedef struct {
 
   /* This section is used when compiling `xbob.core.random' itself */
 
+  /**************
+   * Versioning *
+   **************/
+
   extern int PyXbobCoreRandom_APIVersion;
 
   /*****************************************
@@ -310,9 +318,13 @@ typedef struct {
 #    endif
 #  endif
 
-#define PyXbobCoreRandom_APIVersion (*(PyXbobCoreRandom_APIVersion_TYPE *)PyXbobCoreRandom_API[PyXbobCoreRandom_APIVersion_NUM])
-
   static void **PyXbobCoreRandom_API;
+
+  /**************
+   * Versioning *
+   **************/
+
+# define PyXbobCoreRandom_APIVersion (*(PyXbobCoreRandom_APIVersion_TYPE *)PyXbobCoreRandom_API[PyXbobCoreRandom_APIVersion_NUM])
 
   /*****************************************
    * Bindings for xbob.core.random.mt19937 *
