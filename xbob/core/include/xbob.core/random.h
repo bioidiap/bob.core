@@ -208,6 +208,8 @@ typedef struct {
 
   /* This section is used when compiling `xbob.core.random' itself */
 
+  extern int PyXbobCoreRandom_APIVersion;
+
   /*****************************************
    * Bindings for xbob.core.random.mt19937 *
    *****************************************/
@@ -285,6 +287,30 @@ typedef struct {
 #else
 
   /* This section is used in modules that use `blitz.array's' C-API */
+
+/************************************************************************
+ * Macros to avoid symbol collision and allow for separate compilation. *
+ * We pig-back on symbols already defined for NumPy and apply the same  *
+ * set of rules here, creating our own API symbol names.                *
+ ************************************************************************/
+
+#  if defined(PY_ARRAY_UNIQUE_SYMBOL)
+#    define XBOB_CORE_RANDOM_MAKE_API_NAME_INNER(a) XBOB_CORE_RANDOM_ ## a
+#    define XBOB_CORE_RANDOM_MAKE_API_NAME(a) XBOB_CORE_RANDOM_MAKE_API_NAME_INNER(a)
+#    define PyBlitzArray_API XBOB_CORE_RANDOM_MAKE_API_NAME(PY_ARRAY_UNIQUE_SYMBOL)
+#  endif
+
+#  if defined(NO_IMPORT_ARRAY)
+  extern void **PyXbobCoreRandom_API;
+#  else
+#    if defined(PY_ARRAY_UNIQUE_SYMBOL)
+  void **PyXbobCoreRandom_API;
+#    else
+  static void **PyXbobCoreRandom_API=NULL;
+#    endif
+#  endif
+
+#define PyXbobCoreRandom_APIVersion (*(PyXbobCoreRandom_APIVersion_TYPE *)PyXbobCoreRandom_API[PyXbobCoreRandom_APIVersion_NUM])
 
   static void **PyXbobCoreRandom_API;
 
