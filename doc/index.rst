@@ -34,8 +34,8 @@ Reference
 .. toctree::
    :maxdepth: 2
 
-   c_cpp_api
    py_api
+   c_cpp_api
 
 Indices and tables
 ------------------

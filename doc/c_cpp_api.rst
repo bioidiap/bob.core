@@ -52,10 +52,12 @@ powerful random number generator available within the Boost_ C++ library.
 
    The pythonic object representation for a ``boost::random::mt19937`` object.
 
-   typedef struct {
-     PyObject_HEAD
-     boost::random::mt19937* rng;
-   } PyBoostMt19937Object;
+   .. code-block:: c
+
+      typedef struct {
+        PyObject_HEAD
+        boost::random::mt19937* rng;
+      } PyBoostMt19937Object;
    
    .. c:member:: boost::random::mt19937* rng
 
@@ -119,11 +121,13 @@ support a different set of scalar types:
    The pythonic object representation for a ``boost::random::uniform_*``
    object.
 
-   typedef struct {
-     PyObject_HEAD
-     int type_num;
-     boost::shared_ptr<void> distro;
-   } PyUniformObject;
+   .. code-block:: c
+
+      typedef struct {
+        PyObject_HEAD
+        int type_num;
+        boost::shared_ptr<void> distro;
+      } PyUniformObject;
 
    .. c:member:: int type_num;
 
@@ -176,11 +180,13 @@ support a different set of scalar types:
    The pythonic object representation for a
    ``boost::random::normal_distribution`` object.
 
-   typedef struct {
-     PyObject_HEAD
-     int type_num;
-     boost::shared_ptr<void> distro;
-   } PyUniformObject;
+   .. code-block:: c
+
+      typedef struct {
+        PyObject_HEAD
+        int type_num;
+        boost::shared_ptr<void> distro;
+      } PyUniformObject;
 
    .. c:member:: int type_num;
 
@@ -211,11 +217,13 @@ support a different set of scalar types:
    The pythonic object representation for a
    ``boost::random::lognormal_distribution`` object.
 
-   typedef struct {
-     PyObject_HEAD
-     int type_num;
-     boost::shared_ptr<void> distro;
-   } PyUniformObject;
+   .. code-block:: c
+
+      typedef struct {
+        PyObject_HEAD
+        int type_num;
+        boost::shared_ptr<void> distro;
+      } PyUniformObject;
 
    .. c:member:: int type_num;
 
@@ -246,11 +254,13 @@ support a different set of scalar types:
    The pythonic object representation for a
    ``boost::random::gamma_distribution`` object.
 
-   typedef struct {
-     PyObject_HEAD
-     int type_num;
-     boost::shared_ptr<void> distro;
-   } PyUniformObject;
+   .. code-block:: c
+
+      typedef struct {
+        PyObject_HEAD
+        int type_num;
+        boost::shared_ptr<void> distro;
+      } PyUniformObject;
 
    .. c:member:: int type_num;
 
@@ -281,11 +291,13 @@ support a different set of scalar types:
    The pythonic object representation for a
    ``boost::random::binomial_distribution`` object.
 
-   typedef struct {
-     PyObject_HEAD
-     int type_num;
-     boost::shared_ptr<void> distro;
-   } PyUniformObject;
+   .. code-block:: c
+
+      typedef struct {
+        PyObject_HEAD
+        int type_num;
+        boost::shared_ptr<void> distro;
+      } PyUniformObject;
 
    .. c:member:: int type_num;
 
@@ -379,3 +391,5 @@ support a different set of scalar types:
 
    The parameter ``type_num`` may be set to one of the supported ``NPY_``
    enumeration values (e.g. ``NPY_FLOAT64``).
+
+.. include:: links.rst

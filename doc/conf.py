@@ -257,7 +257,7 @@ man_pages = [
 # Default processing flags for sphinx
 autoclass_content = 'both'
 autodoc_member_order = 'bysource'
-autodoc_default_flags = ['members', 'undoc-members', 'special-members', 'inherited-members', 'show-inheritance']
+autodoc_default_flags = ['members', 'undoc-members', 'inherited-members', 'show-inheritance']
 
 def smaller_than(v1, v2):
   """Compares scipy/numpy version numbers"""
