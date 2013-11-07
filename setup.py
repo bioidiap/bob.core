@@ -96,9 +96,9 @@ setup(
       ],
 
     ext_modules = [
-      Extension("xbob.core._versions",
+      Extension("xbob.core._externals",
         [
-          "xbob/core/versions.cpp",
+          "xbob/core/externals.cpp",
           ],
         define_macros=define_macros,
         include_dirs=include_dirs,

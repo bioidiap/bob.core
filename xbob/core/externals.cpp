@@ -7,7 +7,7 @@
 
 #include <xbob.core/config.h>
 
-#define XBOB_CORE_VERSIONS_MODULE_NAME _versions
+#define XBOB_CORE_VERSIONS_MODULE_NAME _externals
 
 #include <bob/config.h>
 
