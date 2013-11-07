@@ -26,15 +26,11 @@ bob_pkg = pypkg.pkgconfig('bob')
 if bob_pkg < MINIMAL_BOB_VERSION_REQUIRED:
   raise RuntimeError("This package requires Bob %s or superior, but you have %s" % (MINIMAL_BOB_VERSION_REQUIRED, bob_pkg.version))
 
-bob_core_pkg = pypkg.pkgconfig('bob-core')
-if bob_core_pkg < MINIMAL_BOB_VERSION_REQUIRED:
-  raise RuntimeError("This package requires bob::core %s or superior, but you have %s" % (MINIMAL_BOB_VERSION_REQUIRED, bob_core_pkg.version))
-
 # Make-up the names of versioned Bob libraries we must link against
 if platform.system() == 'Darwin':
-  bob_libraries=['%s.%s' % (k, bob_core_pkg.version) for k in bob_core_pkg.libraries()]
+  bob_libraries=['%s.%s' % (k, bob_pkg.version) for k in bob_pkg.libraries()]
 elif platform.system() == 'Linux':
-  bob_libraries=[':lib%s.so.%s' % (k, bob_core_pkg.version) for k in bob_core_pkg.libraries()]
+  bob_libraries=[':lib%s.so.%s' % (k, bob_pkg.version) for k in bob_pkg.libraries()]
 else:
   raise RuntimeError("This package currently only supports MacOSX and Linux builds")
 
@@ -119,7 +115,7 @@ setup(
         define_macros=define_macros,
         include_dirs=include_dirs,
         extra_compile_args=extra_compile_args,
-        library_dirs=bob_core_pkg.library_directories(),
+        library_dirs=bob_pkg.library_directories(),
         runtime_library_dirs=bob_pkg.library_directories(),
         libraries=bob_libraries,
         language="c++",
