@@ -22,15 +22,19 @@ blitz_pkg = pypkg.pkgconfig('blitz')
 if blitz_pkg < MINIMAL_BLITZ_VERSION_REQUIRED:
   raise RuntimeError("This package requires Blitz++ %s or superior, but you have %s" % (MINIMAL_BLITZ_VERSION_REQUIRED, blitz_pkg.version))
 
-bob_pkg = pypkg.pkgconfig('bob-core')
+bob_pkg = pypkg.pkgconfig('bob')
 if bob_pkg < MINIMAL_BOB_VERSION_REQUIRED:
   raise RuntimeError("This package requires Bob %s or superior, but you have %s" % (MINIMAL_BOB_VERSION_REQUIRED, bob_pkg.version))
 
+bob_core_pkg = pypkg.pkgconfig('bob-core')
+if bob_core_pkg < MINIMAL_BOB_VERSION_REQUIRED:
+  raise RuntimeError("This package requires bob::core %s or superior, but you have %s" % (MINIMAL_BOB_VERSION_REQUIRED, bob_core_pkg.version))
+
 # Make-up the names of versioned Bob libraries we must link against
 if platform.system() == 'Darwin':
-  bob_libraries=['%s.%s' % (k, bob_pkg.version) for k in bob_pkg.libraries()]
+  bob_libraries=['%s.%s' % (k, bob_core_pkg.version) for k in bob_core_pkg.libraries()]
 elif platform.system() == 'Linux':
-  bob_libraries=[':lib%s.so.%s' % (k, bob_pkg.version) for k in bob_pkg.libraries()]
+  bob_libraries=[':lib%s.so.%s' % (k, bob_core_pkg.version) for k in bob_core_pkg.libraries()]
 else:
   raise RuntimeError("This package currently only supports MacOSX and Linux builds")
 
@@ -38,7 +42,7 @@ else:
 extra_compile_args = []
 system_includes = \
     [blitz.get_include()] + \
-    blitz_pkg.include_directories() + \
+    bob_pkg.include_directories() + \
     [numpy.get_include()]
 for k in system_includes: extra_compile_args += ['-isystem', k]
 
@@ -96,14 +100,26 @@ setup(
       ],
 
     ext_modules = [
+      Extension("xbob.core._versions",
+        [
+          "xbob/core/versions.cpp",
+          ],
+        define_macros=define_macros,
+        include_dirs=include_dirs,
+        extra_compile_args=extra_compile_args,
+        library_dirs=bob_pkg.library_directories(),
+        runtime_library_dirs=bob_pkg.library_directories(),
+        libraries=bob_libraries,
+        language="c++",
+        ),
       Extension("xbob.core._convert",
         [
           "xbob/core/convert.cpp",
           ],
         define_macros=define_macros,
-        include_dirs=include_dirs + bob_pkg.include_directories(),
+        include_dirs=include_dirs,
         extra_compile_args=extra_compile_args,
-        library_dirs=bob_pkg.library_directories(),
+        library_dirs=bob_core_pkg.library_directories(),
         runtime_library_dirs=bob_pkg.library_directories(),
         libraries=bob_libraries,
         language="c++",
@@ -113,7 +129,7 @@ setup(
           "xbob/core/logging.cpp",
           ],
         define_macros=define_macros,
-        include_dirs=include_dirs + bob_pkg.include_directories(),
+        include_dirs=include_dirs,
         extra_compile_args=extra_compile_args,
         library_dirs=bob_pkg.library_directories(),
         runtime_library_dirs=bob_pkg.library_directories(),
@@ -131,7 +147,7 @@ setup(
           "xbob/core/random/main.cpp",
           ],
         define_macros=define_macros,
-        include_dirs=include_dirs + bob_pkg.include_directories(),
+        include_dirs=include_dirs,
         extra_compile_args=extra_compile_args,
         language="c++",
         ),
