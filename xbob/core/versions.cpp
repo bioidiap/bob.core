@@ -7,7 +7,7 @@
 
 #include <xbob.core/config.h>
 
-#define XBOB_CORE_CONFIG_MODULE_NAME _versions
+#define XBOB_CORE_VERSIONS_MODULE_NAME _versions
 
 #include <bob/config.h>
 
@@ -177,10 +177,9 @@ int PyXbobCoreRandom_APIVersion = XBOB_CORE_API_VERSION;
 #define ENTRY_FUNCTION_INNER(a) init ## a
 #define ENTRY_FUNCTION(a) ENTRY_FUNCTION_INNER(a)
 
-PyMODINIT_FUNC ENTRY_FUNCTION(XBOB_CORE_CONFIG_MODULE_NAME) (void) {
+PyMODINIT_FUNC ENTRY_FUNCTION(XBOB_CORE_VERSIONS_MODULE_NAME) (void) {
 
-  PyObject* m = Py_InitModule3(BOOST_PP_STRINGIZE(XBOB_CORE_CONFIG_MODULE_NAME),
-      module_methods, module_docstr);
+  PyObject* m = Py_InitModule3(BOOST_PP_STRINGIZE(XBOB_CORE_VERSIONS_MODULE_NAME), module_methods, module_docstr);
 
   /* register some constants */
   PyModule_AddIntConstant(m, "__api_version__", XBOB_CORE_API_VERSION);
