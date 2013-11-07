@@ -147,11 +147,6 @@ static PyObject* build_version_dictionary() {
     return 0;
   }
 
-  if (!dict_steal(retval, "Python", python_version())) {
-    Py_DECREF(retval);
-    return 0;
-  }
-
   if (!dict_steal(retval, "NumPy", numpy_version())) {
     Py_DECREF(retval);
     return 0;
