@@ -22,7 +22,7 @@ blitz_pkg = pypkg.pkgconfig('blitz')
 if blitz_pkg < MINIMAL_BLITZ_VERSION_REQUIRED:
   raise RuntimeError("This package requires Blitz++ %s or superior, but you have %s" % (MINIMAL_BLITZ_VERSION_REQUIRED, blitz_pkg.version))
 
-bob_pkg = pypkg.pkgconfig('bob')
+bob_pkg = pypkg.pkgconfig('bob-core')
 if bob_pkg < MINIMAL_BOB_VERSION_REQUIRED:
   raise RuntimeError("This package requires Bob %s or superior, but you have %s" % (MINIMAL_BOB_VERSION_REQUIRED, bob_pkg.version))
 

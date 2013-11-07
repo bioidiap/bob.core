@@ -5,7 +5,6 @@
  * @brief Binds configuration information available from bob
  */
 
-#define XBOB_CORE_RANDOM_MODULE
 #include <xbob.core/config.h>
 
 #define XBOB_CORE_CONFIG_MODULE_NAME _versions
