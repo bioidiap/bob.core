@@ -408,18 +408,6 @@ typedef struct {
    */
   static int import_xbob_core_random(void) {
 
-#if PY_VERSION_HEX >= 0x02070000
-
-    /* New Python API support for library loading */
-
-    PyXbobCoreRandom_API = (void **)PyCapsule_Import(BOOST_PP_STRINGIZE(XBOB_CORE_RANDOM_MODULE_PREFIX) "." BOOST_PP_STRINGIZE(XBOB_CORE_RANDOM_MODULE_NAME) "._C_API", 0);
-
-    if (!PyXbobCoreRandom_API) return -1;
-
-#else
-
-    /* Old-style Python API support for library loading */
-
     PyObject *c_api_object;
     PyObject *module;
 
@@ -434,20 +422,37 @@ typedef struct {
       return -1;
     }
 
-    if (PyCObject_Check(c_api_object)) {
-      PyXbobCoreRandom_API = (void **)PyCObject_AsVoidPtr(c_api_object);
+#   if PY_VERSION_HEX >= 0x02070000
+    if (PyCapsule_CheckExact(c_api_object)) {
+      PyBlitzArray_API = (void **)PyCapsule_GetPointer(c_api_object, 
+          PyCapsule_GetName(c_api_object));
     }
+#   else
+    if (PyCObject_Check(c_api_object)) {
+      PyBlitzArray_API = (void **)PyCObject_AsVoidPtr(c_api_object);
+    }
+#   endif
 
     Py_DECREF(c_api_object);
     Py_DECREF(module);
 
-#endif
-    
+    if (!PyBlitzArray_API) {
+      PyErr_Format(PyExc_ImportError, 
+#   if PY_VERSION_HEX >= 0x02070000
+          "cannot find C/C++ API capsule at `%s.%s'",
+#   else
+          "cannot find C/C++ API cobject at `%s.%s'",
+#   endif
+          BOOST_PP_STRINGIZE(XBOB_CORE_RANDOM_MODULE_PREFIX),
+          BOOST_PP_STRINGIZE(XBOB_CORE_RANDOM_MODULE_NAME));
+      return -1
+    }
+
     /* Checks that the imported version matches the compiled version */
     int imported_version = *(int*)PyXbobCoreRandom_API[PyXbobCoreRandom_APIVersion_NUM];
 
     if (XBOB_CORE_API_VERSION != imported_version) {
-      PyErr_Format(PyExc_RuntimeError, "%s.%s import error: you compiled against API version 0x%04x, but are now importing an API with version 0x%04x which is not compatible - check your Python runtime environment for errors", BOOST_PP_STRINGIZE(XBOB_CORE_RANDOM_MODULE_PREFIX), BOOST_PP_STRINGIZE(XBOB_CORE_RANDOM_MODULE_NAME), XBOB_CORE_API_VERSION, imported_version);
+      PyErr_Format(PyExc_ImportError, "%s.%s import error: you compiled against API version 0x%04x, but are now importing an API with version 0x%04x which is not compatible - check your Python runtime environment for errors", BOOST_PP_STRINGIZE(XBOB_CORE_RANDOM_MODULE_PREFIX), BOOST_PP_STRINGIZE(XBOB_CORE_RANDOM_MODULE_NAME), XBOB_CORE_API_VERSION, imported_version);
       return -1;
     }
 
