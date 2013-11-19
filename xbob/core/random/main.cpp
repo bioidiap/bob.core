@@ -11,7 +11,7 @@
 #ifdef NO_IMPORT_ARRAY
 #undef NO_IMPORT_ARRAY
 #endif
-#include <blitz.array/capi.h>
+#include <xbob.blitz/capi.h>
 
 static PyMethodDef module_methods[] = {
     {0}  /* Sentinel */
@@ -151,6 +151,6 @@ PyMODINIT_FUNC ENTRY_FUNCTION(XBOB_CORE_RANDOM_MODULE_NAME) (void) {
   import_array();
 
   /* imports blitz.array C-API */
-  import_blitz_array();
+  import_xbob_blitz();
 
 }

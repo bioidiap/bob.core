@@ -4,72 +4,17 @@
 # Mon 16 Apr 08:18:08 2012 CEST
 
 from setuptools import setup, find_packages, dist
-from distutils.extension import Extension
-from distutils.version import LooseVersion
+dist.Distribution(dict(setup_requires=['xbob.blitz']))
+from xbob.blitz.extension import Extension
 
-dist.Distribution(dict(setup_requires=['pypkg', 'numpy', 'blitz.array']))
-import pypkg
-import numpy
-import blitz
-import platform
-
-# Minimum version requirements for pkg-config packages
-MINIMAL_BLITZ_VERSION_REQUIRED = '0.10'
-MINIMAL_BOB_VERSION_REQUIRED = '1.3'
-
-# Pkg-config dependencies
-blitz_pkg = pypkg.pkgconfig('blitz')
-if blitz_pkg < MINIMAL_BLITZ_VERSION_REQUIRED:
-  raise RuntimeError("This package requires Blitz++ %s or superior, but you have %s" % (MINIMAL_BLITZ_VERSION_REQUIRED, blitz_pkg.version))
-
-bob_pkg = pypkg.pkgconfig('bob-core')
-if bob_pkg < MINIMAL_BOB_VERSION_REQUIRED:
-  raise RuntimeError("This package requires Bob %s or superior, but you have %s" % (MINIMAL_BOB_VERSION_REQUIRED, bob_pkg.version))
-
-# Make-up the names of versioned Bob libraries we must link against
-if platform.system() == 'Darwin':
-  bob_libraries=['%s.%s' % (k, bob_pkg.version) for k in bob_pkg.libraries()]
-elif platform.system() == 'Linux':
-  bob_libraries=[':lib%s.so.%s' % (k, bob_pkg.version) for k in bob_pkg.libraries()]
-else:
-  raise RuntimeError("This package currently only supports MacOSX and Linux builds")
-
-# Add system include directories
-extra_compile_args = []
-system_includes = \
-    [blitz.get_include()] + \
-    bob_pkg.include_directories() + \
-    [numpy.get_include()]
-for k in system_includes: extra_compile_args += ['-isystem', k]
-
-# NumPy API macros necessary?
-define_macros=[
-    ("PY_ARRAY_UNIQUE_SYMBOL", "XBOB_CORE_PY_ARRAY_API"),
-    ("NO_IMPORT_ARRAY", "1"),
-    ]
-
-import numpy
-from distutils.version import StrictVersion
-if StrictVersion(numpy.__version__) >= StrictVersion('1.7'):
-  define_macros.append(("NPY_NO_DEPRECATED_API", "NPY_1_7_API_VERSION"))
-
-# Compilation options
-if platform.system() == 'Darwin':
-  extra_compile_args += ['-std=c++11', '-Wno-#warnings']
-else:
-  extra_compile_args += ['-std=c++11']
-
-# Local include directory
 import os
 package_dir = os.path.dirname(os.path.realpath(__file__))
 package_dir = os.path.join(package_dir, 'xbob', 'core', 'include')
 include_dirs = [package_dir]
 
-# Define package version
+packages = ['bob-core >= 1.3']
 version = '2.0.0a0'
-define_macros += [
-    ("XBOB_CORE_VERSION", version),
-    ]
+define_macros = [("XBOB_CORE_VERSION", '"%s"' % version)]
 
 setup(
 
@@ -88,7 +33,7 @@ setup(
 
     install_requires=[
       'setuptools',
-      'blitz.array',
+      'xbob.blitz',
     ],
 
     namespace_packages=[
@@ -100,37 +45,25 @@ setup(
         [
           "xbob/core/externals.cpp",
           ],
-        define_macros=define_macros,
-        include_dirs=include_dirs,
-        extra_compile_args=extra_compile_args,
-        library_dirs=bob_pkg.library_directories(),
-        runtime_library_dirs=bob_pkg.library_directories(),
-        libraries=bob_libraries,
-        language="c++",
+        packages = packages,
+        define_macros = define_macros,
+        include_dirs = include_dirs,
         ),
       Extension("xbob.core._convert",
         [
           "xbob/core/convert.cpp",
           ],
-        define_macros=define_macros,
-        include_dirs=include_dirs,
-        extra_compile_args=extra_compile_args,
-        library_dirs=bob_pkg.library_directories(),
-        runtime_library_dirs=bob_pkg.library_directories(),
-        libraries=bob_libraries,
-        language="c++",
+        packages = packages,
+        define_macros = define_macros,
+        include_dirs = include_dirs,
         ),
       Extension("xbob.core._logging",
         [
           "xbob/core/logging.cpp",
           ],
-        define_macros=define_macros,
-        include_dirs=include_dirs,
-        extra_compile_args=extra_compile_args,
-        library_dirs=bob_pkg.library_directories(),
-        runtime_library_dirs=bob_pkg.library_directories(),
-        libraries=bob_libraries,
-        language="c++",
+        packages = packages,
+        define_macros = define_macros,
+        include_dirs = include_dirs,
         ),
       Extension("xbob.core.random._library",
         [
@@ -142,10 +75,9 @@ setup(
           "xbob/core/random/binomial.cpp",
           "xbob/core/random/main.cpp",
           ],
-        define_macros=define_macros,
-        include_dirs=include_dirs,
-        extra_compile_args=extra_compile_args,
-        language="c++",
+        packages = packages,
+        define_macros = define_macros,
+        include_dirs = include_dirs,
         ),
       ],
 

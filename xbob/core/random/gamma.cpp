@@ -7,7 +7,7 @@
 
 #define XBOB_CORE_RANDOM_MODULE
 #include <xbob.core/random.h>
-#include <blitz.array/cppapi.h>
+#include <xbob.blitz/cppapi.h>
 #include <boost/make_shared.hpp>
 
 #define GAMMA_NAME gamma

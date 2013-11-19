@@ -12,7 +12,7 @@
 #ifdef NO_IMPORT_ARRAY
 #undef NO_IMPORT_ARRAY
 #endif
-#include <blitz.array/cppapi.h>
+#include <xbob.blitz/cppapi.h>
 
 #define MODULE_NAME _convert
 
@@ -257,6 +257,6 @@ PyMODINIT_FUNC ENTRY_FUNCTION(MODULE_NAME) (void)
   /* imports the NumPy C-API */
   import_array();
 
-  /* imports blitz.array C-API */
-  import_blitz_array();
+  /* imports xbob.blitz C-API */
+  import_xbob_blitz();
 }
