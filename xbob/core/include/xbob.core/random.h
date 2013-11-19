@@ -437,7 +437,7 @@ typedef struct {
     Py_DECREF(module);
 
     if (!PyBlitzArray_API) {
-      PyErr_Format(PyExc_ImportError, 
+      PyErr_Format(PyExc_ImportError,
 #   if PY_VERSION_HEX >= 0x02070000
           "cannot find C/C++ API capsule at `%s.%s'",
 #   else
