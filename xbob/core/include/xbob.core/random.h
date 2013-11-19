@@ -400,6 +400,8 @@ typedef struct {
 
 # define PyBoostBinomial_SimpleNew (*(PyBoostBinomial_SimpleNew_RET (*)PyBoostBinomial_SimpleNew_PROTO) PyXbobCoreRandom_API[PyBoostBinomial_SimpleNew_NUM])
 
+# if !defined(NO_IMPORT_ARRAY)
+
   /**
    * Returns -1 on error, 0 on success. PyCapsule_Import will set an exception
    * if there's an error.
@@ -453,6 +455,8 @@ typedef struct {
     return 0;
 
   }
+
+# endif //!defined(NO_IMPORT_ARRAY)
 
 #endif /* XBOB_CORE_RANDOM_MODULE */
 
