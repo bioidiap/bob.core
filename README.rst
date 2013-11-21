@@ -31,7 +31,7 @@ Testing
 
 You can run a set of tests using the nose test runner::
 
-  $ nosetests -sv blitz
+  $ nosetests -sv xbob.core
 
 .. warning::
 
