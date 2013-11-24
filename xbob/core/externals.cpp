@@ -7,9 +7,6 @@
 
 #include <xbob.core/config.h>
 
-#define MODULE_NAME "_externals"
-#define LIBRARY_NAME _externals
-
 #include <bob/config.h>
 
 #include <string>
@@ -175,7 +172,7 @@ PyDoc_STRVAR(module_docstr,
 
 PyMODINIT_FUNC XBOB_EXT_ENTRY_NAME (void) {
 
-  PyObject* m = Py_InitModule3(MODULE_NAME, module_methods, module_docstr);
+  PyObject* m = Py_InitModule3(XBOB_EXT_MODULE_NAME, module_methods, module_docstr);
 
   /* register some constants */
   PyModule_AddIntConstant(m, "__api_version__", XBOB_CORE_API_VERSION);
