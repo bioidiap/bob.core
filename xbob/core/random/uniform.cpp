@@ -10,8 +10,8 @@
 #include <xbob.blitz/cppapi.h>
 #include <boost/make_shared.hpp>
 
-#define UNIFORM_NAME uniform
-PyDoc_STRVAR(s_uniform_str, BOOST_PP_STRINGIZE(XBOB_CORE_RANDOM_MODULE_PREFIX) "." BOOST_PP_STRINGIZE(UNIFORM_NAME));
+#define UNIFORM_NAME "uniform"
+PyDoc_STRVAR(s_uniform_str, XBOB_EXT_MODULE_PREFIX "." UNIFORM_NAME);
 
 /* How to create a new PyBoostUniformObject */
 static PyObject* PyBoostUniform_New(PyTypeObject* type, PyObject*, PyObject*) {

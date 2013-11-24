@@ -8,8 +8,8 @@
 #define XBOB_CORE_RANDOM_MODULE
 #include <xbob.core/random.h>
 
-#define MT19937_NAME mt19937
-PyDoc_STRVAR(s_mt19937_str, BOOST_PP_STRINGIZE(XBOB_CORE_RANDOM_MODULE_PREFIX) "." BOOST_PP_STRINGIZE(MT19937_NAME));
+#define MT19937_NAME "mt19937"
+PyDoc_STRVAR(s_mt19937_str, XBOB_EXT_MODULE_PREFIX "." MT19937_NAME);
 
 /* How to create a new PyBoostMt19937Object */
 static PyObject* PyBoostMt19937_New(PyTypeObject* type, PyObject*, PyObject*) {

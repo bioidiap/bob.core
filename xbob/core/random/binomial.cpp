@@ -10,8 +10,8 @@
 #include <xbob.blitz/cppapi.h>
 #include <boost/make_shared.hpp>
 
-#define BINOMIAL_NAME binomial
-PyDoc_STRVAR(s_binomial_str, BOOST_PP_STRINGIZE(XBOB_CORE_RANDOM_MODULE_PREFIX) "." BOOST_PP_STRINGIZE(BINOMIAL_NAME));
+#define BINOMIAL_NAME "binomial"
+PyDoc_STRVAR(s_binomial_str, XBOB_EXT_MODULE_PREFIX "." BINOMIAL_NAME);
 
 /* How to create a new PyBoostBinomialObject */
 static PyObject* PyBoostBinomial_New(PyTypeObject* type, PyObject*, PyObject*) {

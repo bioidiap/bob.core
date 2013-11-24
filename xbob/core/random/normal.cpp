@@ -10,8 +10,8 @@
 #include <xbob.blitz/cppapi.h>
 #include <boost/make_shared.hpp>
 
-#define NORMAL_NAME normal
-PyDoc_STRVAR(s_normal_str, BOOST_PP_STRINGIZE(XBOB_CORE_RANDOM_MODULE_PREFIX) "." BOOST_PP_STRINGIZE(NORMAL_NAME));
+#define NORMAL_NAME "normal"
+PyDoc_STRVAR(s_normal_str, XBOB_EXT_MODULE_PREFIX "." NORMAL_NAME);
 
 /* How to create a new PyBoostNormalObject */
 static PyObject* PyBoostNormal_New(PyTypeObject* type, PyObject*, PyObject*) {

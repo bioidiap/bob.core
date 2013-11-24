@@ -23,10 +23,7 @@ PyDoc_STRVAR(module_docstr,
 
 int PyXbobCoreRandom_APIVersion = XBOB_CORE_API_VERSION;
 
-#define ENTRY_FUNCTION_INNER(a) init ## a
-#define ENTRY_FUNCTION(a) ENTRY_FUNCTION_INNER(a)
-
-PyMODINIT_FUNC ENTRY_FUNCTION(XBOB_CORE_RANDOM_MODULE_NAME) (void) {
+PyMODINIT_FUNC XBOB_EXT_ENTRY_NAME (void) {
 
   PyBoostMt19937_Type.tp_new = PyType_GenericNew;
   if (PyType_Ready(&PyBoostMt19937_Type) < 0) return;
@@ -46,12 +43,12 @@ PyMODINIT_FUNC ENTRY_FUNCTION(XBOB_CORE_RANDOM_MODULE_NAME) (void) {
   PyBoostBinomial_Type.tp_new = PyType_GenericNew;
   if (PyType_Ready(&PyBoostBinomial_Type) < 0) return;
 
-  PyObject* m = Py_InitModule3(BOOST_PP_STRINGIZE(XBOB_CORE_RANDOM_MODULE_NAME),
+  PyObject* m = Py_InitModule3(XBOB_EXT_MODULE_NAME,
       module_methods, module_docstr);
 
   /* register some constants */
   PyModule_AddIntConstant(m, "__api_version__", XBOB_CORE_API_VERSION);
-  PyModule_AddStringConstant(m, "__version__", BOOST_PP_STRINGIZE(XBOB_CORE_VERSION));
+  PyModule_AddStringConstant(m, "__version__", XBOB_EXT_MODULE_VERSION);
 
   /* register the types to python */
   Py_INCREF(&PyBoostMt19937_Type);
@@ -137,7 +134,7 @@ PyMODINIT_FUNC ENTRY_FUNCTION(XBOB_CORE_RANDOM_MODULE_NAME) (void) {
   /* defines the PyCapsule */
 
   PyObject* c_api_object = PyCapsule_New((void *)PyXbobCoreRandom_API, 
-      BOOST_PP_STRINGIZE(XBOB_CORE_RANDOM_MODULE_PREFIX) "." BOOST_PP_STRINGIZE(XBOB_CORE_RANDOM_MODULE_NAME) "._C_API", 0);
+      XBOB_EXT_MODULE_PREFIX "." XBOB_EXT_MODULE_NAME "._C_API", 0);
 
 #else
 

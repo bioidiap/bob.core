@@ -10,8 +10,8 @@
 #include <xbob.blitz/cppapi.h>
 #include <boost/make_shared.hpp>
 
-#define GAMMA_NAME gamma
-PyDoc_STRVAR(s_gamma_str, BOOST_PP_STRINGIZE(XBOB_CORE_RANDOM_MODULE_PREFIX) "." BOOST_PP_STRINGIZE(GAMMA_NAME));
+#define GAMMA_NAME "gamma"
+PyDoc_STRVAR(s_gamma_str, XBOB_EXT_MODULE_PREFIX "." GAMMA_NAME);
 
 /* How to create a new PyBoostGammaObject */
 static PyObject* PyBoostGamma_New(PyTypeObject* type, PyObject*, PyObject*) {

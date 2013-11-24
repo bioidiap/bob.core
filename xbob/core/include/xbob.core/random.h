@@ -9,13 +9,14 @@
 #define XBOB_CORE_RANDOM_H
 
 #include <xbob.core/config.h>
-#include <boost/preprocessor/stringize.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/random.hpp>
 #include <Python.h>
 
-#define XBOB_CORE_RANDOM_MODULE_PREFIX xbob.core.random
-#define XBOB_CORE_RANDOM_MODULE_NAME _library
+/* Define Module Name and Prefix for other Modules
+   Note: We cannot use XBOB_EXT_* macros here, unfortunately */
+#define XBOB_CORE_RANDOM_PREFIX    "xbob.core.random"
+#define XBOB_CORE_RANDOM_FULL_NAME "xbob.core.random._library"
 
 /*******************
  * C API functions *
@@ -411,7 +412,7 @@ typedef struct {
     PyObject *c_api_object;
     PyObject *module;
 
-    module = PyImport_ImportModule(BOOST_PP_STRINGIZE(XBOB_CORE_RANDOM_MODULE_PREFIX) "." BOOST_PP_STRINGIZE(XBOB_CORE_RANDOM_MODULE_NAME));
+    module = PyImport_ImportModule(XBOB_CORE_RANDOM_FULL_NAME);
 
     if (module == NULL) return -1;
 
@@ -437,14 +438,13 @@ typedef struct {
     Py_DECREF(module);
 
     if (!PyXbobCoreRandom_API) {
-      PyErr_Format(PyExc_ImportError,
+      PyErr_SetString(PyExc_ImportError, "cannot find C/C++ API "
 #   if PY_VERSION_HEX >= 0x02070000
-          "cannot find C/C++ API capsule at `%s.%s._C_API'",
+          "capsule"
 #   else
-          "cannot find C/C++ API cobject at `%s.%s._C_API'",
+          "cobject"
 #   endif
-          BOOST_PP_STRINGIZE(XBOB_CORE_RANDOM_MODULE_PREFIX),
-          BOOST_PP_STRINGIZE(XBOB_CORE_RANDOM_MODULE_NAME));
+          " at `" XBOB_CORE_RANDOM_FULL_NAME "._C_API'");
       return -1;
     }
 
@@ -452,7 +452,7 @@ typedef struct {
     int imported_version = *(int*)PyXbobCoreRandom_API[PyXbobCoreRandom_APIVersion_NUM];
 
     if (XBOB_CORE_API_VERSION != imported_version) {
-      PyErr_Format(PyExc_ImportError, "%s.%s import error: you compiled against API version 0x%04x, but are now importing an API with version 0x%04x which is not compatible - check your Python runtime environment for errors", BOOST_PP_STRINGIZE(XBOB_CORE_RANDOM_MODULE_PREFIX), BOOST_PP_STRINGIZE(XBOB_CORE_RANDOM_MODULE_NAME), XBOB_CORE_API_VERSION, imported_version);
+      PyErr_Format(PyExc_ImportError, XBOB_CORE_RANDOM_FULL_NAME " import error: you compiled against API version 0x%04x, but are now importing an API with version 0x%04x which is not compatible - check your Python runtime environment for errors", XBOB_CORE_API_VERSION, imported_version);
       return -1;
     }
 

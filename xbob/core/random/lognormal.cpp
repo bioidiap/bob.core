@@ -10,8 +10,8 @@
 #include <xbob.blitz/cppapi.h>
 #include <boost/make_shared.hpp>
 
-#define NORMAL_NAME lognormal
-PyDoc_STRVAR(s_lognormal_str, BOOST_PP_STRINGIZE(XBOB_CORE_RANDOM_MODULE_PREFIX) "." BOOST_PP_STRINGIZE(NORMAL_NAME));
+#define LOGNORMAL_NAME "lognormal"
+PyDoc_STRVAR(s_lognormal_str, XBOB_EXT_MODULE_PREFIX "." LOGNORMAL_NAME);
 
 /* How to create a new PyBoostLogNormalObject */
 static PyObject* PyBoostLogNormal_New(PyTypeObject* type, PyObject*, PyObject*) {

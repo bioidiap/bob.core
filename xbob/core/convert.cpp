@@ -6,15 +6,12 @@
  */
 
 #include <bob/core/array_convert.h>
-#include <boost/preprocessor/stringize.hpp>
 
 #include <xbob.core/config.h>
 #ifdef NO_IMPORT_ARRAY
 #undef NO_IMPORT_ARRAY
 #endif
 #include <xbob.blitz/cppapi.h>
-
-#define MODULE_NAME _convert
 
 template <typename Tdst, typename Tsrc, int N>
 PyObject* inner_convert (PyBlitzArrayObject* src,
@@ -245,14 +242,12 @@ static PyMethodDef convert_methods[] = {
     {0}  /* Sentinel */
 };
 
-#define ENTRY_FUNCTION_INNER(a) init ## a
-#define ENTRY_FUNCTION(a) ENTRY_FUNCTION_INNER(a)
-
-PyMODINIT_FUNC ENTRY_FUNCTION(MODULE_NAME) (void)
+PyMODINIT_FUNC XBOB_EXT_ENTRY_NAME (void)
 {
-  PyObject* m = Py_InitModule3(BOOST_PP_STRINGIZE(MODULE_NAME), convert_methods, "bob::core::array::convert bindings");
+  PyObject* m = Py_InitModule3(XBOB_EXT_MODULE_NAME, convert_methods, 
+      "bob::core::array::convert bindings");
   PyModule_AddIntConstant(m, "__api_version__", XBOB_CORE_API_VERSION);
-  PyModule_AddStringConstant(m, "__version__", BOOST_PP_STRINGIZE(XBOB_CORE_VERSION));
+  PyModule_AddStringConstant(m, "__version__", XBOB_EXT_MODULE_VERSION);
 
   /* imports the NumPy C-API */
   import_array();

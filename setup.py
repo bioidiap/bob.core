@@ -14,7 +14,6 @@ include_dirs = [package_dir]
 
 packages = ['bob-core >= 1.3']
 version = '2.0.0a0'
-define_macros = [("XBOB_CORE_VERSION", '"%s"' % version)]
 
 setup(
 
@@ -45,24 +44,24 @@ setup(
         [
           "xbob/core/externals.cpp",
           ],
+        version = version,
         packages = packages,
-        define_macros = define_macros,
         include_dirs = include_dirs,
         ),
       Extension("xbob.core._convert",
         [
           "xbob/core/convert.cpp",
           ],
+        version = version,
         packages = packages,
-        define_macros = define_macros,
         include_dirs = include_dirs,
         ),
       Extension("xbob.core._logging",
         [
           "xbob/core/logging.cpp",
           ],
+        version = version,
         packages = packages,
-        define_macros = define_macros,
         include_dirs = include_dirs,
         ),
       Extension("xbob.core.random._library",
@@ -75,8 +74,8 @@ setup(
           "xbob/core/random/binomial.cpp",
           "xbob/core/random/main.cpp",
           ],
+        version = version,
         packages = packages,
-        define_macros = define_macros,
         include_dirs = include_dirs,
         ),
       ],
