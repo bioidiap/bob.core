@@ -404,8 +404,7 @@ typedef struct {
 # if !defined(NO_IMPORT_ARRAY)
 
   /**
-   * Returns -1 on error, 0 on success. PyCapsule_Import will set an exception
-   * if there's an error.
+   * Returns -1 on error, 0 on success.
    */
   static int import_xbob_core_random(void) {
 
