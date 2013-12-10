@@ -154,15 +154,23 @@ static PyMethodDef PyBoostMt19937_methods[] = {
 };
 
 static PyObject* PyBoostMt19937_RichCompare(PyBoostMt19937Object* self,
-    PyBoostMt19937Object* other, int op) {
+    PyObject* other, int op) {
+
+  if (!PyBoostMt19937_Check(other)) {
+    PyErr_Format(PyExc_TypeError, "cannot compare `%s' with `%s'",
+        s_seed_str, other->ob_type->tp_name);
+    return 0;
+  }
+  
+  PyBoostMt19937Object* other_ = reinterpret_cast<PyBoostMt19937Object*>(other);
 
   switch (op) {
     case Py_EQ:
-      if (*(self->rng) == *(other->rng)) Py_RETURN_TRUE;
+      if (*(self->rng) == *(other_->rng)) Py_RETURN_TRUE;
       Py_RETURN_FALSE;
       break;
     case Py_NE:
-      if (*(self->rng) != *(other->rng)) Py_RETURN_TRUE;
+      if (*(self->rng) != *(other_->rng)) Py_RETURN_TRUE;
       Py_RETURN_FALSE;
       break;
     default:
