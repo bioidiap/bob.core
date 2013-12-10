@@ -166,6 +166,7 @@ static PyObject* PyBoostMt19937_RichCompare(PyBoostMt19937Object* self,
       Py_RETURN_FALSE;
       break;
     default:
+      Py_INCREF(Py_NotImplemented);
       return Py_NotImplemented;
   }
 
