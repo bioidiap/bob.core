@@ -193,11 +193,9 @@ static PyObject* py_convert(PyObject*, PyObject* args, PyObject* kwds) {
 
   Py_DECREF(src);
 
-  if (!retval) return retval;
+  if (!retval) return 0;
 
-  PyObject* npy = PyBlitzArray_AsNumpyArray(reinterpret_cast<PyBlitzArrayObject*>(retval));
-  Py_DECREF(retval);
-  return npy;
+  return PyBlitzArray_NUMPY_WRAP(retval);
 }
 
 PyDoc_STRVAR(s_convert_str, "convert");
