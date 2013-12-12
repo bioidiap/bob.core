@@ -5,6 +5,8 @@
  * @brief Binds configuration information available from bob
  */
 
+#include <Python.h>
+
 #include <xbob.core/config.h>
 
 #include <bob/config.h>
@@ -20,8 +22,6 @@
 #endif
 
 extern "C" {
-
-#include <Python.h>
 
 #ifdef NO_IMPORT_ARRAY
 #undef NO_IMPORT_ARRAY

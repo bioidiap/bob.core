@@ -53,7 +53,7 @@ struct PythonLoggingOutputDevice: public bob::core::OutputDevice {
       static_log << "(" << std::hex << thread_id << std::dec
         << ") Constructing new PythonLoggingOutputDevice from logger `logging.logger('"
         << PyString_AsString(PyObject_GetAttrString(m_logger, "name")) << "')."
-        << name << "' (@" << std::hex << m_logger << std::dec 
+        << name << "' (@" << std::hex << m_logger << std::dec
         << ")" << std::endl;
 #endif
 
@@ -160,7 +160,7 @@ static int set_stream(boost::iostreams::stream<bob::core::AutoOutputDevice>& s, 
 #if   PYTHON_LOGGING_DEBUG != 0
     pthread_t thread_id = pthread_self();
     static_log << "(" << std::hex << thread_id << std::dec
-      << ") Setting stream `" << n << "' to logger at " << std::hex 
+      << ") Setting stream `" << n << "' to logger at " << std::hex
       << o << std::dec << std::endl;
 #endif
 
@@ -181,7 +181,7 @@ static PyObject* reset(PyObject*, PyObject* args, PyObject* kwds) {
 
   /* Parses input arguments in a single shot */
   static const char* const_kwlist[] = {
-    "logger", 
+    "logger",
     0 /* Sentinel */
   };
   static char** kwlist = const_cast<char**>(const_kwlist);
@@ -264,7 +264,7 @@ static void* log_message_inner(void* cookie) {
 
     *(mi->s) << mi->message
 #     if PYTHON_LOGGING_DEBUG != 0
-      << " (thread " << mi->thread_id << "; iteration " << i << ")" 
+      << " (thread " << mi->thread_id << "; iteration " << i << ")"
 #     endif
       << std::endl;
 
@@ -362,8 +362,8 @@ static PyObject* log_message_mt(PyObject*, PyObject* args, PyObject* kwds) {
 
   /* Parses input arguments in a single shot */
   static const char* const_kwlist[] = {
-    "nthreads", 
-    "ntimes", 
+    "nthreads",
+    "ntimes",
     "stream",
     "message",
     0 /* Sentinel */
@@ -398,7 +398,7 @@ static PyObject* log_message_mt(PyObject*, PyObject* args, PyObject* kwds) {
     message_info_t mi = {s, message, true, ntimes, i+1};
     infos[i] = mi;
   }
- 
+
 # if PYTHON_LOGGING_DEBUG != 0
   static_log << "(thread 0) Launching " << nthreads << " thread(s)" << std::endl;
 # endif
@@ -488,7 +488,7 @@ static PyMethodDef logging_methods[] = {
 
 PyMODINIT_FUNC XBOB_EXT_ENTRY_NAME (void) {
 
-  PyObject* m = Py_InitModule3(XBOB_EXT_MODULE_NAME, logging_methods, 
+  PyObject* m = Py_InitModule3(XBOB_EXT_MODULE_NAME, logging_methods,
       "C++ logging handling");
 
   PyModule_AddIntConstant(m, "__api_version__", XBOB_CORE_API_VERSION);

@@ -5,13 +5,13 @@
  * @brief Pythonic bindings to C++ constructs on bob.core
  */
 
-#include <bob/core/array_convert.h>
-
 #include <xbob.core/config.h>
 #ifdef NO_IMPORT_ARRAY
 #undef NO_IMPORT_ARRAY
 #endif
 #include <xbob.blitz/cppapi.h>
+
+#include <bob/core/array_convert.h>
 
 template <typename Tdst, typename Tsrc, int N>
 PyObject* inner_convert (PyBlitzArrayObject* src,
@@ -44,14 +44,14 @@ PyObject* inner_convert (PyBlitzArrayObject* src,
     auto bz_dst = convertToRange<Tdst,Tsrc>(*bz_src, c_dst_min, c_dst_max);
     return PyBlitzArrayCxx_NewFromArray(bz_dst);
   }
-  
+
   //use all defaults
   auto bz_dst = convert<Tdst,Tsrc>(*bz_src);
   return PyBlitzArrayCxx_NewFromArray(bz_dst);
 
 }
 
-template <typename Tdst, typename Tsrc> 
+template <typename Tdst, typename Tsrc>
 PyObject* convert_dim (PyBlitzArrayObject* src,
     PyObject* dst_min, PyObject* dst_max,
     PyObject* src_min, PyObject* src_max) {
@@ -59,19 +59,19 @@ PyObject* convert_dim (PyBlitzArrayObject* src,
   PyObject* retval = 0;
 
   switch (src->ndim) {
-    case 1: 
+    case 1:
       retval = inner_convert<Tdst, Tsrc, 1>(src, dst_min, dst_max, src_min, src_max);
       break;
 
-    case 2: 
+    case 2:
       retval = inner_convert<Tdst, Tsrc, 2>(src, dst_min, dst_max, src_min, src_max);
       break;
 
-    case 3: 
+    case 3:
       retval = inner_convert<Tdst, Tsrc, 3>(src, dst_min, dst_max, src_min, src_max);
       break;
 
-    case 4: 
+    case 4:
       retval = inner_convert<Tdst, Tsrc, 4>(src, dst_min, dst_max, src_min, src_max);
       break;
 
@@ -83,7 +83,7 @@ PyObject* convert_dim (PyBlitzArrayObject* src,
   return retval;
 }
 
-template <typename T> PyObject* convert_to(PyBlitzArrayObject* src, 
+template <typename T> PyObject* convert_to(PyBlitzArrayObject* src,
     PyObject* dst_min, PyObject* dst_max,
     PyObject* src_min, PyObject* src_max) {
 
@@ -147,9 +147,9 @@ static PyObject* py_convert(PyObject*, PyObject* args, PyObject* kwds) {
 
   /* Parses input arguments in a single shot */
   static const char* const_kwlist[] = {
-    "src", 
-    "dtype", 
-    "dest_range", 
+    "src",
+    "dtype",
+    "dest_range",
     "source_range",
     0 /* Sentinel */
   };
@@ -164,7 +164,7 @@ static PyObject* py_convert(PyObject*, PyObject* args, PyObject* kwds) {
   PyObject* src_max = 0;
 
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&O&|(OO)(OO)",
-        kwlist, 
+        kwlist,
         &PyBlitzArray_Converter, &src,
         &PyBlitzArray_TypenumConverter, &type_num_p,
         &dst_min, &dst_max,
@@ -172,7 +172,7 @@ static PyObject* py_convert(PyObject*, PyObject* args, PyObject* kwds) {
         )) return 0;
 
   PyObject* retval = 0;
-  
+
   switch (type_num) {
     case NPY_UINT8:
       retval = convert_to<uint8_t>(src, dst_min, dst_max, src_min, src_max);
@@ -242,7 +242,7 @@ static PyMethodDef convert_methods[] = {
 
 PyMODINIT_FUNC XBOB_EXT_ENTRY_NAME (void)
 {
-  PyObject* m = Py_InitModule3(XBOB_EXT_MODULE_NAME, convert_methods, 
+  PyObject* m = Py_InitModule3(XBOB_EXT_MODULE_NAME, convert_methods,
       "bob::core::array::convert bindings");
   PyModule_AddIntConstant(m, "__api_version__", XBOB_CORE_API_VERSION);
   PyModule_AddStringConstant(m, "__version__", XBOB_EXT_MODULE_VERSION);
