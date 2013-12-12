@@ -1,6 +1,6 @@
 /**
  * @author Andre Anjos <andre.anjos@idiap.ch>
- * @date Wed 30 Oct 07:40:47 2013 
+ * @date Wed 30 Oct 07:40:47 2013
  *
  * @brief C/C++-API for the random module
  */
@@ -8,10 +8,10 @@
 #ifndef XBOB_CORE_RANDOM_H
 #define XBOB_CORE_RANDOM_H
 
+#include <Python.h>
 #include <xbob.core/config.h>
 #include <boost/shared_ptr.hpp>
 #include <boost/random.hpp>
-#include <Python.h>
 
 /* Define Module Name and Prefix for other Modules
    Note: We cannot use XBOB_EXT_* macros here, unfortunately */
@@ -424,7 +424,7 @@ typedef struct {
 
 #   if PY_VERSION_HEX >= 0x02070000
     if (PyCapsule_CheckExact(c_api_object)) {
-      PyXbobCoreRandom_API = (void **)PyCapsule_GetPointer(c_api_object, 
+      PyXbobCoreRandom_API = (void **)PyCapsule_GetPointer(c_api_object,
           PyCapsule_GetName(c_api_object));
     }
 #   else
