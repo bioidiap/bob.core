@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 # vim: set fileencoding=utf-8 :
 # Andre Anjos <andre.anjos@idiap.ch>
-# Fri 18 Oct 13:50:08 2013 
+# Fri 18 Oct 13:50:08 2013
 
 """Tests for core conversion functions
 """
 
-from .. import convert
+from . import convert
 import numpy
 
 def test_default_ranges():

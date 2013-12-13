@@ -6,7 +6,7 @@
 """Tests for the logging subsystem
 """
 
-from .. import _logging
+from . import _logging
 
 def test_from_cxx():
 

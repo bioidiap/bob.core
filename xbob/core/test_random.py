@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 # vim: set fileencoding=utf-8 :
 # Andre Anjos <andre.anjos@idiap.ch>
-# Sat  2 Nov 10:05:23 2013 
+# Sat  2 Nov 10:05:23 2013
 
 """Tests for xbob.core.random
 """
 
 from __future__ import division
-from .. import random
+from . import random
 import numpy
 import nose.tools
 
@@ -31,7 +31,7 @@ def test_uniform_creation():
   assert x.max == 9
 
 def test_uniform_int8():
-  
+
   x = random.uniform('uint8', min=0, max=7)
   assert x.dtype == numpy.uint8
   rng = random.mt19937()
@@ -71,7 +71,7 @@ def test_uniform_complex():
   x = random.uniform('complex64')
 
 def test_mt19937_same_sequence():
-  
+
   x = random.uniform('float64', min=-1, max=+1)
   rng1 = random.mt19937(17)
   rng2 = random.mt19937(17)
@@ -79,7 +79,7 @@ def test_mt19937_same_sequence():
   assert numpy.all(check)
 
 def test_mt19937_different_sequences():
-  
+
   x = random.uniform('float64', min=-1, max=+1)
   rng1 = random.mt19937(17)
   rng2 = random.mt19937(-3)
@@ -87,7 +87,7 @@ def test_mt19937_different_sequences():
   assert not numpy.all(check)
 
 def test_variate_generator_1d():
-  
+
   import math
 
   x = random.variate_generator(random.mt19937(), random.uniform('float32', min=0, max=2*math.pi))
@@ -112,7 +112,7 @@ def test_normal():
   assert abs(m.std() - 2.) < 0.1
 
 def test_lognormal():
-  
+
   x = random.variate_generator(random.mt19937(), random.lognormal('float64', mean=0.5, sigma=2.0))
   assert x.distribution.mean == 0.5
   assert x.distribution.sigma == 2.0
