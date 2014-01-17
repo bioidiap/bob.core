@@ -10,8 +10,23 @@
 #include <xbob.blitz/cppapi.h>
 #include <boost/make_shared.hpp>
 
-#define LOGNORMAL_NAME "lognormal"
-PyDoc_STRVAR(s_lognormal_str, XBOB_EXT_MODULE_PREFIX "." LOGNORMAL_NAME);
+PyDoc_STRVAR(s_lognormal_str, XBOB_EXT_MODULE_PREFIX ".lognormal");
+
+PyDoc_STRVAR(s_lognormal_doc,
+"lognormal(dtype, [mean=0., sigma=1.]]) -> new log-normal distribution\n\
+\n\
+Models a random lognormal distribution\n\
+\n\
+This distribution models a log-normal random distribution. Such a\n\
+distribution produces random numbers ``x`` distributed with the\n\
+probability density function\n\
+:math:`p(x) = \\frac{1}{x \\sigma_N \\sqrt{2\\pi}} e^{\\frac{-\\left(\\log(x)-\\mu_N\\right)^2}{2\\sigma_N^2}}`, for :math:`x > 0` and :math:`\\sigma_N = \\sqrt{\\log\\left(1 + \\frac{\\sigma^2}{\\mu^2}\\right)}`,\n\
+\n\
+where the ``mean`` (:math:`\\mu`) and ``sigma`` (:math:`\\sigma`,\n\
+the standard deviation) the parameters of the distribution.\n\
+\n\
+"
+);
 
 /* How to create a new PyBoostLogNormalObject */
 static PyObject* PyBoostLogNormal_New(PyTypeObject* type, PyObject*, PyObject*) {
@@ -57,7 +72,7 @@ PyObject* PyBoostLogNormal_SimpleNew (int type_num, PyObject* mean, PyObject* si
       retval->distro = make_lognormal<double>(mean, sigma);
       break;
     default:
-      PyErr_Format(PyExc_NotImplementedError, "cannot create %s(T) with T having an unsupported numpy type number of %d (it only supports numpy.float32 or numpy.float64)", s_lognormal_str, retval->type_num);
+      PyErr_Format(PyExc_NotImplementedError, "cannot create %s(T) with T having an unsupported numpy type number of %d (it only supports numpy.float32 or numpy.float64)", retval->ob_type->tp_name, retval->type_num);
       Py_DECREF(retval);
       return 0;
   }
@@ -93,7 +108,7 @@ int PyBoostLogNormal_Init(PyBoostLogNormalObject* self, PyObject *args, PyObject
       self->distro = make_lognormal<double>(m, s);
       break;
     default:
-      PyErr_Format(PyExc_NotImplementedError, "cannot create %s(T) with T having an unsupported numpy type number of %d (it only supports numpy.float32 or numpy.float64)", s_lognormal_str, self->type_num);
+      PyErr_Format(PyExc_NotImplementedError, "cannot create %s(T) with T having an unsupported numpy type number of %d (it only supports numpy.float32 or numpy.float64)", self->ob_type->tp_name, self->type_num);
       return -1;
   }
 
@@ -130,7 +145,7 @@ static PyObject* PyBoostLogNormal_GetMean(PyBoostLogNormalObject* self) {
     case NPY_FLOAT64:
       return get_mean<double>(self);
     default:
-      PyErr_Format(PyExc_NotImplementedError, "cannot get m of %s(T) with T having an unsupported numpy type number of %d (DEBUG ME)", s_lognormal_str, self->type_num);
+      PyErr_Format(PyExc_NotImplementedError, "cannot get m of %s(T) with T having an unsupported numpy type number of %d (DEBUG ME)", self->ob_type->tp_name, self->type_num);
       return 0;
   }
 }
@@ -149,7 +164,7 @@ static PyObject* PyBoostLogNormal_GetSigma(PyBoostLogNormalObject* self) {
     case NPY_FLOAT64:
       return get_sigma<double>(self);
     default:
-      PyErr_Format(PyExc_NotImplementedError, "cannot get s of %s(T) with T having an unsupported numpy type number of %d (DEBUG ME)", s_lognormal_str, self->type_num);
+      PyErr_Format(PyExc_NotImplementedError, "cannot get s of %s(T) with T having an unsupported numpy type number of %d (DEBUG ME)", self->ob_type->tp_name, self->type_num);
       return 0;
   }
 }
@@ -177,7 +192,7 @@ static PyObject* PyBoostLogNormal_Reset(PyBoostLogNormalObject* self) {
     case NPY_FLOAT64:
       return reset<double>(self);
     default:
-      PyErr_Format(PyExc_NotImplementedError, "cannot reset %s(T) with T having an unsupported numpy type number of %d (DEBUG ME)", s_lognormal_str, self->type_num);
+      PyErr_Format(PyExc_NotImplementedError, "cannot reset %s(T) with T having an unsupported numpy type number of %d (DEBUG ME)", self->ob_type->tp_name, self->type_num);
       return 0;
   }
 }
@@ -208,7 +223,7 @@ PyObject* PyBoostLogNormal_Call(PyBoostLogNormalObject* self, PyObject *args, Py
       return call<double>(self, rng);
       break;
     default:
-      PyErr_Format(PyExc_NotImplementedError, "cannot call %s(T) with T having an unsupported numpy type number of %d (DEBUG ME)", s_lognormal_str, self->type_num);
+      PyErr_Format(PyExc_NotImplementedError, "cannot call %s(T) with T having an unsupported numpy type number of %d (DEBUG ME)", self->ob_type->tp_name, self->type_num);
   }
 
   return 0; ///< FAILURE
@@ -332,7 +347,7 @@ static PyObject* PyBoostLogNormal_Repr(PyBoostLogNormalObject* self) {
 #endif
       (
        "%s(dtype='%s', mean=%s, sigma=%s)",
-       s_lognormal_str, PyBlitzArray_TypenumAsString(self->type_num),
+       self->ob_type->tp_name, PyBlitzArray_TypenumAsString(self->type_num),
        bytes_to_charp(smean), bytes_to_charp(ssigma)
       );
 
@@ -342,22 +357,6 @@ static PyObject* PyBoostLogNormal_Repr(PyBoostLogNormalObject* self) {
   return retval;
 
 }
-
-PyDoc_STRVAR(s_lognormal_doc,
-"lognormal(dtype, [mean=0., sigma=1.]]) -> new log-normal distribution\n\
-\n\
-Models a random lognormal distribution\n\
-\n\
-This distribution models a log-normal random distribution. Such a\n\
-distribution produces random numbers ``x`` distributed with the\n\
-probability density function\n\
-:math:`p(x) = \\frac{1}{x \\sigma_N \\sqrt{2\\pi}} e^{\\frac{-\\left(\\log(x)-\\mu_N\\right)^2}{2\\sigma_N^2}}`, for :math:`x > 0` and :math:`\\sigma_N = \\sqrt{\\log\\left(1 + \\frac{\\sigma^2}{\\mu^2}\\right)}`,\n\
-\n\
-where the ``mean`` (:math:`\\mu`) and ``sigma`` (:math:`\\sigma`,\n\
-the standard deviation) the parameters of the distribution.\n\
-\n\
-"
-);
 
 PyTypeObject PyBoostLogNormal_Type = {
     PyObject_HEAD_INIT(0)

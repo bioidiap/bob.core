@@ -10,8 +10,22 @@
 #include <xbob.blitz/cppapi.h>
 #include <boost/make_shared.hpp>
 
-#define GAMMA_NAME "gamma"
-PyDoc_STRVAR(s_gamma_str, XBOB_EXT_MODULE_PREFIX "." GAMMA_NAME);
+PyDoc_STRVAR(s_gamma_str, XBOB_EXT_MODULE_PREFIX ".gamma");
+
+PyDoc_STRVAR(s_gamma_doc,
+"gamma(dtype, [alpha=1., beta=1.]]) -> new gamma distribution\n\
+\n\
+Models a random gamma distribution\n\
+\n\
+This distribution class models a gamma random distribution.\n\
+Such a distribution produces random numbers :math:`x` distributed\n\
+with the probability density function\n\
+:math:`p(x) = x^{\\alpha-1}\\frac{e^{-x}}{\\Gamma(\\alpha)}`,\n\
+where the ``alpha`` (:math:`\\alpha`) and ``beta`` (:math:`\\beta`)\n\
+are parameters of the distribution.\n\
+\n\
+"
+);
 
 /* How to create a new PyBoostGammaObject */
 static PyObject* PyBoostGamma_New(PyTypeObject* type, PyObject*, PyObject*) {
@@ -57,7 +71,7 @@ PyObject* PyBoostGamma_SimpleNew (int type_num, PyObject* alpha, PyObject* beta)
       retval->distro = make_gamma<double>(alpha, beta);
       break;
     default:
-      PyErr_Format(PyExc_NotImplementedError, "cannot create %s(T) with T having an unsupported numpy type number of %d (it only supports numpy.float32 or numpy.float64)", s_gamma_str, retval->type_num);
+      PyErr_Format(PyExc_NotImplementedError, "cannot create %s(T) with T having an unsupported numpy type number of %d (it only supports numpy.float32 or numpy.float64)", retval->ob_type->tp_name, retval->type_num);
       Py_DECREF(retval);
       return 0;
   }
@@ -93,7 +107,7 @@ int PyBoostGamma_Init(PyBoostGammaObject* self, PyObject *args, PyObject* kwds) 
       self->distro = make_gamma<double>(alpha, beta);
       break;
     default:
-      PyErr_Format(PyExc_NotImplementedError, "cannot create %s(T) with T having an unsupported numpy type number of %d (it only supports numpy.float32 or numpy.float64)", s_gamma_str, self->type_num);
+      PyErr_Format(PyExc_NotImplementedError, "cannot create %s(T) with T having an unsupported numpy type number of %d (it only supports numpy.float32 or numpy.float64)", self->ob_type->tp_name, self->type_num);
       return -1;
   }
 
@@ -130,7 +144,7 @@ static PyObject* PyBoostGamma_GetAlpha(PyBoostGammaObject* self) {
     case NPY_FLOAT64:
       return get_alpha<double>(self);
     default:
-      PyErr_Format(PyExc_NotImplementedError, "cannot get alpha parameter of %s(T) with T having an unsupported numpy type number of %d (DEBUG ME)", s_gamma_str, self->type_num);
+      PyErr_Format(PyExc_NotImplementedError, "cannot get alpha parameter of %s(T) with T having an unsupported numpy type number of %d (DEBUG ME)", self->ob_type->tp_name, self->type_num);
       return 0;
   }
 }
@@ -149,7 +163,7 @@ static PyObject* PyBoostGamma_GetBeta(PyBoostGammaObject* self) {
     case NPY_FLOAT64:
       return get_beta<double>(self);
     default:
-      PyErr_Format(PyExc_NotImplementedError, "cannot get beta parameter of %s(T) with T having an unsupported numpy type number of %d (DEBUG ME)", s_gamma_str, self->type_num);
+      PyErr_Format(PyExc_NotImplementedError, "cannot get beta parameter of %s(T) with T having an unsupported numpy type number of %d (DEBUG ME)", self->ob_type->tp_name, self->type_num);
       return 0;
   }
 }
@@ -177,7 +191,7 @@ static PyObject* PyBoostGamma_Reset(PyBoostGammaObject* self) {
     case NPY_FLOAT64:
       return reset<double>(self);
     default:
-      PyErr_Format(PyExc_NotImplementedError, "cannot reset %s(T) with T having an unsupported numpy type number of %d (DEBUG ME)", s_gamma_str, self->type_num);
+      PyErr_Format(PyExc_NotImplementedError, "cannot reset %s(T) with T having an unsupported numpy type number of %d (DEBUG ME)", self->ob_type->tp_name, self->type_num);
       return 0;
   }
 }
@@ -208,7 +222,7 @@ PyObject* PyBoostGamma_Call(PyBoostGammaObject* self, PyObject *args, PyObject* 
       return call<double>(self, rng);
       break;
     default:
-      PyErr_Format(PyExc_NotImplementedError, "cannot call %s(T) with T having an unsupported numpy type number of %d (DEBUG ME)", s_gamma_str, self->type_num);
+      PyErr_Format(PyExc_NotImplementedError, "cannot call %s(T) with T having an unsupported numpy type number of %d (DEBUG ME)", self->ob_type->tp_name, self->type_num);
   }
 
   return 0; ///< FAILURE
@@ -332,7 +346,7 @@ static PyObject* PyBoostGamma_Repr(PyBoostGammaObject* self) {
 #endif
       (
        "%s(dtype='%s', alpha=%s, beta=%s)",
-       s_gamma_str, PyBlitzArray_TypenumAsString(self->type_num),
+       self->ob_type->tp_name, PyBlitzArray_TypenumAsString(self->type_num),
        bytes_to_charp(salpha), bytes_to_charp(sbeta)
       );
 
@@ -342,21 +356,6 @@ static PyObject* PyBoostGamma_Repr(PyBoostGammaObject* self) {
   return retval;
 
 }
-
-PyDoc_STRVAR(s_gamma_doc,
-"gamma(dtype, [alpha=1., beta=1.]]) -> new gamma distribution\n\
-\n\
-Models a random gamma distribution\n\
-\n\
-This distribution class models a gamma random distribution.\n\
-Such a distribution produces random numbers :math:`x` distributed\n\
-with the probability density function\n\
-:math:`p(x) = x^{\\alpha-1}\\frac{e^{-x}}{\\Gamma(\\alpha)}`,\n\
-where the ``alpha`` (:math:`\\alpha`) and ``beta`` (:math:`\\beta`)\n\
-are parameters of the distribution.\n\
-\n\
-"
-);
 
 PyTypeObject PyBoostGamma_Type = {
     PyObject_HEAD_INIT(0)

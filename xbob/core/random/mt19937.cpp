@@ -8,8 +8,31 @@
 #define XBOB_CORE_RANDOM_MODULE
 #include <xbob.core/random.h>
 
-#define MT19937_NAME "mt19937"
-PyDoc_STRVAR(s_mt19937_str, XBOB_EXT_MODULE_PREFIX "." MT19937_NAME);
+PyDoc_STRVAR(s_mt19937_str, XBOB_EXT_MODULE_PREFIX ".mt19937");
+
+PyDoc_STRVAR(s_mt19937_doc,
+"mt19937([seed]) -> new random number generator\n\
+\n\
+A Mersenne-Twister Random Number Generator (RNG)\n\
+\n\
+Constructor parameters:\n\
+\n\
+seed\n\
+  [optional] A integral value determining the initial seed\n\
+\n\
+A Random Number Generator (RNG) based on the work \"*Mersenne Twister:\n\
+A 623-dimensionally equidistributed uniform pseudo-random number\n\
+generator, Makoto Matsumoto and Takuji Nishimura, ACM Transactions\n\
+on Modeling and Computer Simulation: Special Issue on Uniform Random\n\
+Number Generation, Vol. 8, No. 1, January 1998, pp. 3-30*\"\n\
+\n\
+Objects of this class support comparison operators such as ``==``\n\
+or ``!=`` and setting the seed with the method ``seed(int)``. Two\n\
+random number generators are equal if they are at the same state -\n\
+i.e. they have been initialized with the same seed and have been\n\
+called the same number of times for number generation.\n\
+"
+);
 
 /* How to create a new PyBoostMt19937Object */
 static PyObject* PyBoostMt19937_New(PyTypeObject* type, PyObject*, PyObject*) {
@@ -90,30 +113,6 @@ static int PyBoostMt19937_Init(PyBoostMt19937Object* self, PyObject *args,
   return 0; ///< SUCCESS
 }
 
-PyDoc_STRVAR(s_mt19937_doc,
-"mt19937([seed]) -> new random number generator\n\
-\n\
-A Mersenne-Twister Random Number Generator (RNG)\n\
-\n\
-Constructor parameters:\n\
-\n\
-seed\n\
-  [optional] A integral value determining the initial seed\n\
-\n\
-A Random Number Generator (RNG) based on the work \"*Mersenne Twister:\n\
-A 623-dimensionally equidistributed uniform pseudo-random number\n\
-generator, Makoto Matsumoto and Takuji Nishimura, ACM Transactions\n\
-on Modeling and Computer Simulation: Special Issue on Uniform Random\n\
-Number Generation, Vol. 8, No. 1, January 1998, pp. 3-30*\"\n\
-\n\
-Objects of this class support comparison operators such as ``==``\n\
-or ``!=`` and setting the seed with the method ``seed(int)``. Two\n\
-random number generators are equal if they are at the same state -\n\
-i.e. they have been initialized with the same seed and have been\n\
-called the same number of times for number generation.\n\
-"
-);
-
 /* Sets the seed on a random number generator */
 static PyObject* PyBoostMt19937_seed(PyBoostMt19937Object* self, 
     PyObject *args, PyObject* kwds) {
@@ -181,7 +180,7 @@ static PyObject* PyBoostMt19937_RichCompare(PyBoostMt19937Object* self,
 }
 
 static PyObject* PyBoostMt19937_Repr(PyBoostMt19937Object* self) {
-  return PyUnicode_FromFormat("%s()", s_mt19937_str);
+  return PyUnicode_FromFormat("%s()", self->ob_type->tp_name);
 }
 
 PyTypeObject PyBoostMt19937_Type = {
