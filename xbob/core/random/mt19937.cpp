@@ -84,7 +84,7 @@ int PyBoostMt19937_Converter(PyObject* o, PyBoostMt19937Object** a) {
 static void PyBoostMt19937_Delete (PyBoostMt19937Object* o) {
 
   delete o->rng;
-  o->ob_type->tp_free((PyObject*)o);
+  Py_TYPE(o)->tp_free((PyObject*)o);
 
 }
 
@@ -180,12 +180,11 @@ static PyObject* PyBoostMt19937_RichCompare(PyBoostMt19937Object* self,
 }
 
 static PyObject* PyBoostMt19937_Repr(PyBoostMt19937Object* self) {
-  return PyUnicode_FromFormat("%s()", self->ob_type->tp_name);
+  return PyUnicode_FromFormat("%s()", Py_TYPE(self)->tp_name);
 }
 
 PyTypeObject PyBoostMt19937_Type = {
-    PyObject_HEAD_INIT(0)
-    0,                                          /*ob_size*/
+    PyVarObject_HEAD_INIT(0, 0)
     s_mt19937_str,                              /*tp_name*/
     sizeof(PyBoostMt19937Object),               /*tp_basicsize*/
     0,                                          /*tp_itemsize*/

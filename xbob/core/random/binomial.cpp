@@ -46,7 +46,7 @@ static PyObject* PyBoostBinomial_New(PyTypeObject* type, PyObject*, PyObject*) {
 static void PyBoostBinomial_Delete (PyBoostBinomialObject* o) {
 
   o->distro.reset();
-  o->ob_type->tp_free((PyObject*)o);
+  Py_TYPE(o)->tp_free((PyObject*)o);
 
 }
 
@@ -83,7 +83,7 @@ PyObject* PyBoostBinomial_SimpleNew (int type_num, PyObject* t, PyObject* p) {
       retval->distro = make_binomial<double>(t, p);
       break;
     default:
-      PyErr_Format(PyExc_NotImplementedError, "cannot create %s(T) with T having an unsupported numpy type number of %d (it only supports numpy.float32 or numpy.float64)", retval->ob_type->tp_name, retval->type_num);
+      PyErr_Format(PyExc_NotImplementedError, "cannot create %s(T) with T having an unsupported numpy type number of %d (it only supports numpy.float32 or numpy.float64)", Py_TYPE(retval)->tp_name, retval->type_num);
       Py_DECREF(retval);
       return 0;
   }
@@ -119,7 +119,7 @@ int PyBoostBinomial_Init(PyBoostBinomialObject* self, PyObject *args, PyObject* 
       self->distro = make_binomial<double>(t, p);
       break;
     default:
-      PyErr_Format(PyExc_NotImplementedError, "cannot create %s(T) with T having an unsupported numpy type number of %d (it only supports numpy.float32 or numpy.float64)", self->ob_type->tp_name, self->type_num);
+      PyErr_Format(PyExc_NotImplementedError, "cannot create %s(T) with T having an unsupported numpy type number of %d (it only supports numpy.float32 or numpy.float64)", Py_TYPE(self)->tp_name, self->type_num);
       return -1;
   }
 
@@ -156,7 +156,7 @@ static PyObject* PyBoostBinomial_GetT(PyBoostBinomialObject* self) {
     case NPY_FLOAT64:
       return get_t<double>(self);
     default:
-      PyErr_Format(PyExc_NotImplementedError, "cannot get parameter `t` of %s(T) with T having an unsupported numpy type number of %d (DEBUG ME)", self->ob_type->tp_name, self->type_num);
+      PyErr_Format(PyExc_NotImplementedError, "cannot get parameter `t` of %s(T) with T having an unsupported numpy type number of %d (DEBUG ME)", Py_TYPE(self)->tp_name, self->type_num);
       return 0;
   }
 }
@@ -175,7 +175,7 @@ static PyObject* PyBoostBinomial_GetP(PyBoostBinomialObject* self) {
     case NPY_FLOAT64:
       return get_p<double>(self);
     default:
-      PyErr_Format(PyExc_NotImplementedError, "cannot get parameter `p` of %s(T) with T having an unsupported numpy type number of %d (DEBUG ME)", self->ob_type->tp_name, self->type_num);
+      PyErr_Format(PyExc_NotImplementedError, "cannot get parameter `p` of %s(T) with T having an unsupported numpy type number of %d (DEBUG ME)", Py_TYPE(self)->tp_name, self->type_num);
       return 0;
   }
 }
@@ -203,7 +203,7 @@ static PyObject* PyBoostBinomial_Reset(PyBoostBinomialObject* self) {
     case NPY_FLOAT64:
       return reset<double>(self);
     default:
-      PyErr_Format(PyExc_NotImplementedError, "cannot reset %s(T) with T having an unsupported numpy type number of %d (DEBUG ME)", self->ob_type->tp_name, self->type_num);
+      PyErr_Format(PyExc_NotImplementedError, "cannot reset %s(T) with T having an unsupported numpy type number of %d (DEBUG ME)", Py_TYPE(self)->tp_name, self->type_num);
       return 0;
   }
 }
@@ -234,7 +234,7 @@ PyObject* PyBoostBinomial_Call(PyBoostBinomialObject* self, PyObject *args, PyOb
       return call<double>(self, rng);
       break;
     default:
-      PyErr_Format(PyExc_NotImplementedError, "cannot call %s(T) with T having an unsupported numpy type number of %d (DEBUG ME)", self->ob_type->tp_name, self->type_num);
+      PyErr_Format(PyExc_NotImplementedError, "cannot call %s(T) with T having an unsupported numpy type number of %d (DEBUG ME)", Py_TYPE(self)->tp_name, self->type_num);
   }
 
   return 0; ///< FAILURE
@@ -356,7 +356,7 @@ static PyObject* PyBoostBinomial_Repr(PyBoostBinomialObject* self) {
 #endif
       (
        "%s(dtype='%s', t=%s, p=%s)",
-       self->ob_type->tp_name, PyBlitzArray_TypenumAsString(self->type_num),
+       Py_TYPE(self)->tp_name, PyBlitzArray_TypenumAsString(self->type_num),
        bytes_to_charp(st), bytes_to_charp(sp)
       );
 
@@ -368,8 +368,7 @@ static PyObject* PyBoostBinomial_Repr(PyBoostBinomialObject* self) {
 }
 
 PyTypeObject PyBoostBinomial_Type = {
-    PyObject_HEAD_INIT(0)
-    0,                                            /*ob_size*/
+    PyVarObject_HEAD_INIT(0, 0)
     s_binomial_str,                               /*tp_name*/
     sizeof(PyBoostBinomialObject),                /*tp_basicsize*/
     0,                                            /*tp_itemsize*/

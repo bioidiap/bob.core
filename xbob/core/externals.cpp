@@ -170,9 +170,27 @@ PyDoc_STRVAR(module_docstr,
 "Information about software used to compile the C++ Bob API"
 );
 
+#if PY_VERSION_HEX >= 0x03000000
+static PyModuleDef module_definition = {
+  PyModuleDef_HEAD_INIT,
+  XBOB_EXT_MODULE_NAME,
+  module_docstr,
+  -1,
+  module_methods, 
+  0, 0, 0, 0
+};
+#endif
+
 PyMODINIT_FUNC XBOB_EXT_ENTRY_NAME (void) {
 
-  PyObject* m = Py_InitModule3(XBOB_EXT_MODULE_NAME, module_methods, module_docstr);
+# if PY_VERSION_HEX >= 0x03000000
+  PyObject* m = PyModule_Create(&module_definition);
+  if (!m) return 0;
+# else
+  PyObject* m = Py_InitModule3(XBOB_EXT_MODULE_NAME, 
+      module_methods, module_docstr);
+  if (!m) return;
+# endif
 
   /* register some constants */
   PyModule_AddIntConstant(m, "__api_version__", XBOB_CORE_API_VERSION);
@@ -181,5 +199,9 @@ PyMODINIT_FUNC XBOB_EXT_ENTRY_NAME (void) {
 
   /* imports the NumPy C-API */
   import_array();
+
+# if PY_VERSION_HEX >= 0x03000000
+  return m;
+# endif
 
 }

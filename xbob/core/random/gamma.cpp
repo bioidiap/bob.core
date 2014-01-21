@@ -42,7 +42,7 @@ static PyObject* PyBoostGamma_New(PyTypeObject* type, PyObject*, PyObject*) {
 static void PyBoostGamma_Delete (PyBoostGammaObject* o) {
 
   o->distro.reset();
-  o->ob_type->tp_free((PyObject*)o);
+  Py_TYPE(o)->tp_free((PyObject*)o);
 
 }
 
@@ -71,7 +71,7 @@ PyObject* PyBoostGamma_SimpleNew (int type_num, PyObject* alpha, PyObject* beta)
       retval->distro = make_gamma<double>(alpha, beta);
       break;
     default:
-      PyErr_Format(PyExc_NotImplementedError, "cannot create %s(T) with T having an unsupported numpy type number of %d (it only supports numpy.float32 or numpy.float64)", retval->ob_type->tp_name, retval->type_num);
+      PyErr_Format(PyExc_NotImplementedError, "cannot create %s(T) with T having an unsupported numpy type number of %d (it only supports numpy.float32 or numpy.float64)", Py_TYPE(retval)->tp_name, retval->type_num);
       Py_DECREF(retval);
       return 0;
   }
@@ -107,7 +107,7 @@ int PyBoostGamma_Init(PyBoostGammaObject* self, PyObject *args, PyObject* kwds) 
       self->distro = make_gamma<double>(alpha, beta);
       break;
     default:
-      PyErr_Format(PyExc_NotImplementedError, "cannot create %s(T) with T having an unsupported numpy type number of %d (it only supports numpy.float32 or numpy.float64)", self->ob_type->tp_name, self->type_num);
+      PyErr_Format(PyExc_NotImplementedError, "cannot create %s(T) with T having an unsupported numpy type number of %d (it only supports numpy.float32 or numpy.float64)", Py_TYPE(self)->tp_name, self->type_num);
       return -1;
   }
 
@@ -144,7 +144,7 @@ static PyObject* PyBoostGamma_GetAlpha(PyBoostGammaObject* self) {
     case NPY_FLOAT64:
       return get_alpha<double>(self);
     default:
-      PyErr_Format(PyExc_NotImplementedError, "cannot get alpha parameter of %s(T) with T having an unsupported numpy type number of %d (DEBUG ME)", self->ob_type->tp_name, self->type_num);
+      PyErr_Format(PyExc_NotImplementedError, "cannot get alpha parameter of %s(T) with T having an unsupported numpy type number of %d (DEBUG ME)", Py_TYPE(self)->tp_name, self->type_num);
       return 0;
   }
 }
@@ -163,7 +163,7 @@ static PyObject* PyBoostGamma_GetBeta(PyBoostGammaObject* self) {
     case NPY_FLOAT64:
       return get_beta<double>(self);
     default:
-      PyErr_Format(PyExc_NotImplementedError, "cannot get beta parameter of %s(T) with T having an unsupported numpy type number of %d (DEBUG ME)", self->ob_type->tp_name, self->type_num);
+      PyErr_Format(PyExc_NotImplementedError, "cannot get beta parameter of %s(T) with T having an unsupported numpy type number of %d (DEBUG ME)", Py_TYPE(self)->tp_name, self->type_num);
       return 0;
   }
 }
@@ -191,7 +191,7 @@ static PyObject* PyBoostGamma_Reset(PyBoostGammaObject* self) {
     case NPY_FLOAT64:
       return reset<double>(self);
     default:
-      PyErr_Format(PyExc_NotImplementedError, "cannot reset %s(T) with T having an unsupported numpy type number of %d (DEBUG ME)", self->ob_type->tp_name, self->type_num);
+      PyErr_Format(PyExc_NotImplementedError, "cannot reset %s(T) with T having an unsupported numpy type number of %d (DEBUG ME)", Py_TYPE(self)->tp_name, self->type_num);
       return 0;
   }
 }
@@ -222,7 +222,7 @@ PyObject* PyBoostGamma_Call(PyBoostGammaObject* self, PyObject *args, PyObject* 
       return call<double>(self, rng);
       break;
     default:
-      PyErr_Format(PyExc_NotImplementedError, "cannot call %s(T) with T having an unsupported numpy type number of %d (DEBUG ME)", self->ob_type->tp_name, self->type_num);
+      PyErr_Format(PyExc_NotImplementedError, "cannot call %s(T) with T having an unsupported numpy type number of %d (DEBUG ME)", Py_TYPE(self)->tp_name, self->type_num);
   }
 
   return 0; ///< FAILURE
@@ -346,7 +346,7 @@ static PyObject* PyBoostGamma_Repr(PyBoostGammaObject* self) {
 #endif
       (
        "%s(dtype='%s', alpha=%s, beta=%s)",
-       self->ob_type->tp_name, PyBlitzArray_TypenumAsString(self->type_num),
+       Py_TYPE(self)->tp_name, PyBlitzArray_TypenumAsString(self->type_num),
        bytes_to_charp(salpha), bytes_to_charp(sbeta)
       );
 
@@ -358,8 +358,7 @@ static PyObject* PyBoostGamma_Repr(PyBoostGammaObject* self) {
 }
 
 PyTypeObject PyBoostGamma_Type = {
-    PyObject_HEAD_INIT(0)
-    0,                                          /*ob_size*/
+    PyVarObject_HEAD_INIT(0, 0)
     s_gamma_str,                                /*tp_name*/
     sizeof(PyBoostGammaObject),                 /*tp_basicsize*/
     0,                                          /*tp_itemsize*/

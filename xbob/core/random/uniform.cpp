@@ -27,7 +27,7 @@ static PyObject* PyBoostUniform_New(PyTypeObject* type, PyObject*, PyObject*) {
 static void PyBoostUniform_Delete (PyBoostUniformObject* o) {
 
   o->distro.reset();
-  o->ob_type->tp_free((PyObject*)o);
+  Py_TYPE(o)->tp_free((PyObject*)o);
 
 }
 
@@ -101,7 +101,7 @@ PyObject* PyBoostUniform_SimpleNew (int type_num, PyObject* min, PyObject* max) 
       retval->distro = make_uniform_real<double>(min, max);
       break;
     default:
-      PyErr_Format(PyExc_NotImplementedError, "cannot create %s(T) with T having an unsupported numpy type number of %d", retval->ob_type->tp_name, retval->type_num);
+      PyErr_Format(PyExc_NotImplementedError, "cannot create %s(T) with T having an unsupported numpy type number of %d", Py_TYPE(retval)->tp_name, retval->type_num);
       Py_DECREF(retval);
       return 0;
   }
@@ -169,7 +169,7 @@ int PyBoostUniform_Init(PyBoostUniformObject* self, PyObject *args, PyObject* kw
       self->distro = make_uniform_real<double>(min, max);
       break;
     default:
-      PyErr_Format(PyExc_NotImplementedError, "cannot create %s(T) with T having an unsupported numpy type number of %d", self->ob_type->tp_name, self->type_num);
+      PyErr_Format(PyExc_NotImplementedError, "cannot create %s(T) with T having an unsupported numpy type number of %d", Py_TYPE(self)->tp_name, self->type_num);
       return -1;
   }
 
@@ -228,7 +228,7 @@ static PyObject* PyBoostUniform_GetMin(PyBoostUniformObject* self) {
     case NPY_FLOAT64:
       return get_minimum_real<double>(self);
     default:
-      PyErr_Format(PyExc_NotImplementedError, "cannot get minimum of %s(T) with T having an unsupported numpy type number of %d (DEBUG ME)", self->ob_type->tp_name, self->type_num);
+      PyErr_Format(PyExc_NotImplementedError, "cannot get minimum of %s(T) with T having an unsupported numpy type number of %d (DEBUG ME)", Py_TYPE(self)->tp_name, self->type_num);
       return 0;
   }
 }
@@ -269,7 +269,7 @@ static PyObject* PyBoostUniform_GetMax(PyBoostUniformObject* self) {
     case NPY_FLOAT64:
       return get_maximum_real<double>(self);
     default:
-      PyErr_Format(PyExc_NotImplementedError, "cannot get maximum of %s(T) with T having an unsupported numpy type number of %d (DEBUG ME)", self->ob_type->tp_name, self->type_num);
+      PyErr_Format(PyExc_NotImplementedError, "cannot get maximum of %s(T) with T having an unsupported numpy type number of %d (DEBUG ME)", Py_TYPE(self)->tp_name, self->type_num);
       return 0;
   }
 }
@@ -325,7 +325,7 @@ static PyObject* PyBoostUniform_Reset(PyBoostUniformObject* self) {
     case NPY_FLOAT64:
       return reset_real<double>(self);
     default:
-      PyErr_Format(PyExc_NotImplementedError, "cannot reset %s(T) with T having an unsupported numpy type number of %d (DEBUG ME)", self->ob_type->tp_name, self->type_num);
+      PyErr_Format(PyExc_NotImplementedError, "cannot reset %s(T) with T having an unsupported numpy type number of %d (DEBUG ME)", Py_TYPE(self)->tp_name, self->type_num);
       return 0;
   }
 }
@@ -392,7 +392,7 @@ PyObject* PyBoostUniform_Call(PyBoostUniformObject* self, PyObject *args, PyObje
       return call_real<double>(self, rng);
       break;
     default:
-      PyErr_Format(PyExc_NotImplementedError, "cannot call %s(T) with T having an unsupported numpy type number of %d", self->ob_type->tp_name, self->type_num);
+      PyErr_Format(PyExc_NotImplementedError, "cannot call %s(T) with T having an unsupported numpy type number of %d", Py_TYPE(self)->tp_name, self->type_num);
   }
 
   return 0; ///< FAILURE
@@ -517,7 +517,7 @@ static PyObject* PyBoostUniform_Repr(PyBoostUniformObject* self) {
 #endif
       (
        "%s(dtype='%s', min=%s, max=%s)",
-       self->ob_type->tp_name, PyBlitzArray_TypenumAsString(self->type_num),
+       Py_TYPE(self)->tp_name, PyBlitzArray_TypenumAsString(self->type_num),
        bytes_to_charp(smin), bytes_to_charp(smax)
       );
 
@@ -545,8 +545,7 @@ to be ``min=0`` and ``max=9``, for integral distributions and\n\
 );
 
 PyTypeObject PyBoostUniform_Type = {
-    PyObject_HEAD_INIT(0)
-    0,                                          /*ob_size*/
+    PyVarObject_HEAD_INIT(0, 0)
     s_uniform_str,                              /*tp_name*/
     sizeof(PyBoostUniformObject),               /*tp_basicsize*/
     0,                                          /*tp_itemsize*/

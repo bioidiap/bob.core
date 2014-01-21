@@ -27,7 +27,7 @@ static PyObject* PyBoostNormal_New(PyTypeObject* type, PyObject*, PyObject*) {
 static void PyBoostNormal_Delete (PyBoostNormalObject* o) {
 
   o->distro.reset();
-  o->ob_type->tp_free((PyObject*)o);
+  Py_TYPE(o)->tp_free((PyObject*)o);
 
 }
 
@@ -56,7 +56,7 @@ PyObject* PyBoostNormal_SimpleNew (int type_num, PyObject* mean, PyObject* sigma
       retval->distro = make_normal<double>(mean, sigma);
       break;
     default:
-      PyErr_Format(PyExc_NotImplementedError, "cannot create %s(T) with T having an unsupported numpy type number of %d (it only supports numpy.float32 or numpy.float64)", retval->ob_type->tp_name, retval->type_num);
+      PyErr_Format(PyExc_NotImplementedError, "cannot create %s(T) with T having an unsupported numpy type number of %d (it only supports numpy.float32 or numpy.float64)", Py_TYPE(retval)->tp_name, retval->type_num);
       Py_DECREF(retval);
       return 0;
   }
@@ -92,7 +92,7 @@ int PyBoostNormal_Init(PyBoostNormalObject* self, PyObject *args, PyObject* kwds
       self->distro = make_normal<double>(mean, sigma);
       break;
     default:
-      PyErr_Format(PyExc_NotImplementedError, "cannot create %s(T) with T having an unsupported numpy type number of %d (it only supports numpy.float32 or numpy.float64)", self->ob_type->tp_name, self->type_num);
+      PyErr_Format(PyExc_NotImplementedError, "cannot create %s(T) with T having an unsupported numpy type number of %d (it only supports numpy.float32 or numpy.float64)", Py_TYPE(self)->tp_name, self->type_num);
       return -1;
   }
 
@@ -129,7 +129,7 @@ static PyObject* PyBoostNormal_GetMean(PyBoostNormalObject* self) {
     case NPY_FLOAT64:
       return get_mean<double>(self);
     default:
-      PyErr_Format(PyExc_NotImplementedError, "cannot get mean of %s(T) with T having an unsupported numpy type number of %d (DEBUG ME)", self->ob_type->tp_name, self->type_num);
+      PyErr_Format(PyExc_NotImplementedError, "cannot get mean of %s(T) with T having an unsupported numpy type number of %d (DEBUG ME)", Py_TYPE(self)->tp_name, self->type_num);
       return 0;
   }
 }
@@ -148,7 +148,7 @@ static PyObject* PyBoostNormal_GetSigma(PyBoostNormalObject* self) {
     case NPY_FLOAT64:
       return get_sigma<double>(self);
     default:
-      PyErr_Format(PyExc_NotImplementedError, "cannot get sigma of %s(T) with T having an unsupported numpy type number of %d (DEBUG ME)", self->ob_type->tp_name, self->type_num);
+      PyErr_Format(PyExc_NotImplementedError, "cannot get sigma of %s(T) with T having an unsupported numpy type number of %d (DEBUG ME)", Py_TYPE(self)->tp_name, self->type_num);
       return 0;
   }
 }
@@ -176,7 +176,7 @@ static PyObject* PyBoostNormal_Reset(PyBoostNormalObject* self) {
     case NPY_FLOAT64:
       return reset<double>(self);
     default:
-      PyErr_Format(PyExc_NotImplementedError, "cannot reset %s(T) with T having an unsupported numpy type number of %d (DEBUG ME)", self->ob_type->tp_name, self->type_num);
+      PyErr_Format(PyExc_NotImplementedError, "cannot reset %s(T) with T having an unsupported numpy type number of %d (DEBUG ME)", Py_TYPE(self)->tp_name, self->type_num);
       return 0;
   }
 }
@@ -207,7 +207,7 @@ PyObject* PyBoostNormal_Call(PyBoostNormalObject* self, PyObject *args, PyObject
       return call<double>(self, rng);
       break;
     default:
-      PyErr_Format(PyExc_NotImplementedError, "cannot call %s(T) with T having an unsupported numpy type number of %d (DEBUG ME)", self->ob_type->tp_name, self->type_num);
+      PyErr_Format(PyExc_NotImplementedError, "cannot call %s(T) with T having an unsupported numpy type number of %d (DEBUG ME)", Py_TYPE(self)->tp_name, self->type_num);
   }
 
   return 0; ///< FAILURE
@@ -331,7 +331,7 @@ static PyObject* PyBoostNormal_Repr(PyBoostNormalObject* self) {
 #endif
       (
        "%s(dtype='%s', mean=%s, sigma=%s)",
-       self->ob_type->tp_name, PyBlitzArray_TypenumAsString(self->type_num),
+       Py_TYPE(self)->tp_name, PyBlitzArray_TypenumAsString(self->type_num),
        bytes_to_charp(smean), bytes_to_charp(ssigma)
       );
 
@@ -358,8 +358,7 @@ the standard deviation) the parameters of the distribution.\n\
 );
 
 PyTypeObject PyBoostNormal_Type = {
-    PyObject_HEAD_INIT(0)
-    0,                                          /*ob_size*/
+    PyVarObject_HEAD_INIT(0, 0)
     s_normal_str,                               /*tp_name*/
     sizeof(PyBoostNormalObject),                /*tp_basicsize*/
     0,                                          /*tp_itemsize*/

@@ -230,7 +230,7 @@ with its element type as indicated by the user.\n\
 "
 );
 
-static PyMethodDef convert_methods[] = {
+static PyMethodDef module_methods[] = {
     {
       s_convert_str,
       (PyCFunction)py_convert,
@@ -240,10 +240,31 @@ static PyMethodDef convert_methods[] = {
     {0}  /* Sentinel */
 };
 
+PyDoc_STRVAR(module_docstr, "bob::core::array::convert bindings");
+
+#if PY_VERSION_HEX >= 0x03000000
+static PyModuleDef module_definition = {
+  PyModuleDef_HEAD_INIT,
+  XBOB_EXT_MODULE_NAME,
+  module_docstr,
+  -1,
+  module_methods, 
+  0, 0, 0, 0
+};
+#endif
+
 PyMODINIT_FUNC XBOB_EXT_ENTRY_NAME (void)
 {
-  PyObject* m = Py_InitModule3(XBOB_EXT_MODULE_NAME, convert_methods,
-      "bob::core::array::convert bindings");
+
+# if PY_VERSION_HEX >= 0x03000000
+  PyObject* m = PyModule_Create(&module_definition);
+  if (!m) return 0;
+# else
+  PyObject* m = Py_InitModule3(XBOB_EXT_MODULE_NAME, 
+      module_methods, module_docstr);
+  if (!m) return;
+# endif
+
   PyModule_AddIntConstant(m, "__api_version__", XBOB_CORE_API_VERSION);
   PyModule_AddStringConstant(m, "__version__", XBOB_EXT_MODULE_VERSION);
 
@@ -252,4 +273,9 @@ PyMODINIT_FUNC XBOB_EXT_ENTRY_NAME (void)
 
   /* imports xbob.blitz C-API */
   import_xbob_blitz();
+
+# if PY_VERSION_HEX >= 0x03000000
+  return m;
+# endif
+
 }

@@ -21,30 +21,71 @@ PyDoc_STRVAR(module_docstr,
 "boost::random classes and methods"
 );
 
+#if PY_VERSION_HEX >= 0x03000000
+static PyModuleDef module_definition = {
+  PyModuleDef_HEAD_INIT,
+  XBOB_EXT_MODULE_NAME,
+  module_docstr,
+  -1,
+  module_methods, 
+  0, 0, 0, 0
+};
+#endif
+
 int PyXbobCoreRandom_APIVersion = XBOB_CORE_API_VERSION;
 
 PyMODINIT_FUNC XBOB_EXT_ENTRY_NAME (void) {
 
   PyBoostMt19937_Type.tp_new = PyType_GenericNew;
-  if (PyType_Ready(&PyBoostMt19937_Type) < 0) return;
+  if (PyType_Ready(&PyBoostMt19937_Type) < 0) return
+# if PY_VERSION_HEX >= 0x03000000
+    0
+# endif
+    ;
 
   PyBoostUniform_Type.tp_new = PyType_GenericNew;
-  if (PyType_Ready(&PyBoostUniform_Type) < 0) return;
+  if (PyType_Ready(&PyBoostUniform_Type) < 0) return
+# if PY_VERSION_HEX >= 0x03000000
+    0
+# endif
+    ;
 
   PyBoostNormal_Type.tp_new = PyType_GenericNew;
-  if (PyType_Ready(&PyBoostNormal_Type) < 0) return;
+  if (PyType_Ready(&PyBoostNormal_Type) < 0) return
+# if PY_VERSION_HEX >= 0x03000000
+    0
+# endif
+    ;
 
   PyBoostLogNormal_Type.tp_new = PyType_GenericNew;
-  if (PyType_Ready(&PyBoostLogNormal_Type) < 0) return;
+  if (PyType_Ready(&PyBoostLogNormal_Type) < 0) return
+# if PY_VERSION_HEX >= 0x03000000
+    0
+# endif
+    ;
 
   PyBoostGamma_Type.tp_new = PyType_GenericNew;
-  if (PyType_Ready(&PyBoostGamma_Type) < 0) return;
+  if (PyType_Ready(&PyBoostGamma_Type) < 0) return
+# if PY_VERSION_HEX >= 0x03000000
+    0
+# endif
+    ;
 
   PyBoostBinomial_Type.tp_new = PyType_GenericNew;
-  if (PyType_Ready(&PyBoostBinomial_Type) < 0) return;
+  if (PyType_Ready(&PyBoostBinomial_Type) < 0) return
+# if PY_VERSION_HEX >= 0x03000000
+    0
+# endif
+    ;
 
-  PyObject* m = Py_InitModule3(XBOB_EXT_MODULE_NAME,
+# if PY_VERSION_HEX >= 0x03000000
+  PyObject* m = PyModule_Create(&module_definition);
+  if (!m) return 0;
+# else
+  PyObject* m = Py_InitModule3(XBOB_EXT_MODULE_NAME, 
       module_methods, module_docstr);
+  if (!m) return;
+# endif
 
   /* register some constants */
   PyModule_AddIntConstant(m, "__api_version__", XBOB_CORE_API_VERSION);
@@ -149,5 +190,9 @@ PyMODINIT_FUNC XBOB_EXT_ENTRY_NAME (void) {
 
   /* imports blitz.array C-API */
   import_xbob_blitz();
+
+# if PY_VERSION_HEX >= 0x03000000
+  return m;
+# endif
 
 }
