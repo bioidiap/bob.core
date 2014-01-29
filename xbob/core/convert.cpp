@@ -10,6 +10,7 @@
 #undef NO_IMPORT_ARRAY
 #endif
 #include <xbob.blitz/cppapi.h>
+#include <xbob.blitz/cleanup.h>
 
 #include <bob/core/array_convert.h>
 
@@ -170,6 +171,7 @@ static PyObject* py_convert(PyObject*, PyObject* args, PyObject* kwds) {
         &dst_min, &dst_max,
         &src_min, &src_max
         )) return 0;
+  auto src_ = make_safe(src);
 
   PyObject* retval = 0;
 
@@ -190,8 +192,6 @@ static PyObject* py_convert(PyObject*, PyObject* args, PyObject* kwds) {
       PyErr_Format(PyExc_TypeError, "conversion to `%s' (%d) is not supported", PyBlitzArray_TypenumAsString(type_num), type_num);
 
   }
-
-  Py_DECREF(src);
 
   if (!retval) return 0;
 
@@ -253,29 +253,30 @@ static PyModuleDef module_definition = {
 };
 #endif
 
-PyMODINIT_FUNC XBOB_EXT_ENTRY_NAME (void)
-{
+static PyObject* create_module (void) {
 
 # if PY_VERSION_HEX >= 0x03000000
   PyObject* m = PyModule_Create(&module_definition);
-  if (!m) return 0;
 # else
-  PyObject* m = Py_InitModule3(XBOB_EXT_MODULE_NAME, 
-      module_methods, module_docstr);
-  if (!m) return;
+  PyObject* m = Py_InitModule3(XBOB_EXT_MODULE_NAME, module_methods, module_docstr);
 # endif
+  if (!m) return 0;
+  auto m_ = make_safe(m);
 
-  PyModule_AddIntConstant(m, "__api_version__", XBOB_CORE_API_VERSION);
-  PyModule_AddStringConstant(m, "__version__", XBOB_EXT_MODULE_VERSION);
+  /* register some constants */
+  if (PyModule_AddStringConstant(m, "__version__", XBOB_EXT_MODULE_VERSION) < 0) return 0;
 
-  /* imports the NumPy C-API */
-  import_array();
+  /* imports xbob.blitz C-API + dependencies */
+  if (import_xbob_blitz() < 0) return 0;
 
-  /* imports xbob.blitz C-API */
-  import_xbob_blitz();
-
-# if PY_VERSION_HEX >= 0x03000000
+  Py_INCREF(m);
   return m;
-# endif
 
+}
+
+PyMODINIT_FUNC XBOB_EXT_ENTRY_NAME (void) {
+# if PY_VERSION_HEX >= 0x03000000
+  return
+# endif
+    create_module();
 }
