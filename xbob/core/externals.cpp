@@ -21,15 +21,11 @@
 #include <google/tcmalloc.h>
 #endif
 
-extern "C" {
-
 #ifdef NO_IMPORT_ARRAY
 #undef NO_IMPORT_ARRAY
 #endif
-#define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
-#include <numpy/arrayobject.h>
-
-}
+#include <xbob.blitz/capi.h>
+#include <xbob.blitz/cleanup.h>
 
 static int dict_set(PyObject* d, const char* key, const char* value) {
   PyObject* v = Py_BuildValue("s", value);
@@ -181,27 +177,35 @@ static PyModuleDef module_definition = {
 };
 #endif
 
-PyMODINIT_FUNC XBOB_EXT_ENTRY_NAME (void) {
+static PyObject* create_module (void) {
 
 # if PY_VERSION_HEX >= 0x03000000
   PyObject* m = PyModule_Create(&module_definition);
-  if (!m) return 0;
 # else
-  PyObject* m = Py_InitModule3(XBOB_EXT_MODULE_NAME, 
-      module_methods, module_docstr);
-  if (!m) return;
+  PyObject* m = Py_InitModule3(XBOB_EXT_MODULE_NAME, module_methods, module_docstr);
 # endif
+  if (!m) return 0;
+  auto m_ = make_safe(m); ///< protects against early returns
 
-  /* register some constants */
-  PyModule_AddIntConstant(m, "__api_version__", XBOB_CORE_API_VERSION);
-  PyModule_AddStringConstant(m, "__version__", XBOB_EXT_MODULE_VERSION);
-  PyModule_AddObject(m, "versions", build_version_dictionary());
+  /* register version numbers and constants */
+  if (PyModule_AddIntConstant(m, "__api_version__", XBOB_BLITZ_API_VERSION) < 0) 
+    return 0;
+  if (PyModule_AddStringConstant(m, "__version__", XBOB_EXT_MODULE_VERSION) < 0)
+    return 0;
+  PyObject* versions = build_version_dictionary();
+  if (!versions) return 0;
+  if (PyModule_AddObject(m, "versions", versions) < 0) return 0;
 
-  /* imports the NumPy C-API */
-  import_array();
+  if (import_xbob_blitz() < 0) return 0;
 
-# if PY_VERSION_HEX >= 0x03000000
+  Py_INCREF(m);
   return m;
-# endif
 
+}
+
+PyMODINIT_FUNC XBOB_EXT_ENTRY_NAME (void) {
+# if PY_VERSION_HEX >= 0x03000000
+  return
+# endif
+    create_module();
 }
