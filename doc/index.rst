@@ -16,6 +16,7 @@ Reference
 .. toctree::
    :maxdepth: 2
 
+   guide
    py_api
    c_cpp_api
 
