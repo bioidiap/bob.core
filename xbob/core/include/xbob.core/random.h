@@ -12,6 +12,7 @@
 #include <xbob.core/config.h>
 #include <boost/shared_ptr.hpp>
 #include <boost/random.hpp>
+#include <boost/random/mersenne_twister.hpp>
 
 /* Define Module Name and Prefix for other Modules
    Note: We cannot use XBOB_EXT_* macros here, unfortunately */
