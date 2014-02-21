@@ -175,7 +175,9 @@ static PyObject* PyBoostGamma_Reset(PyBoostGammaObject* self) {
 }
 
 template <typename T> PyObject* call(PyBoostGammaObject* self, PyBoostMt19937Object* rng) {
-  return PyBlitzArrayCxx_FromCScalar(boost::static_pointer_cast<boost::gamma_distribution<T>>(self->distro)->operator()(*rng->rng));
+  typedef boost::mt19937 rng_t;
+  typedef boost::gamma_distribution<T> distro_t;
+  return PyBlitzArrayCxx_FromCScalar(boost::variate_generator<rng_t&, distro_t>(*rng->rng, *boost::static_pointer_cast<distro_t>(self->distro))());
 }
 
 /**
