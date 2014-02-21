@@ -3,7 +3,7 @@
 # Andre Anjos <andre.anjos@idiap.ch>
 # Tue 15 Oct 16:37:18 2013 CEST
 #
-# Copyright (C) 2011-2013 Idiap Research Institute, Martigny, Switzerland
+# Copyright (C) 2011-2014 Idiap Research Institute, Martigny, Switzerland
 
 import os
 import sys
