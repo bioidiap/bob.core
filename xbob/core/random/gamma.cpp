@@ -13,7 +13,7 @@
 PyDoc_STRVAR(s_gamma_str, XBOB_EXT_MODULE_PREFIX ".gamma");
 
 PyDoc_STRVAR(s_gamma_doc,
-"gamma(dtype, [alpha=1., beta=1.]]) -> new gamma distribution\n\
+"gamma(dtype, [alpha=1.]]) -> new gamma distribution\n\
 \n\
 Models a random gamma distribution\n\
 \n\
@@ -21,8 +21,8 @@ This distribution class models a gamma random distribution.\n\
 Such a distribution produces random numbers :math:`x` distributed\n\
 with the probability density function\n\
 :math:`p(x) = x^{\\alpha-1}\\frac{e^{-x}}{\\Gamma(\\alpha)}`,\n\
-where the ``alpha`` (:math:`\\alpha`) and ``beta`` (:math:`\\beta`)\n\
-are parameters of the distribution.\n\
+where the ``alpha`` (:math:`\\alpha`) is a parameter of the\n\
+distribution.\n\
 \n\
 "
 );
@@ -47,15 +47,13 @@ static void PyBoostGamma_Delete (PyBoostGammaObject* o) {
 }
 
 template <typename T>
-boost::shared_ptr<void> make_gamma(PyObject* alpha, PyObject* beta) {
+boost::shared_ptr<void> make_gamma(PyObject* alpha) {
   T calpha = 1.;
   if (alpha) calpha = PyBlitzArrayCxx_AsCScalar<T>(alpha);
-  T cbeta = 1.;
-  if (beta) cbeta = PyBlitzArrayCxx_AsCScalar<T>(beta);
-  return boost::make_shared<boost::gamma_distribution<T>>(calpha, cbeta);
+  return boost::make_shared<boost::gamma_distribution<T>>(calpha);
 }
 
-PyObject* PyBoostGamma_SimpleNew (int type_num, PyObject* alpha, PyObject* beta) {
+PyObject* PyBoostGamma_SimpleNew (int type_num, PyObject* alpha) {
 
   PyBoostGammaObject* retval = (PyBoostGammaObject*)PyBoostGamma_New(&PyBoostGamma_Type, 0, 0);
 
@@ -65,10 +63,10 @@ PyObject* PyBoostGamma_SimpleNew (int type_num, PyObject* alpha, PyObject* beta)
 
   switch(type_num) {
     case NPY_FLOAT32:
-      retval->distro = make_gamma<float>(alpha, beta);
+      retval->distro = make_gamma<float>(alpha);
       break;
     case NPY_FLOAT64:
-      retval->distro = make_gamma<double>(alpha, beta);
+      retval->distro = make_gamma<double>(alpha);
       break;
     default:
       PyErr_Format(PyExc_NotImplementedError, "cannot create %s(T) with T having an unsupported numpy type number of %d (it only supports numpy.float32 or numpy.float64)", Py_TYPE(retval)->tp_name, retval->type_num);
@@ -86,25 +84,24 @@ PyObject* PyBoostGamma_SimpleNew (int type_num, PyObject* alpha, PyObject* beta)
 }
 
 /* Implements the __init__(self) function */
-static 
+static
 int PyBoostGamma_Init(PyBoostGammaObject* self, PyObject *args, PyObject* kwds) {
 
   /* Parses input arguments in a single shot */
-  static const char* const_kwlist[] = {"dtype", "alpha", "beta", 0};
+  static const char* const_kwlist[] = {"dtype", "alpha", 0};
   static char** kwlist = const_cast<char**>(const_kwlist);
 
   int* type_num_p = &self->type_num;
   PyObject* alpha = 0;
-  PyObject* beta = 0;
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&|OO", kwlist, &PyBlitzArray_TypenumConverter, &type_num_p, &alpha, &beta)) return -1; ///< FAILURE
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&|O", kwlist, &PyBlitzArray_TypenumConverter, &type_num_p, &alpha)) return -1; ///< FAILURE
 
   switch(self->type_num) {
     case NPY_FLOAT32:
-      self->distro = make_gamma<float>(alpha, beta);
+      self->distro = make_gamma<float>(alpha);
       break;
     case NPY_FLOAT64:
-      self->distro = make_gamma<double>(alpha, beta);
+      self->distro = make_gamma<double>(alpha);
       break;
     default:
       PyErr_Format(PyExc_NotImplementedError, "cannot create %s(T) with T having an unsupported numpy type number of %d (it only supports numpy.float32 or numpy.float64)", Py_TYPE(self)->tp_name, self->type_num);
@@ -149,25 +146,6 @@ static PyObject* PyBoostGamma_GetAlpha(PyBoostGammaObject* self) {
   }
 }
 
-template <typename T> PyObject* get_beta(PyBoostGammaObject* self) {
-  return PyBlitzArrayCxx_FromCScalar(boost::static_pointer_cast<boost::gamma_distribution<T>>(self->distro)->beta());
-}
-
-/**
- * Accesses the beta value
- */
-static PyObject* PyBoostGamma_GetBeta(PyBoostGammaObject* self) {
-  switch (self->type_num) {
-    case NPY_FLOAT32:
-      return get_beta<float>(self);
-    case NPY_FLOAT64:
-      return get_beta<double>(self);
-    default:
-      PyErr_Format(PyExc_NotImplementedError, "cannot get beta parameter of %s(T) with T having an unsupported numpy type number of %d (DEBUG ME)", Py_TYPE(self)->tp_name, self->type_num);
-      return 0;
-  }
-}
-
 /**
  * Accesses the datatype
  */
@@ -203,7 +181,7 @@ template <typename T> PyObject* call(PyBoostGammaObject* self, PyBoostMt19937Obj
 /**
  * Calling a PyBoostGammaObject to generate a random number
  */
-static 
+static
 PyObject* PyBoostGamma_Call(PyBoostGammaObject* self, PyObject *args, PyObject* kwds) {
 
   /* Parses input arguments in a single shot */
@@ -229,7 +207,7 @@ PyObject* PyBoostGamma_Call(PyBoostGammaObject* self, PyObject *args, PyObject* 
 }
 
 PyDoc_STRVAR(s_reset_str, "reset");
-PyDoc_STRVAR(s_reset_doc, 
+PyDoc_STRVAR(s_reset_doc,
 "x.reset() -> None\n\
 \n\
 After calling this method, subsequent uses of the distribution do\n\
@@ -249,7 +227,7 @@ static PyMethodDef PyBoostGamma_methods[] = {
 };
 
 PyDoc_STRVAR(s_dtype_str, "dtype");
-PyDoc_STRVAR(s_dtype_doc, 
+PyDoc_STRVAR(s_dtype_doc,
 "x.dtype -> numpy dtype\n\
 \n\
 The type of scalars produced by this gamma distribution.\n\
@@ -257,19 +235,10 @@ The type of scalars produced by this gamma distribution.\n\
 );
 
 PyDoc_STRVAR(s_alpha_str, "alpha");
-PyDoc_STRVAR(s_alpha_doc, 
+PyDoc_STRVAR(s_alpha_doc,
 "x.alpha -> scalar\n\
 \n\
 This value corresponds to the alpha parameter the\n\
-distribution current has.\n\
-"
-);
-
-PyDoc_STRVAR(s_beta_str, "beta");
-PyDoc_STRVAR(s_beta_doc, 
-"x.beta -> scalar\n\
-\n\
-This value corresponds to the beta parameter the\n\
 distribution current has.\n\
 "
 );
@@ -287,13 +256,6 @@ static PyGetSetDef PyBoostGamma_getseters[] = {
       (getter)PyBoostGamma_GetAlpha,
       0,
       s_alpha_doc,
-      0,
-    },
-    {
-      s_beta_str,
-      (getter)PyBoostGamma_GetBeta,
-      0,
-      s_beta_doc,
       0,
     },
     {0}  /* Sentinel */
@@ -327,31 +289,26 @@ static const char* bytes_to_charp(PyObject* s) {
  * String representation and print out
  */
 static PyObject* PyBoostGamma_Repr(PyBoostGammaObject* self) {
-  
+
   PyObject* alpha = PyBoostGamma_GetAlpha(self);
   if (!alpha) return 0;
-  PyObject* beta = PyBoostGamma_GetBeta(self);
-  if (!beta) return 0;
 
   PyObject* salpha = scalar_to_bytes(alpha);
   if (!salpha) return 0;
-  PyObject* sbeta = scalar_to_bytes(beta);
-  if (!sbeta) return 0;
-  
-  PyObject* retval = 
+
+  PyObject* retval =
 # if PY_VERSION_HEX >= 0x03000000
     PyUnicode_FromFormat
 #else
     PyString_FromFormat
 #endif
       (
-       "%s(dtype='%s', alpha=%s, beta=%s)",
+       "%s(dtype='%s', alpha=%s)",
        Py_TYPE(self)->tp_name, PyBlitzArray_TypenumAsString(self->type_num),
-       bytes_to_charp(salpha), bytes_to_charp(sbeta)
-      );
+       bytes_to_charp(salpha)
+       );
 
   Py_DECREF(salpha);
-  Py_DECREF(sbeta);
 
   return retval;
 
