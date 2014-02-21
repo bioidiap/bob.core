@@ -121,12 +121,11 @@ def test_lognormal():
 
 def test_gamma():
 
-  x = random.variate_generator(random.mt19937(), random.gamma('float64', alpha=0.5, beta=2.0))
+  x = random.variate_generator(random.mt19937(), random.gamma('float64', alpha=0.5))
   assert x.distribution.alpha == 0.5
-  assert x.distribution.beta == 2.0
   m = x(10000)
-  assert abs(m.mean() - 1.0) < 0.1
-  assert abs(m.std() - 1.4) < 0.1
+  assert abs(m.mean() - 0.49) < 0.1
+  assert abs(m.std() - 0.70) < 0.1
 
 def test_binomial():
 
