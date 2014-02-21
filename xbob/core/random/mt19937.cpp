@@ -51,7 +51,7 @@ PyObject* PyBoostMt19937_SimpleNew () {
 
   if (!retval) return 0;
 
-  retval->rng = new boost::random::mt19937;
+  retval->rng = new boost::mt19937;
 
   return reinterpret_cast<PyObject*>(retval);
 
@@ -60,10 +60,10 @@ PyObject* PyBoostMt19937_SimpleNew () {
 PyObject* PyBoostMt19937_NewWithSeed (Py_ssize_t seed) {
 
   PyBoostMt19937Object* retval = (PyBoostMt19937Object*)PyBoostMt19937_New(&PyBoostMt19937_Type, 0, 0);
-  
+
   if (!retval) return 0;
 
-  retval->rng = new boost::random::mt19937(seed);
+  retval->rng = new boost::mt19937(seed);
 
   return reinterpret_cast<PyObject*>(retval);
 
@@ -104,17 +104,17 @@ static int PyBoostMt19937_Init(PyBoostMt19937Object* self, PyObject *args,
   if (seed) {
     Py_ssize_t s_seed = PyNumber_AsSsize_t(seed, PyExc_ValueError);
     if (PyErr_Occurred()) return -1;
-    self->rng = new boost::random::mt19937(s_seed);
+    self->rng = new boost::mt19937(s_seed);
   }
   else {
-    self->rng = new boost::random::mt19937;
+    self->rng = new boost::mt19937;
   }
 
   return 0; ///< SUCCESS
 }
 
 /* Sets the seed on a random number generator */
-static PyObject* PyBoostMt19937_seed(PyBoostMt19937Object* self, 
+static PyObject* PyBoostMt19937_seed(PyBoostMt19937Object* self,
     PyObject *args, PyObject* kwds) {
 
   /* Parses input arguments in a single shot */
@@ -160,7 +160,7 @@ static PyObject* PyBoostMt19937_RichCompare(PyBoostMt19937Object* self,
         s_seed_str, other->ob_type->tp_name);
     return 0;
   }
-  
+
   PyBoostMt19937Object* other_ = reinterpret_cast<PyBoostMt19937Object*>(other);
 
   switch (op) {

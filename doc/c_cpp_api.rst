@@ -41,21 +41,21 @@ the import function:
 Mersenne Twister Random Number Generator (mt19937)
 --------------------------------------------------
 
-This package contains bindings to ``boost::random::mt19937``, which is a
+This package contains bindings to ``boost::mt19937``, which is a
 powerful random number generator available within the Boost_ C++ library.
 
 .. cpp:type:: PyBoostMt19937Object
 
-   The pythonic object representation for a ``boost::random::mt19937`` object.
+   The pythonic object representation for a ``boost::mt19937`` object.
 
    .. code-block:: c
 
       typedef struct {
         PyObject_HEAD
-        boost::random::mt19937* rng;
+        boost::mt19937* rng;
       } PyBoostMt19937Object;
-   
-   .. c:member:: boost::random::mt19937* rng
+
+   .. c:member:: boost::mt19937* rng
 
       A direct pointer to the boost random number generator. You can use this
       pointer in your C/C++ code if required.

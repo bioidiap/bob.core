@@ -12,7 +12,6 @@
 #include <xbob.core/config.h>
 #include <boost/shared_ptr.hpp>
 #include <boost/random.hpp>
-#include <boost/random/mersenne_twister.hpp>
 
 /* Define Module Name and Prefix for other Modules
    Note: We cannot use XBOB_EXT_* macros here, unfortunately */
@@ -39,7 +38,7 @@ typedef struct {
   PyObject_HEAD
 
   /* Type-specific fields go here. */
-  boost::random::mt19937* rng;
+  boost::mt19937* rng;
 
 } PyBoostMt19937Object;
 
