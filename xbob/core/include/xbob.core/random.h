@@ -175,7 +175,7 @@ typedef struct {
 
 #define PyBoostGamma_SimpleNew_NUM 21
 #define PyBoostGamma_SimpleNew_RET PyObject*
-#define PyBoostGamma_SimpleNew_PROTO (int type_num, PyObject* alpha, PyObject* beta)
+#define PyBoostGamma_SimpleNew_PROTO (int type_num, PyObject* alpha)
 
 /******************************************
  * Bindings for xbob.core.random.binomial *
