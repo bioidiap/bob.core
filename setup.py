@@ -40,9 +40,9 @@ setup(
       ],
 
     ext_modules = [
-      Extension("xbob.core._externals",
+      Extension("xbob.core.version",
         [
-          "xbob/core/externals.cpp",
+          "xbob/core/version.cpp",
           ],
         version = version,
         packages = packages,

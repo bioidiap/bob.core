@@ -120,11 +120,6 @@ static PyObject* build_version_dictionary() {
   PyObject* retval = PyDict_New();
   if (!retval) return 0;
 
-  if (!dict_set(retval, "Blitz++", BZ_VERSION)) {
-    Py_DECREF(retval);
-    return 0;
-  }
-
   if (!dict_steal(retval, "Boost", boost_version())) {
     Py_DECREF(retval);
     return 0;
@@ -136,11 +131,6 @@ static PyObject* build_version_dictionary() {
   }
 
   if (!dict_steal(retval, "Python", python_version())) {
-    Py_DECREF(retval);
-    return 0;
-  }
-
-  if (!dict_steal(retval, "NumPy", numpy_version())) {
     Py_DECREF(retval);
     return 0;
   }
@@ -172,7 +162,7 @@ static PyModuleDef module_definition = {
   XBOB_EXT_MODULE_NAME,
   module_docstr,
   -1,
-  module_methods, 
+  module_methods,
   0, 0, 0, 0
 };
 #endif
@@ -188,13 +178,15 @@ static PyObject* create_module (void) {
   auto m_ = make_safe(m); ///< protects against early returns
 
   /* register version numbers and constants */
-  if (PyModule_AddIntConstant(m, "__api_version__", XBOB_BLITZ_API_VERSION) < 0) 
+  if (PyModule_AddStringConstant(m, "module", XBOB_EXT_MODULE_VERSION) < 0)
     return 0;
-  if (PyModule_AddStringConstant(m, "__version__", XBOB_EXT_MODULE_VERSION) < 0)
+
+  if (PyModule_AddIntConstant(m, "api", XBOB_CORE_API_VERSION) < 0)
     return 0;
-  PyObject* versions = build_version_dictionary();
-  if (!versions) return 0;
-  if (PyModule_AddObject(m, "versions", versions) < 0) return 0;
+
+  PyObject* externals = build_version_dictionary();
+  if (!externals) return 0;
+  if (PyModule_AddObject(m, "externals", externals) < 0) return 0;
 
   if (import_xbob_blitz() < 0) return 0;
 

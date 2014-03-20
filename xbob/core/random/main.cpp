@@ -28,7 +28,7 @@ static PyModuleDef module_definition = {
   XBOB_EXT_MODULE_NAME,
   module_docstr,
   -1,
-  module_methods, 
+  module_methods,
   0, 0, 0, 0
 };
 #endif
@@ -150,7 +150,7 @@ static PyObject* create_module (void) {
 
   /* defines the PyCapsule */
 
-  PyObject* c_api_object = PyCapsule_New((void *)PyXbobCoreRandom_API, 
+  PyObject* c_api_object = PyCapsule_New((void *)PyXbobCoreRandom_API,
       XBOB_EXT_MODULE_PREFIX "." XBOB_EXT_MODULE_NAME "._C_API", 0);
 
 #else
@@ -160,7 +160,7 @@ static PyObject* create_module (void) {
 #endif
 
   if (c_api_object) PyModule_AddObject(m, "_C_API", c_api_object);
-  
+
   /* imports xbob.blitz C-API + dependencies */
   if (import_xbob_blitz() < 0) return 0;
 
