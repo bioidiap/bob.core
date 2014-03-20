@@ -77,13 +77,6 @@ static PyObject* python_version() {
 }
 
 /**
- * Numpy version
- */
-static PyObject* numpy_version() {
-  return Py_BuildValue("s", BOOST_PP_STRINGIZE(NPY_VERSION));
-}
-
-/**
  * Google profiler version, if available
  */
 static PyObject* perftools_version() {
