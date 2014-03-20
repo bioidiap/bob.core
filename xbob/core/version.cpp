@@ -27,15 +27,6 @@
 #include <xbob.blitz/capi.h>
 #include <xbob.blitz/cleanup.h>
 
-static int dict_set(PyObject* d, const char* key, const char* value) {
-  PyObject* v = Py_BuildValue("s", value);
-  if (!v) return 0;
-  int retval = PyDict_SetItemString(d, key, v);
-  Py_DECREF(v);
-  if (retval == 0) return 1; //all good
-  return 0; //a problem occurred
-}
-
 static int dict_steal(PyObject* d, const char* key, PyObject* value) {
   if (!value) return 0;
   int retval = PyDict_SetItemString(d, key, value);
