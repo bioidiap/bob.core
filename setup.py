@@ -12,7 +12,7 @@ package_dir = os.path.dirname(os.path.realpath(__file__))
 package_dir = os.path.join(package_dir, 'xbob', 'core', 'include')
 include_dirs = [package_dir]
 
-packages = ['bob-core >= 1.3']
+packages = ['bob-core >= 1.2.2']
 version = '2.0.0a0'
 
 setup(
