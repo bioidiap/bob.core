@@ -27,6 +27,15 @@
 #include <xbob.blitz/capi.h>
 #include <xbob.blitz/cleanup.h>
 
+static int dict_set(PyObject* d, const char* key, const char* value) {
+  PyObject* v = Py_BuildValue("s", value);
+  if (!v) return 0;
+  int retval = PyDict_SetItemString(d, key, v);
+  Py_DECREF(v);
+  if (retval == 0) return 1; //all good
+  return 0; //a problem occurred
+}
+
 static int dict_steal(PyObject* d, const char* key, PyObject* value) {
   if (!value) return 0;
   int retval = PyDict_SetItemString(d, key, value);
@@ -77,58 +86,42 @@ static PyObject* python_version() {
 }
 
 /**
- * Google profiler version, if available
- */
-static PyObject* perftools_version() {
-#if WITH_PERFTOOLS
-  boost::format f("%s.%s.%s");
-  f % BOOST_PP_STRINGIZE(TC_VERSION_MAJOR);
-  f % BOOST_PP_STRINGIZE(TC_VERSION_MINOR);
-  if (std::strlen(TC_VERSION_PATCH) == 0) f % "0";
-  else f % BOOST_PP_STRINGIZE(TC_VERSION_PATCH);
-  return Py_BuildValue("s", f.str().c_str());
-#else
-  return Py_BuildValue("s", "unavailable");
-#endif
-}
-
-/**
  * Bob version, API version and platform
  */
 static PyObject* bob_version() {
   return Py_BuildValue("sis", BOB_VERSION, BOB_API_VERSION, BOB_PLATFORM);
 }
 
+/**
+ * Numpy version
+ */
+static PyObject* numpy_version() {
+  return Py_BuildValue("{ssss}", "abi", BOOST_PP_STRINGIZE(NPY_VERSION),
+      "api", BOOST_PP_STRINGIZE(NPY_API_VERSION));
+}
+
+/**
+ * xbob.blitz c/c++ api version
+ */
+static PyObject* xbob_blitz_version() {
+  return Py_BuildValue("{ss}", "api", BOOST_PP_STRINGIZE(XBOB_BLITZ_API_VERSION));
+}
+
 static PyObject* build_version_dictionary() {
 
   PyObject* retval = PyDict_New();
   if (!retval) return 0;
+  auto retval_ = make_safe(retval);
 
-  if (!dict_steal(retval, "Boost", boost_version())) {
-    Py_DECREF(retval);
-    return 0;
-  }
+  if (!dict_set(retval, "Blitz++", BZ_VERSION)) return 0;
+  if (!dict_steal(retval, "Boost", boost_version())) return 0;
+  if (!dict_steal(retval, "Compiler", compiler_version())) return 0;
+  if (!dict_steal(retval, "Python", python_version())) return 0;
+  if (!dict_steal(retval, "NumPy", numpy_version())) return 0;
+  if (!dict_steal(retval, "xbob.blitz", xbob_blitz_version())) return 0;
+  if (!dict_steal(retval, "Bob", bob_version())) return 0;
 
-  if (!dict_steal(retval, "Compiler", compiler_version())) {
-    Py_DECREF(retval);
-    return 0;
-  }
-
-  if (!dict_steal(retval, "Python", python_version())) {
-    Py_DECREF(retval);
-    return 0;
-  }
-
-  if (!dict_steal(retval, "Google Perftools", perftools_version())) {
-    Py_DECREF(retval);
-    return 0;
-  }
-
-  if (!dict_steal(retval, "Bob", bob_version())) {
-    Py_DECREF(retval);
-    return 0;
-  }
-
+  Py_INCREF(retval);
   return retval;
 }
 
