@@ -4,6 +4,14 @@
 
 .. image:: https://travis-ci.org/bioidiap/xbob.core.svg?branch=master
    :target: https://travis-ci.org/bioidiap/xbob.core
+.. image:: https://coveralls.io/repos/bioidiap/xbob.core/badge.png
+   :target: https://coveralls.io/r/bioidiap/xbob.core
+.. image:: http://img.shields.io/github/tag/bioidiap/xbob.core.png
+   :target: https://github.com/bioidiap/xbob.core
+.. image:: http://img.shields.io/pypi/v/xbob.core.png
+   :target: https://pypi.python.org/pypi/xbob.core
+.. image:: http://img.shields.io/pypi/dm/xbob.core.png
+   :target: https://pypi.python.org/pypi/xbob.core
 
 ==============================
  Python bindings for bob.core
