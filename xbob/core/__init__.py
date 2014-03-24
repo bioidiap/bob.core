@@ -21,7 +21,8 @@ def get_config():
   this = packages[0]
   deps = packages[1:]
 
-  retval =  "%s: %s (%s)\n" % (this.key, this.version, this.location)
+  retval =  "%s: %s [api=0x%04x] (%s)\n" % (this.key, this.version,
+      version.api, this.location)
   retval += "  - c/c++ dependencies:\n"
   for k in sorted(externals): retval += "    - %s: %s\n" % (k, externals[k])
   retval += "  - python dependencies:\n"
