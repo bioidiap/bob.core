@@ -20,7 +20,7 @@ setup(
     name='xbob.core',
     version=version,
     description='Bindings for bob.core',
-    url='http://github.com/anjos/xbob.core',
+    url='http://github.com/bioidiap/xbob.core',
     license='BSD',
     author='Andre Anjos',
     author_email='andre.anjos@idiap.ch',
