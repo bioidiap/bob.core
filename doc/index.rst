@@ -6,6 +6,8 @@
  Bob's Core Routines
 =====================
 
+.. todolist::
+
 This module contains base functionality from Bob bound to Python, available in
 the C++ counter-part ``bob::core``. It includes basic conversion routines,
 random number generation and central logging facilities.
