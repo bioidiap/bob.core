@@ -161,8 +161,12 @@ static PyObject* create_module (void) {
 
   if (c_api_object) PyModule_AddObject(m, "_C_API", c_api_object);
 
-  /* imports xbob.blitz C-API + dependencies */
-  if (import_xbob_blitz() < 0) return 0;
+  /* imports dependencies */
+  if (import_xbob_blitz() < 0) {
+    PyErr_Print();
+    PyErr_Format(PyExc_ImportError, "cannot import `%s'", XBOB_EXT_MODULE_NAME);
+    return 0;
+  }
 
   Py_INCREF(m);
   return m;

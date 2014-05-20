@@ -18,6 +18,7 @@ the import function:
 
 .. code-block:: c++
 
+   #include <xbob.blitz/capi.h>
    #include <xbob.core/random.h>
 
    PyMODINIT_FUNC initclient(void) {
@@ -26,8 +27,19 @@ the import function:
 
      if (!m) return;
 
-     // imports blitz.array C-API
-     if (import_xbob_blitz() < 0) return 0;
+     // imports dependencies
+     if (import_xbob_blitz() < 0) {
+       PyErr_Print();
+       PyErr_SetString(PyExc_ImportError, "cannot import module");
+       return 0;
+     }
+
+     // imports dependencies
+     if (import_xbob_core_random() < 0) {
+       PyErr_Print();
+       PyErr_SetString(PyExc_ImportError, "cannot import module");
+       return 0;
+     }
 
      return m;
 
