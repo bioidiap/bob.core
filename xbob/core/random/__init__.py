@@ -1,4 +1,4 @@
-from ._library import __doc__, __api_version__, mt19937, uniform, normal, lognormal, gamma, binomial
+from ._library import __doc__, __api_version__, mt19937, uniform, normal, lognormal, gamma, binomial, discrete
 import numpy
 
 class variate_generator:
@@ -7,7 +7,7 @@ class variate_generator:
   Keyword parameters:
 
   engine
-    An instance of the RNG you would like to use. This has to be an 
+    An instance of the RNG you would like to use. This has to be an
     object of the class :py:class:`xbob.core.random.mt19937`, already
     initialized.
 

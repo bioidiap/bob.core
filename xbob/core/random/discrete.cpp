@@ -377,9 +377,9 @@ Models a random discrete distribution\n\
 A discrete distribution can only assume certain values, which\n\
 for this class is defined as a number ``i`` in the range\n\
 ``[0, len(probabilities)]``. Notice that the condition\n\
-:math:`\\sum(P) = 1`, with ``P = probabilities``, must hold.\n\
-Therefore, the input sequence ``probabilities`` determine the\n\
-discrete probabilities defined by this distribution.\n\
+:math:`\\sum(P) = 1`, with ``P = probabilities``, is\n\
+enforced by normalizing the input values so that the sum\n\
+over all probabilities always equals 1.\n\
 \n\
 "
 );

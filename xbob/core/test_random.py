@@ -136,6 +136,16 @@ def test_binomial():
   assert abs(m.mean() - 0.30) < 0.1
   assert abs(m.std() - 0.52) < 0.1
 
+def test_discrete():
+
+  probs = (0.5, 0.2, 0.3) # mean == 0*0.5 + 1*0.2 + 2*0.3 = 0.8
+  d = random.discrete(int, probs)
+  assert numpy.allclose(probs, d.probabilities)
+
+  x = random.variate_generator(random.mt19937(), d)
+  m = x(10000)
+  assert abs(m.mean() - 0.8) < 0.1
+
 def test_repr():
 
   x = random.uniform(float)
@@ -148,5 +158,5 @@ def test_repr():
   repr(x)
   x = random.binomial(float)
   repr(x)
-  x = random.discrete(int, (0.5, 0.5))
+  x = random.discrete(int, (0.1, 0.9))
   repr(x)
