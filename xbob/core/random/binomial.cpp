@@ -98,7 +98,7 @@ PyObject* PyBoostBinomial_SimpleNew (int type_num, PyObject* t, PyObject* p) {
 }
 
 /* Implements the __init__(self) function */
-static 
+static
 int PyBoostBinomial_Init(PyBoostBinomialObject* self, PyObject *args, PyObject* kwds) {
 
   /* Parses input arguments in a single shot */
@@ -215,7 +215,7 @@ template <typename T> PyObject* call(PyBoostBinomialObject* self, PyBoostMt19937
 /**
  * Calling a PyBoostBinomialObject to generate a random number
  */
-static 
+static
 PyObject* PyBoostBinomial_Call(PyBoostBinomialObject* self, PyObject *args, PyObject* kwds) {
 
   /* Parses input arguments in a single shot */
@@ -224,7 +224,7 @@ PyObject* PyBoostBinomial_Call(PyBoostBinomialObject* self, PyObject *args, PyOb
 
   PyBoostMt19937Object* rng = 0;
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&", kwlist, &PyBoostMt19937_Converter, &rng)) return 0; ///< FAILURE
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!", kwlist, &PyBoostMt19937_Type, &rng)) return 0; ///< FAILURE
 
   switch(self->type_num) {
     case NPY_FLOAT32:
@@ -241,7 +241,7 @@ PyObject* PyBoostBinomial_Call(PyBoostBinomialObject* self, PyObject *args, PyOb
 }
 
 PyDoc_STRVAR(s_reset_str, "reset");
-PyDoc_STRVAR(s_reset_doc, 
+PyDoc_STRVAR(s_reset_doc,
 "x.reset() -> None\n\
 \n\
 After calling this method, subsequent uses of the distribution do\n\
@@ -261,7 +261,7 @@ static PyMethodDef PyBoostBinomial_methods[] = {
 };
 
 PyDoc_STRVAR(s_dtype_str, "dtype");
-PyDoc_STRVAR(s_dtype_doc, 
+PyDoc_STRVAR(s_dtype_doc,
 "x.dtype -> numpy dtype\n\
 \n\
 The type of scalars produced by this binomial distribution.\n\
@@ -269,7 +269,7 @@ The type of scalars produced by this binomial distribution.\n\
 );
 
 PyDoc_STRVAR(s_t_str, "t");
-PyDoc_STRVAR(s_t_doc, 
+PyDoc_STRVAR(s_t_doc,
 "x.t -> scalar\n\
 \n\
 This value corresponds to the parameter ``t`` of the distribution.\n\
@@ -277,7 +277,7 @@ This value corresponds to the parameter ``t`` of the distribution.\n\
 );
 
 PyDoc_STRVAR(s_p_str, "p");
-PyDoc_STRVAR(s_p_doc, 
+PyDoc_STRVAR(s_p_doc,
 "x.p -> scalar\n\
 \n\
 This value corresponds to the parameter ``p`` of the distribution.\n\
@@ -347,8 +347,8 @@ static PyObject* PyBoostBinomial_Repr(PyBoostBinomialObject* self) {
   if (!st) return 0;
   PyObject* sp = scalar_to_bytes(p);
   if (!sp) return 0;
-  
-  PyObject* retval = 
+
+  PyObject* retval =
 # if PY_VERSION_HEX >= 0x03000000
     PyUnicode_FromFormat
 #else

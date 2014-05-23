@@ -148,3 +148,5 @@ def test_repr():
   repr(x)
   x = random.binomial(float)
   repr(x)
+  x = random.discrete(int, (0.5, 0.5))
+  repr(x)

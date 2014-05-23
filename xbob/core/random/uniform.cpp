@@ -116,7 +116,7 @@ PyObject* PyBoostUniform_SimpleNew (int type_num, PyObject* min, PyObject* max) 
 }
 
 /* Implements the __init__(self) function */
-static 
+static
 int PyBoostUniform_Init(PyBoostUniformObject* self, PyObject *args, PyObject* kwds) {
 
   /* Parses input arguments in a single shot */
@@ -346,7 +346,7 @@ template <typename T> PyObject* call_real(PyBoostUniformObject* self, PyBoostMt1
 /**
  * Calling a PyBoostUniformObject to generate a random number
  */
-static 
+static
 PyObject* PyBoostUniform_Call(PyBoostUniformObject* self, PyObject *args, PyObject* kwds) {
 
   /* Parses input arguments in a single shot */
@@ -355,7 +355,7 @@ PyObject* PyBoostUniform_Call(PyBoostUniformObject* self, PyObject *args, PyObje
 
   PyBoostMt19937Object* rng = 0;
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&", kwlist, &PyBoostMt19937_Converter, &rng)) return 0; ///< FAILURE
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!", kwlist, &PyBoostMt19937_Type, &rng)) return 0; ///< FAILURE
 
   switch(self->type_num) {
     case NPY_BOOL:
@@ -399,7 +399,7 @@ PyObject* PyBoostUniform_Call(PyBoostUniformObject* self, PyObject *args, PyObje
 }
 
 PyDoc_STRVAR(s_reset_str, "reset");
-PyDoc_STRVAR(s_reset_doc, 
+PyDoc_STRVAR(s_reset_doc,
 "x.reset() -> None\n\
 \n\
 After calling this method, subsequent uses of the distribution do\n\
@@ -419,7 +419,7 @@ static PyMethodDef PyBoostUniform_methods[] = {
 };
 
 PyDoc_STRVAR(s_dtype_str, "dtype");
-PyDoc_STRVAR(s_dtype_doc, 
+PyDoc_STRVAR(s_dtype_doc,
 "x.dtype -> numpy dtype\n\
 \n\
 The type of scalars produced by this uniform distribution.\n\
@@ -427,7 +427,7 @@ The type of scalars produced by this uniform distribution.\n\
 );
 
 PyDoc_STRVAR(s_min_str, "min");
-PyDoc_STRVAR(s_min_doc, 
+PyDoc_STRVAR(s_min_doc,
 "x.min -> scalar\n\
 \n\
 This value corresponds to the smallest value that the distribution\n\
@@ -436,7 +436,7 @@ can produce.\n\
 );
 
 PyDoc_STRVAR(s_max_str, "max");
-PyDoc_STRVAR(s_max_doc, 
+PyDoc_STRVAR(s_max_doc,
 "x.max -> scalar\n\
 \n\
 This value corresponds to the largest value that the distribution\n\
@@ -498,7 +498,7 @@ static const char* bytes_to_charp(PyObject* s) {
  * String representation and print out
  */
 static PyObject* PyBoostUniform_Repr(PyBoostUniformObject* self) {
-  
+
   PyObject* min = PyBoostUniform_GetMin(self);
   if (!min) return 0;
   PyObject* max = PyBoostUniform_GetMax(self);
@@ -508,8 +508,8 @@ static PyObject* PyBoostUniform_Repr(PyBoostUniformObject* self) {
   if (!smin) return 0;
   PyObject* smax = scalar_to_bytes(max);
   if (!smax) return 0;
-  
-  PyObject* retval = 
+
+  PyObject* retval =
 # if PY_VERSION_HEX >= 0x03000000
     PyUnicode_FromFormat
 #else

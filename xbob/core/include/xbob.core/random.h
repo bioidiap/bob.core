@@ -206,8 +206,37 @@ typedef struct {
 #define PyBoostBinomial_SimpleNew_RET PyObject*
 #define PyBoostBinomial_SimpleNew_PROTO (int type_num, PyObject* alpha, PyObject* beta)
 
+/******************************************
+ * Bindings for xbob.core.random.discrete *
+ ******************************************/
+
+/* Type definition for PyBoostDiscreteObject */
+typedef struct {
+  PyObject_HEAD
+
+  /* Type-specific fields go here. */
+  int type_num;
+  boost::shared_ptr<void> distro;
+
+} PyBoostDiscreteObject;
+
+#define PyBoostDiscrete_Type_NUM 26
+#define PyBoostDiscrete_Type_TYPE PyTypeObject
+
+#define PyBoostDiscrete_Check_NUM 27
+#define PyBoostDiscrete_Check_RET int
+#define PyBoostDiscrete_Check_PROTO (PyObject* o)
+
+#define PyBoostDiscrete_Converter_NUM 28
+#define PyBoostDiscrete_Converter_RET int
+#define PyBoostDiscrete_Converter_PROTO (PyObject* o, PyBoostDiscreteObject** a)
+
+#define PyBoostDiscrete_SimpleNew_NUM 29
+#define PyBoostDiscrete_SimpleNew_RET PyObject*
+#define PyBoostDiscrete_SimpleNew_PROTO (int type_num, PyObject* probabilities)
+
 /* Total number of C API pointers */
-#define PyXbobCoreRandom_API_pointers 26
+#define PyXbobCoreRandom_API_pointers 30
 
 #ifdef XBOB_CORE_RANDOM_MODULE
 
@@ -292,6 +321,18 @@ typedef struct {
   PyBoostBinomial_Converter_RET PyBoostBinomial_Converter PyBoostBinomial_Converter_PROTO;
 
   PyBoostBinomial_SimpleNew_RET PyBoostBinomial_SimpleNew PyBoostBinomial_SimpleNew_PROTO;
+
+  /******************************************
+   * Bindings for xbob.core.random.discrete *
+   ******************************************/
+
+  extern PyBoostDiscrete_Type_TYPE PyBoostDiscrete_Type;
+
+  PyBoostDiscrete_Check_RET PyBoostDiscrete_Check PyBoostDiscrete_Check_PROTO;
+
+  PyBoostDiscrete_Converter_RET PyBoostDiscrete_Converter PyBoostDiscrete_Converter_PROTO;
+
+  PyBoostDiscrete_SimpleNew_RET PyBoostDiscrete_SimpleNew PyBoostDiscrete_SimpleNew_PROTO;
 
 #else
 
@@ -386,6 +427,18 @@ typedef struct {
 # define PyBoostBinomial_Converter (*(PyBoostBinomial_Converter_RET (*)PyBoostBinomial_Converter_PROTO) PyXbobCoreRandom_API[PyBoostBinomial_Converter_NUM])
 
 # define PyBoostBinomial_SimpleNew (*(PyBoostBinomial_SimpleNew_RET (*)PyBoostBinomial_SimpleNew_PROTO) PyXbobCoreRandom_API[PyBoostBinomial_SimpleNew_NUM])
+
+  /******************************************
+   * Bindings for xbob.core.random.discrete *
+   ******************************************/
+
+# define PyBoostDiscrete_Type (*(PyBoostDiscrete_Type_TYPE *)PyXbobCoreRandom_API[PyBoostDiscrete_Type_NUM])
+
+# define PyBoostDiscrete_Check (*(PyBoostDiscrete_Check_RET (*)PyBoostDiscrete_Check_PROTO) PyXbobCoreRandom_API[PyBoostDiscrete_Check_NUM])
+
+# define PyBoostDiscrete_Converter (*(PyBoostDiscrete_Converter_RET (*)PyBoostDiscrete_Converter_PROTO) PyXbobCoreRandom_API[PyBoostDiscrete_Converter_NUM])
+
+# define PyBoostDiscrete_SimpleNew (*(PyBoostDiscrete_SimpleNew_RET (*)PyBoostDiscrete_SimpleNew_PROTO) PyXbobCoreRandom_API[PyBoostDiscrete_SimpleNew_NUM])
 
 # if !defined(NO_IMPORT_ARRAY)
 

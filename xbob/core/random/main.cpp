@@ -55,6 +55,9 @@ static PyObject* create_module (void) {
   PyBoostBinomial_Type.tp_new = PyType_GenericNew;
   if (PyType_Ready(&PyBoostBinomial_Type) < 0) return 0;
 
+  PyBoostDiscrete_Type.tp_new = PyType_GenericNew;
+  if (PyType_Ready(&PyBoostDiscrete_Type) < 0) return 0;
+
 # if PY_VERSION_HEX >= 0x03000000
   PyObject* m = PyModule_Create(&module_definition);
 # else
@@ -85,6 +88,9 @@ static PyObject* create_module (void) {
 
   Py_INCREF(&PyBoostBinomial_Type);
   if (PyModule_AddObject(m, "binomial", (PyObject *)&PyBoostBinomial_Type) < 0) return 0;
+
+  Py_INCREF(&PyBoostDiscrete_Type);
+  if (PyModule_AddObject(m, "discrete", (PyObject *)&PyBoostDiscrete_Type) < 0) return 0;
 
   static void* PyXbobCoreRandom_API[PyXbobCoreRandom_API_pointers];
 
@@ -145,6 +151,15 @@ static PyObject* create_module (void) {
   PyXbobCoreRandom_API[PyBoostBinomial_Check_NUM] = (void *)PyBoostBinomial_Check;
   PyXbobCoreRandom_API[PyBoostBinomial_Converter_NUM] = (void *)PyBoostBinomial_Converter;
   PyXbobCoreRandom_API[PyBoostBinomial_SimpleNew_NUM] = (void *)PyBoostBinomial_SimpleNew;
+
+  /******************************************
+   * Bindings for xbob.core.random.discrete *
+   ******************************************/
+
+  PyXbobCoreRandom_API[PyBoostDiscrete_Type_NUM] = (void *)&PyBoostDiscrete_Type;
+  PyXbobCoreRandom_API[PyBoostDiscrete_Check_NUM] = (void *)PyBoostDiscrete_Check;
+  PyXbobCoreRandom_API[PyBoostDiscrete_Converter_NUM] = (void *)PyBoostDiscrete_Converter;
+  PyXbobCoreRandom_API[PyBoostDiscrete_SimpleNew_NUM] = (void *)PyBoostDiscrete_SimpleNew;
 
 #if PY_VERSION_HEX >= 0x02070000
 

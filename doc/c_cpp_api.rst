@@ -305,7 +305,7 @@ support a different set of scalar types:
         PyObject_HEAD
         int type_num;
         boost::shared_ptr<void> distro;
-      } PyUniformObject;
+      } PyBinomialObject;
 
    .. c:member:: int type_num;
 
@@ -331,6 +331,55 @@ support a different set of scalar types:
           float64     ``boost::random::binomial_distribution<int64_t,double>``
        ============= ==========================================================
 
+.. cpp:type:: PyBoostDiscreteObject
+
+   The pythonic object representation for a
+   ``boost::random::discrete_distribution`` object.
+
+   .. code-block:: c
+
+      typedef struct {
+        PyObject_HEAD
+        int type_num;
+        boost::shared_ptr<void> distro;
+      } PyDiscreteObject;
+
+   .. c:member:: int type_num;
+
+      The NumPy type number of scalars produced by this distribution. Accepted
+      values match the scalar type produced:
+
+       ============= ========================================
+        Scalar type   NumPy scalar type number (enumeration)
+       ============= ========================================
+          int8        ``NPY_INT8``
+          int16       ``NPY_INT16``
+          int32       ``NPY_INT32``
+          int64       ``NPY_INT64``
+          int8        ``NPY_INT8``
+          int16       ``NPY_INT16``
+          int32       ``NPY_INT32``
+          int64       ``NPY_INT64``
+       ============= ========================================
+
+   .. c:member:: boost::shared_ptr<void> distro
+
+      A direct pointer to the boost distribution. The underlying allocated type
+      changes with the scalar that is produced by the distribution:
+
+       ============= ==========================================================
+        Scalar type   C++ data type
+       ============= ==========================================================
+          int8        ``boost::random::uniform_int<int8_t>``
+          int16       ``boost::random::uniform_int<int16_t>``
+          int32       ``boost::random::uniform_int<int32_t>``
+          int64       ``boost::random::uniform_int<int64_t>``
+          uint8       ``boost::random::uniform_int<uint8_t>``
+          uint16      ``boost::random::uniform_int<uint16_t>``
+          uint32      ``boost::random::uniform_int<uint32_t>``
+          uint64      ``boost::random::uniform_int<uint64_t>``
+       ============= ==========================================================
+
 .. cpp:function:: int PyBoostUniform_Check(PyObject* o)
 
 .. cpp:function:: int PyBoostNormal_Check(PyObject* o)
@@ -340,6 +389,8 @@ support a different set of scalar types:
 .. cpp:function:: int PyBoostGamma_Check(PyObject* o)
 
 .. cpp:function:: int PyBoostBinomial_Check(PyObject* o)
+
+.. cpp:function:: int PyBoostDiscrete_Check(PyObject* o)
 
    Checks if the input object ``o`` is a ``PyBoost<Distribution>Object``.
    Returns ``1`` if it is, and ``0`` otherwise.
@@ -353,6 +404,8 @@ support a different set of scalar types:
 .. cpp:function:: int PyBoostGamma_Converter(PyObject* o, PyBoostGammaObject** a)
 
 .. cpp:function:: int PyBoostBinomial_Converter(PyObject* o, PyBoostBinomialObject** a)
+
+.. cpp:function:: int PyBoostDiscrete_Converter(PyObject* o, PyBoostDiscreteObject** a)
 
    This function is meant to be used with :c:func:`PyArg_ParseTupleAndKeywords`
    family of functions in the Python C-API. It checks the input object to be of
@@ -384,6 +437,8 @@ support a different set of scalar types:
 
 .. cpp:function:: PyObject* PyBoostBinomial_SimpleNew(int type_num, PyObject* t, PyObject* p)
 
+.. cpp:function:: PyObject* PyBoostDiscrete_SimpleNew(int type_num, PyObject* t, PyObject* p)
+
    Depending on the distribution, which may be one of ``Normal``,
    ``LogNormal``, ``Gamma`` or ``Binomial``, each of the parameters assume a
    different function:
@@ -395,6 +450,7 @@ support a different set of scalar types:
       LogNormal      mean          sigma (standard deviation)
       Gamma          alpha         beta
       Binomial       t             p
+      Discrete       probs         ``None``
      ============== ============= ============================
 
    The parameter ``type_num`` may be set to one of the supported ``NPY_``

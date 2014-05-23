@@ -192,7 +192,7 @@ PyObject* PyBoostGamma_Call(PyBoostGammaObject* self, PyObject *args, PyObject* 
 
   PyBoostMt19937Object* rng = 0;
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&", kwlist, &PyBoostMt19937_Converter, &rng)) return 0; ///< FAILURE
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!", kwlist, &PyBoostMt19937_Type, &rng)) return 0; ///< FAILURE
 
   switch(self->type_num) {
     case NPY_FLOAT32:

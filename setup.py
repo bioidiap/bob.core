@@ -12,7 +12,7 @@ package_dir = os.path.dirname(os.path.realpath(__file__))
 package_dir = os.path.join(package_dir, 'xbob', 'core', 'include')
 include_dirs = [package_dir]
 
-packages = ['bob-core >= 1.2.2']
+packages = ['bob-core >= 1.2.2', 'boost >= 1.47']
 version = '2.0.0a0'
 
 setup(
@@ -72,6 +72,7 @@ setup(
           "xbob/core/random/lognormal.cpp",
           "xbob/core/random/gamma.cpp",
           "xbob/core/random/binomial.cpp",
+          "xbob/core/random/discrete.cpp",
           "xbob/core/random/main.cpp",
           ],
         version = version,

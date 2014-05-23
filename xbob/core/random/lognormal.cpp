@@ -87,7 +87,7 @@ PyObject* PyBoostLogNormal_SimpleNew (int type_num, PyObject* mean, PyObject* si
 }
 
 /* Implements the __init__(self) function */
-static 
+static
 int PyBoostLogNormal_Init(PyBoostLogNormalObject* self, PyObject *args, PyObject* kwds) {
 
   /* Parses input arguments in a single shot */
@@ -206,7 +206,7 @@ template <typename T> PyObject* call(PyBoostLogNormalObject* self, PyBoostMt1993
 /**
  * Calling a PyBoostLogNormalObject to generate a random number
  */
-static 
+static
 PyObject* PyBoostLogNormal_Call(PyBoostLogNormalObject* self, PyObject *args, PyObject* kwds) {
 
   /* Parses input arguments in a single shot */
@@ -215,7 +215,7 @@ PyObject* PyBoostLogNormal_Call(PyBoostLogNormalObject* self, PyObject *args, Py
 
   PyBoostMt19937Object* rng = 0;
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&", kwlist, &PyBoostMt19937_Converter, &rng)) return 0; ///< FAILURE
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!", kwlist, &PyBoostMt19937_Type, &rng)) return 0; ///< FAILURE
 
   switch(self->type_num) {
     case NPY_FLOAT32:
@@ -232,7 +232,7 @@ PyObject* PyBoostLogNormal_Call(PyBoostLogNormalObject* self, PyObject *args, Py
 }
 
 PyDoc_STRVAR(s_reset_str, "reset");
-PyDoc_STRVAR(s_reset_doc, 
+PyDoc_STRVAR(s_reset_doc,
 "x.reset() -> None\n\
 \n\
 After calling this method, subsequent uses of the distribution do\n\
@@ -252,7 +252,7 @@ static PyMethodDef PyBoostLogNormal_methods[] = {
 };
 
 PyDoc_STRVAR(s_dtype_str, "dtype");
-PyDoc_STRVAR(s_dtype_doc, 
+PyDoc_STRVAR(s_dtype_doc,
 "x.dtype -> numpy dtype\n\
 \n\
 The type of scalars produced by this lognormal distribution.\n\
@@ -260,7 +260,7 @@ The type of scalars produced by this lognormal distribution.\n\
 );
 
 PyDoc_STRVAR(s_mean_str, "mean");
-PyDoc_STRVAR(s_mean_doc, 
+PyDoc_STRVAR(s_mean_doc,
 "x.mean -> scalar\n\
 \n\
 This value corresponds to the mean value the distribution\n\
@@ -269,7 +269,7 @@ will produce.\n\
 );
 
 PyDoc_STRVAR(s_s_str, "sigma");
-PyDoc_STRVAR(s_s_doc, 
+PyDoc_STRVAR(s_s_doc,
 "x.sigma -> scalar\n\
 \n\
 This value corresponds to the standard deviation value the\n\
@@ -340,8 +340,8 @@ static PyObject* PyBoostLogNormal_Repr(PyBoostLogNormalObject* self) {
   if (!smean) return 0;
   PyObject* ssigma = scalar_to_bytes(sigma);
   if (!ssigma) return 0;
-  
-  PyObject* retval = 
+
+  PyObject* retval =
 # if PY_VERSION_HEX >= 0x03000000
     PyUnicode_FromFormat
 #else
