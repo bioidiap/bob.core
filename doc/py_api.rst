@@ -30,6 +30,8 @@ Classes
 
 .. autoclass:: xbob.core.random.binomial
 
+.. autoclass:: xbob.core.random.discrete
+
 .. autoclass:: xbob.core.random.variate_generator
 
 
