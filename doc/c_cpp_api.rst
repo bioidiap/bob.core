@@ -6,10 +6,10 @@
  C++ API
 =========
 
-The C++ API of ``xbob.core`` allows users to leverage from automatic converters
-for classes in :py:class:`xbob.core.random`.  To use the C API, clients should
-first, include the header file ``<xbob.core/random.h>`` on their compilation
-units and then, make sure to call once ``import_xbob_core_random()`` at their
+The C++ API of ``bob.core`` allows users to leverage from automatic converters
+for classes in :py:class:`bob.core.random`.  To use the C API, clients should
+first, include the header file ``<bob.core/random.h>`` on their compilation
+units and then, make sure to call once ``import_bob_core_random()`` at their
 module instantiation, as explained at the `Python manual
 <http://docs.python.org/2/extending/extending.html#using-capsules>`_.
 
@@ -18,8 +18,8 @@ the import function:
 
 .. code-block:: c++
 
-   #include <xbob.blitz/capi.h>
-   #include <xbob.core/random.h>
+   #include <bob.blitz/capi.h>
+   #include <bob.core/random.h>
 
    PyMODINIT_FUNC initclient(void) {
 
@@ -28,14 +28,14 @@ the import function:
      if (!m) return;
 
      // imports dependencies
-     if (import_xbob_blitz() < 0) {
+     if (import_bob_blitz() < 0) {
        PyErr_Print();
        PyErr_SetString(PyExc_ImportError, "cannot import module");
        return 0;
      }
 
      // imports dependencies
-     if (import_xbob_core_random() < 0) {
+     if (import_bob_core_random() < 0) {
        PyErr_Print();
        PyErr_SetString(PyExc_ImportError, "cannot import module");
        return 0;
@@ -48,7 +48,7 @@ the import function:
 .. note::
 
   The include directory can be discovered using
-  :py:func:`xbob.core.get_include`.
+  :py:func:`bob.core.get_include`.
 
 Mersenne Twister Random Number Generator (mt19937)
 --------------------------------------------------

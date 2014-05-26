@@ -5,7 +5,7 @@
 .. testsetup:: coretest
 
    import numpy
-   import xbob.core
+   import bob.core
 
 ============
  User Guide
@@ -14,7 +14,7 @@
 Array Conversion
 ----------------
 
-The function :py:func:`xbob.core.convert` allows you to convert objects of type
+The function :py:func:`bob.core.convert` allows you to convert objects of type
 :py:class:`numpy.ndarray` between different types, with range compression or
 decompression. For example, here we demonstrate a conversion using default
 ranges. In this type of conversion, our implementation will assume that the
@@ -28,7 +28,7 @@ expand it to the range of ``uint16_t`` numbers, as desired by the programmer:
    >>> x
    array([[  0, 255,   0],
           [255,   0, 255]], dtype=uint8)
-   >>> xbob.core.convert(x, 'uint16')
+   >>> bob.core.convert(x, 'uint16')
    array([[    0, 65535,     0],
           [65535,     0, 65535]], dtype=uint16)
 
@@ -40,7 +40,7 @@ example:
    :options: +NORMALIZE_WHITESPACE
 
    >>> x = numpy.array([0, 10, 20, 30, 40], 'uint8')
-   >>> xbob.core.convert(x, 'float64', source_range=(0,40), dest_range=(0.,1.))
+   >>> bob.core.convert(x, 'float64', source_range=(0,40), dest_range=(0.,1.))
    array([ 0.  ,  0.25,  0.5 ,  0.75,  1.  ])
 
 Any range not specified is assumed to default on the type range.
@@ -50,22 +50,22 @@ Random Number Generation
 ------------------------
 
 You can build a new random number generator (RNG) of type
-:py:class:`xbob.core.random.mt19937` using one of two possible ways:
+:py:class:`bob.core.random.mt19937` using one of two possible ways:
 
 1. Use the default constructor, which initializes with the default seed:
 
    .. doctest:: coretest
       :options: +NORMALIZE_WHITESPACE
 
-      >>> xbob.core.random.mt19937()
-      xbob.core.random.mt19937()
+      >>> bob.core.random.mt19937()
+      bob.core.random.mt19937()
 
 2. Pass a seed while initializing:
 
    .. doctest:: coretest
       :options: +NORMALIZE_WHITESPACE
 
-      >>> rng = xbob.core.random.mt19937(34)
+      >>> rng = bob.core.random.mt19937(34)
 
 RNGs can be compared for equality. The ``==`` operator checks if both
 generators are on the exact same state and would generate the same sequence of
@@ -74,11 +74,11 @@ numbers when exposed to the same distributions. For example:
 .. doctest:: coretest
    :options: +NORMALIZE_WHITESPACE
 
-   >>> rng1 = xbob.core.random.mt19937(111)
-   >>> rng2 = xbob.core.random.mt19937(111)
+   >>> rng1 = bob.core.random.mt19937(111)
+   >>> rng2 = bob.core.random.mt19937(111)
    >>> rng1 == rng2
    True
-   >>> rng3 = xbob.core.random.mt19937(12)
+   >>> rng3 = bob.core.random.mt19937(12)
    >>> rng1 == rng3
    False
 
@@ -99,9 +99,9 @@ effectively generates random numbers:
 .. doctest:: coretest
    :options: +NORMALIZE_WHITESPACE
 
-   >>> rng = xbob.core.random.mt19937()
+   >>> rng = bob.core.random.mt19937()
    >>> # creates an uniform distribution of integers inside [0, 10]
-   >>> u = xbob.core.random.uniform(int, 0, 10)
+   >>> u = bob.core.random.uniform(int, 0, 10)
    >>> u(rng) # doctest: +SKIP
    8
 
@@ -113,7 +113,7 @@ random numbers, we provide a class that mimics the behavior of
 .. doctest:: coretest
    :options: +NORMALIZE_WHITESPACE
 
-   >>> ugen = xbob.core.random.variate_generator(rng, u)
+   >>> ugen = bob.core.random.variate_generator(rng, u)
    >>> ugen() # doctest: +SKIP
    6
 

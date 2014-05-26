@@ -5,12 +5,12 @@
  * @brief Uniform distributions (with integers or floating point numbers)
  */
 
-#define XBOB_CORE_RANDOM_MODULE
-#include <xbob.core/random.h>
-#include <xbob.blitz/cppapi.h>
+#define BOB_CORE_RANDOM_MODULE
+#include <bob.core/random.h>
+#include <bob.blitz/cppapi.h>
 #include <boost/make_shared.hpp>
 
-PyDoc_STRVAR(s_uniform_str, XBOB_EXT_MODULE_PREFIX ".uniform");
+PyDoc_STRVAR(s_uniform_str, BOB_EXT_MODULE_PREFIX ".uniform");
 
 /* How to create a new PyBoostUniformObject */
 static PyObject* PyBoostUniform_New(PyTypeObject* type, PyObject*, PyObject*) {

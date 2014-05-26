@@ -5,10 +5,10 @@
  * @brief Bindings for the MT19937 random number generator
  */
 
-#define XBOB_CORE_RANDOM_MODULE
-#include <xbob.core/random.h>
+#define BOB_CORE_RANDOM_MODULE
+#include <bob.core/random.h>
 
-PyDoc_STRVAR(s_mt19937_str, XBOB_EXT_MODULE_PREFIX ".mt19937");
+PyDoc_STRVAR(s_mt19937_str, BOB_EXT_MODULE_PREFIX ".mt19937");
 
 PyDoc_STRVAR(s_mt19937_doc,
 "mt19937([seed]) -> new random number generator\n\

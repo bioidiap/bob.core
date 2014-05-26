@@ -5,12 +5,12 @@
  * @brief Binomial distributions (with integers or floating point numbers)
  */
 
-#define XBOB_CORE_RANDOM_MODULE
-#include <xbob.core/random.h>
-#include <xbob.blitz/cppapi.h>
+#define BOB_CORE_RANDOM_MODULE
+#include <bob.core/random.h>
+#include <bob.blitz/cppapi.h>
 #include <boost/make_shared.hpp>
 
-PyDoc_STRVAR(s_binomial_str, XBOB_EXT_MODULE_PREFIX ".binomial");
+PyDoc_STRVAR(s_binomial_str, BOB_EXT_MODULE_PREFIX ".binomial");
 
 PyDoc_STRVAR(s_binomial_doc,
 "binomial(dtype, [t=1.0, p=0.5]]) -> new binomial distribution\n\

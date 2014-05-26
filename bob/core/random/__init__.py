@@ -8,7 +8,7 @@ class variate_generator:
 
   engine
     An instance of the RNG you would like to use. This has to be an
-    object of the class :py:class:`xbob.core.random.mt19937`, already
+    object of the class :py:class:`bob.core.random.mt19937`, already
     initialized.
 
   distribution

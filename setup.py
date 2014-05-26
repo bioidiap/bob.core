@@ -4,12 +4,12 @@
 # Mon 16 Apr 08:18:08 2012 CEST
 
 from setuptools import setup, find_packages, dist
-dist.Distribution(dict(setup_requires=['xbob.blitz']))
-from xbob.blitz.extension import Extension
+dist.Distribution(dict(setup_requires=['bob.blitz']))
+from bob.blitz.extension import Extension
 
 import os
 package_dir = os.path.dirname(os.path.realpath(__file__))
-package_dir = os.path.join(package_dir, 'xbob', 'core', 'include')
+package_dir = os.path.join(package_dir, 'bob', 'core', 'include')
 include_dirs = [package_dir]
 
 packages = ['bob-core >= 1.2.2', 'boost']
@@ -17,10 +17,10 @@ version = '2.0.0a0'
 
 setup(
 
-    name='xbob.core',
+    name='bob.core',
     version=version,
     description='Bindings for bob.core',
-    url='http://github.com/bioidiap/xbob.core',
+    url='http://github.com/bioidiap/bob.core',
     license='BSD',
     author='Andre Anjos',
     author_email='andre.anjos@idiap.ch',
@@ -32,48 +32,48 @@ setup(
 
     install_requires=[
       'setuptools',
-      'xbob.blitz',
+      'bob.blitz',
     ],
 
     namespace_packages=[
-      "xbob",
+      "bob",
       ],
 
     ext_modules = [
-      Extension("xbob.core.version",
+      Extension("bob.core.version",
         [
-          "xbob/core/version.cpp",
+          "bob/core/version.cpp",
           ],
         version = version,
         packages = packages,
         include_dirs = include_dirs,
         ),
-      Extension("xbob.core._convert",
+      Extension("bob.core._convert",
         [
-          "xbob/core/convert.cpp",
+          "bob/core/convert.cpp",
           ],
         version = version,
         packages = packages,
         include_dirs = include_dirs,
         ),
-      Extension("xbob.core._logging",
+      Extension("bob.core._logging",
         [
-          "xbob/core/logging.cpp",
+          "bob/core/logging.cpp",
           ],
         version = version,
         packages = packages,
         include_dirs = include_dirs,
         ),
-      Extension("xbob.core.random._library",
+      Extension("bob.core.random._library",
         [
-          "xbob/core/random/mt19937.cpp",
-          "xbob/core/random/uniform.cpp",
-          "xbob/core/random/normal.cpp",
-          "xbob/core/random/lognormal.cpp",
-          "xbob/core/random/gamma.cpp",
-          "xbob/core/random/binomial.cpp",
-          "xbob/core/random/discrete.cpp",
-          "xbob/core/random/main.cpp",
+          "bob/core/random/mt19937.cpp",
+          "bob/core/random/uniform.cpp",
+          "bob/core/random/normal.cpp",
+          "bob/core/random/lognormal.cpp",
+          "bob/core/random/gamma.cpp",
+          "bob/core/random/binomial.cpp",
+          "bob/core/random/discrete.cpp",
+          "bob/core/random/main.cpp",
           ],
         version = version,
         packages = packages,

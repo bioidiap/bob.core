@@ -5,10 +5,10 @@
  * @brief Discrete distributions (with integers or floating point numbers)
  */
 
-#define XBOB_CORE_RANDOM_MODULE
-#include <xbob.core/random.h>
-#include <xbob.blitz/cppapi.h>
-#include <xbob.blitz/cleanup.h>
+#define BOB_CORE_RANDOM_MODULE
+#include <bob.core/random.h>
+#include <bob.blitz/cppapi.h>
+#include <bob.blitz/cleanup.h>
 #include <boost/make_shared.hpp>
 #include <boost/version.hpp>
 
@@ -16,7 +16,7 @@
 #include <boost/random/discrete_distribution.hpp>
 #endif
 
-PyDoc_STRVAR(s_discrete_str, XBOB_EXT_MODULE_PREFIX ".discrete");
+PyDoc_STRVAR(s_discrete_str, BOB_EXT_MODULE_PREFIX ".discrete");
 
 /* How to create a new PyBoostDiscreteObject */
 static PyObject* PyBoostDiscrete_New(PyTypeObject* type, PyObject*, PyObject*) {

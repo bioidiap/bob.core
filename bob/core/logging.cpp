@@ -9,8 +9,8 @@
 #include <boost/shared_array.hpp>
 #include <boost/make_shared.hpp>
 #include <bob/core/logging.h>
-#include <xbob.core/config.h>
-#include <xbob.blitz/cleanup.h>
+#include <bob.core/config.h>
+#include <bob.blitz/cleanup.h>
 
 #define PYTHON_LOGGING_DEBUG 0
 
@@ -492,7 +492,7 @@ PyDoc_STRVAR(module_docstr, "C++ logging handling");
 #if PY_VERSION_HEX >= 0x03000000
 static PyModuleDef module_definition = {
   PyModuleDef_HEAD_INIT,
-  XBOB_EXT_MODULE_NAME,
+  BOB_EXT_MODULE_NAME,
   module_docstr,
   -1,
   module_methods, 
@@ -505,20 +505,20 @@ static PyObject* create_module (void) {
 # if PY_VERSION_HEX >= 0x03000000
   PyObject* m = PyModule_Create(&module_definition);
 # else
-  PyObject* m = Py_InitModule3(XBOB_EXT_MODULE_NAME, module_methods, module_docstr);
+  PyObject* m = Py_InitModule3(BOB_EXT_MODULE_NAME, module_methods, module_docstr);
 # endif
   if (!m) return 0;
   auto m_ = make_safe(m);
 
   /* register some constants */
-  if (PyModule_AddStringConstant(m, "__version__", XBOB_EXT_MODULE_VERSION) < 0) return 0;
+  if (PyModule_AddStringConstant(m, "__version__", BOB_EXT_MODULE_VERSION) < 0) return 0;
 
   Py_INCREF(m);
   return m;
 
 }
 
-PyMODINIT_FUNC XBOB_EXT_ENTRY_NAME (void) {
+PyMODINIT_FUNC BOB_EXT_ENTRY_NAME (void) {
 # if PY_VERSION_HEX >= 0x03000000
   return
 # endif

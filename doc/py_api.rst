@@ -5,44 +5,44 @@
 .. testsetup:: coretest
 
    import numpy
-   import xbob.core
+   import bob.core
 
 ============
  Python API
 ============
 
 This section includes information for using the pure Python API of
-``xbob.core``.
+``bob.core``.
 
 
 Classes
 -------
 
-.. autoclass:: xbob.core.random.mt19937
+.. autoclass:: bob.core.random.mt19937
 
-.. autoclass:: xbob.core.random.uniform
+.. autoclass:: bob.core.random.uniform
 
-.. autoclass:: xbob.core.random.normal
+.. autoclass:: bob.core.random.normal
 
-.. autoclass:: xbob.core.random.lognormal
+.. autoclass:: bob.core.random.lognormal
 
-.. autoclass:: xbob.core.random.gamma
+.. autoclass:: bob.core.random.gamma
 
-.. autoclass:: xbob.core.random.binomial
+.. autoclass:: bob.core.random.binomial
 
-.. autoclass:: xbob.core.random.discrete
+.. autoclass:: bob.core.random.discrete
 
-.. autoclass:: xbob.core.random.variate_generator
+.. autoclass:: bob.core.random.variate_generator
 
 
 Functions
 ---------
 
-.. autofunction:: xbob.core.convert
+.. autofunction:: bob.core.convert
 
 
 C++ API Helpers
 ---------------
 
-.. autofunction:: xbob.core.get_include
+.. autofunction:: bob.core.get_include
 

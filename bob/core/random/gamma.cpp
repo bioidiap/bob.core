@@ -5,12 +5,12 @@
  * @brief Gamma distributions (with integers or floating point numbers)
  */
 
-#define XBOB_CORE_RANDOM_MODULE
-#include <xbob.core/random.h>
-#include <xbob.blitz/cppapi.h>
+#define BOB_CORE_RANDOM_MODULE
+#include <bob.core/random.h>
+#include <bob.blitz/cppapi.h>
 #include <boost/make_shared.hpp>
 
-PyDoc_STRVAR(s_gamma_str, XBOB_EXT_MODULE_PREFIX ".gamma");
+PyDoc_STRVAR(s_gamma_str, BOB_EXT_MODULE_PREFIX ".gamma");
 
 PyDoc_STRVAR(s_gamma_doc,
 "gamma(dtype, [alpha=1.]]) -> new gamma distribution\n\

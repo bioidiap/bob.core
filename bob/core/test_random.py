@@ -3,7 +3,7 @@
 # Andre Anjos <andre.anjos@idiap.ch>
 # Sat  2 Nov 10:05:23 2013
 
-"""Tests for xbob.core.random
+"""Tests for bob.core.random
 """
 
 from __future__ import division
