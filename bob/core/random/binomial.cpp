@@ -105,11 +105,10 @@ int PyBoostBinomial_Init(PyBoostBinomialObject* self, PyObject *args, PyObject* 
   static const char* const_kwlist[] = {"dtype", "t", "p", 0};
   static char** kwlist = const_cast<char**>(const_kwlist);
 
-  int* type_num_p = &self->type_num;
   PyObject* t = 0;
   PyObject* p = 0;
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&|OO", kwlist, &PyBlitzArray_TypenumConverter, &type_num_p, &t, &p)) return -1; ///< FAILURE
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&|OO", kwlist, &PyBlitzArray_TypenumConverter, &self->type_num, &t, &p)) return -1; ///< FAILURE
 
   switch(self->type_num) {
     case NPY_FLOAT32:

@@ -158,7 +158,6 @@ static PyObject* py_convert(PyObject*, PyObject* args, PyObject* kwds) {
 
   PyBlitzArrayObject* src = 0;
   int type_num = NPY_NOTYPE;
-  int* type_num_p = &type_num;
   PyObject* dst_min = 0;
   PyObject* dst_max = 0;
   PyObject* src_min = 0;
@@ -167,7 +166,7 @@ static PyObject* py_convert(PyObject*, PyObject* args, PyObject* kwds) {
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&O&|(OO)(OO)",
         kwlist,
         &PyBlitzArray_Converter, &src,
-        &PyBlitzArray_TypenumConverter, &type_num_p,
+        &PyBlitzArray_TypenumConverter, &type_num,
         &dst_min, &dst_max,
         &src_min, &src_max
         )) return 0;

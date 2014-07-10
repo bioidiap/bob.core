@@ -118,10 +118,9 @@ int PyBoostDiscrete_Init(PyBoostDiscreteObject* self, PyObject *args, PyObject* 
   static const char* const_kwlist[] = {"dtype", "probabilities", 0};
   static char** kwlist = const_cast<char**>(const_kwlist);
 
-  int* type_num_p = &self->type_num;
   PyObject* probabilities = 0;
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&O", kwlist, &PyBlitzArray_TypenumConverter, &type_num_p, &probabilities)) return -1; ///< FAILURE
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&O", kwlist, &PyBlitzArray_TypenumConverter, &self->type_num, &probabilities)) return -1; ///< FAILURE
 
   switch(self->type_num) {
     case NPY_UINT8:

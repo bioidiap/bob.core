@@ -123,11 +123,10 @@ int PyBoostUniform_Init(PyBoostUniformObject* self, PyObject *args, PyObject* kw
   static const char* const_kwlist[] = {"dtype", "min", "max", 0};
   static char** kwlist = const_cast<char**>(const_kwlist);
 
-  int* type_num_p = &self->type_num;
   PyObject* min = 0;
   PyObject* max = 0;
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&|OO", kwlist, &PyBlitzArray_TypenumConverter, &type_num_p, &min, &max)) return -1; ///< FAILURE
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&|OO", kwlist, &PyBlitzArray_TypenumConverter, &self->type_num, &min, &max)) return -1; ///< FAILURE
 
   if (self->type_num == NPY_BOOL && (min || max)) {
     PyErr_Format(PyExc_ValueError, "uniform distributions of boolean scalars cannot have a maximum or minimum");

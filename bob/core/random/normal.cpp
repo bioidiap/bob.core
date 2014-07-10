@@ -78,11 +78,10 @@ int PyBoostNormal_Init(PyBoostNormalObject* self, PyObject *args, PyObject* kwds
   static const char* const_kwlist[] = {"dtype", "mean", "sigma", 0};
   static char** kwlist = const_cast<char**>(const_kwlist);
 
-  int* type_num_p = &self->type_num;
   PyObject* mean = 0;
   PyObject* sigma = 0;
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&|OO", kwlist, &PyBlitzArray_TypenumConverter, &type_num_p, &mean, &sigma)) return -1; ///< FAILURE
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&|OO", kwlist, &PyBlitzArray_TypenumConverter, &self->type_num, &mean, &sigma)) return -1; ///< FAILURE
 
   switch(self->type_num) {
     case NPY_FLOAT32:

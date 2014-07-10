@@ -91,10 +91,9 @@ int PyBoostGamma_Init(PyBoostGammaObject* self, PyObject *args, PyObject* kwds) 
   static const char* const_kwlist[] = {"dtype", "alpha", 0};
   static char** kwlist = const_cast<char**>(const_kwlist);
 
-  int* type_num_p = &self->type_num;
   PyObject* alpha = 0;
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&|O", kwlist, &PyBlitzArray_TypenumConverter, &type_num_p, &alpha)) return -1; ///< FAILURE
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&|O", kwlist, &PyBlitzArray_TypenumConverter, &self->type_num, &alpha)) return -1; ///< FAILURE
 
   switch(self->type_num) {
     case NPY_FLOAT32:
