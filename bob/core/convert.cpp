@@ -12,7 +12,7 @@
 #include <bob.blitz/cppapi.h>
 #include <bob.blitz/cleanup.h>
 
-#include <bob/core/array_convert.h>
+#include <bob.core/array_convert.h>
 
 template <typename Tdst, typename Tsrc, int N>
 PyObject* inner_convert (PyBlitzArrayObject* src,

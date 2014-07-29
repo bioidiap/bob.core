@@ -12,14 +12,14 @@ package_dir = os.path.dirname(os.path.realpath(__file__))
 package_dir = os.path.join(package_dir, 'bob', 'core', 'include')
 include_dirs = [package_dir]
 
-packages = ['bob-core >= 1.2.2', 'boost']
+packages = ['blitz >= 0.10', 'boost']
 version = '2.0.0a0'
 
 setup(
 
     name='bob.core',
     version=version,
-    description='Bindings for bob.core',
+    description='Core utilities required on all Bob modules',
     url='http://github.com/bioidiap/bob.core',
     license='BSD',
     author='Andre Anjos',
@@ -42,6 +42,10 @@ setup(
     ext_modules = [
       Extension("bob.core.version",
         [
+          "bob/core/cpp/array.cpp",
+          "bob/core/cpp/array_type.cpp",
+          "bob/core/cpp/blitz_array.cpp",
+          "bob/core/cpp/cast.cpp",
           "bob/core/version.cpp",
           ],
         version = version,
@@ -58,11 +62,13 @@ setup(
         ),
       Extension("bob.core._logging",
         [
+          "bob/core/cpp/logging.cpp",
           "bob/core/logging.cpp",
           ],
         version = version,
         packages = packages,
         include_dirs = include_dirs,
+        boost_modules = ['iostreams', 'filesystem'],
         ),
       Extension("bob.core.random._library",
         [

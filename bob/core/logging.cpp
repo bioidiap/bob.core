@@ -8,7 +8,6 @@
 #include <Python.h>
 #include <boost/shared_array.hpp>
 #include <boost/make_shared.hpp>
-#include <bob/core/logging.h>
 #include <bob.core/config.h>
 #include <bob.blitz/cleanup.h>
 
@@ -18,6 +17,8 @@
 #include <boost/algorithm/string.hpp>
 static boost::iostreams::stream<bob::core::AutoOutputDevice> static_log("stdout");
 #endif
+
+#include "cpp/logging.h"
 
 /**
  * Objects of this class are able to redirect the data injected into a
@@ -495,7 +496,7 @@ static PyModuleDef module_definition = {
   BOB_EXT_MODULE_NAME,
   module_docstr,
   -1,
-  module_methods, 
+  module_methods,
   0, 0, 0, 0
 };
 #endif
