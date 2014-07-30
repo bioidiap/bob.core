@@ -8,7 +8,7 @@
  * Copyright (C) Idiap Research Institute, Martigny, Switzerland
  */
 
-#include "cast.h"
+#include <bob.core/cast.h>
 
 /**
   * @brief Specializations of the cast function for the std::complex type.

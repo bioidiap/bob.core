@@ -17,12 +17,12 @@
 #include <blitz/array.h>
 
 #include <bob.core/check.h>
+#include <bob.core/cast.h>
 #include <bob.core/array_copy.h>
 
 #include "array.h"
 #include "array_utils.h"
 #include "array_type.h"
-#include "cast.h"
 
 namespace bob { namespace core { namespace array {
   /**
