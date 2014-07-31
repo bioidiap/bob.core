@@ -13,21 +13,27 @@
 
 #include <bob.core/assert.h>
 #include <blitz/array.h>
+#include <complex>
 
 namespace bob { namespace core {
 
-  template<typename T, typename U> T cast(const U& in) {
-    return static_cast<T>(in);
-  }
-
   namespace array {
 
+    template<typename T, typename U> T scalar_cast(const U& u) {
+      return static_cast<T>(u);
+    }
+
+    template<typename T, typename U> T scalar_cast(const std::complex<U>& u) {
+      return static_cast<T>(u.real());
+    }
+
+    // when using matching complex or non-complex T and U
     template<typename T, typename U>
       blitz::Array<T,1> cast(const blitz::Array<U,1>& in) {
         bob::core::array::assertZeroBase(in);
         blitz::Array<T,1> out(in.extent(0));
         for( int i=0; i<in.extent(0); ++i)
-          out(i) = bob::core::cast<T>( in(i));
+          out(i) = scalar_cast<T,U>(in(i));
         return out;
       }
 
@@ -37,7 +43,7 @@ namespace bob { namespace core {
         blitz::Array<T,2> out(in.extent(0),in.extent(1));
         for( int i=0; i<in.extent(0); ++i)
           for( int j=0; j<in.extent(1); ++j)
-            out(i,j) = bob::core::cast<T>( in(i,j) );
+            out(i,j) = scalar_cast<T,U>(in(i,j));
         return out;
       }
 
@@ -48,7 +54,7 @@ namespace bob { namespace core {
         for( int i=0; i<in.extent(0); ++i)
           for( int j=0; j<in.extent(1); ++j)
             for( int k=0; k<in.extent(2); ++k)
-              out(i,j,k) = bob::core::cast<T>( in(i,j,k) );
+              out(i,j,k) = scalar_cast<T>(in(i,j,k));
         return out;
       }
 
@@ -60,7 +66,7 @@ namespace bob { namespace core {
           for( int j=0; j<in.extent(1); ++j)
             for( int k=0; k<in.extent(2); ++k)
               for( int l=0; l<in.extent(3); ++l)
-                out(i,j,k,l) = bob::core::cast<T>( in(i,j,k,l) );
+                out(i,j,k,l) = scalar_cast<T,U>(in(i,j,k,l));
         return out;
       }
 

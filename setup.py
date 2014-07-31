@@ -45,7 +45,6 @@ setup(
           "bob/core/cpp/array.cpp",
           "bob/core/cpp/array_type.cpp",
           "bob/core/cpp/blitz_array.cpp",
-          "bob/core/cpp/complex_cast.cpp",
           "bob/core/version.cpp",
           ],
         version = version,
