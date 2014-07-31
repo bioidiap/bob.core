@@ -6,7 +6,7 @@
  * blitz array of a given type into a blitz array of an other type. Typically,
  * this can be used to rescale a 16 bit precision grayscale image (2d array)
  * into an 8 bit precision grayscale image.
- * @see bob::core::cast
+ * @see bob::core::scalar_cast
  *
  * Copyright (C) Idiap Research Institute, Martigny, Switzerland
  */
