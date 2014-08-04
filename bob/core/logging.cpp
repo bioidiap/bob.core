@@ -5,7 +5,9 @@
  * @brief Bindings to re-inject C++ messages into the Python logging module
  */
 
-#include <Python.h>
+#define BOB_CORE_LOGGING_MODULE
+#include <bob.core/logging.h>
+
 #include <boost/shared_array.hpp>
 #include <boost/make_shared.hpp>
 #include <bob.core/config.h>
@@ -18,7 +20,26 @@
 static boost::iostreams::stream<bob::core::AutoOutputDevice> static_log("stdout");
 #endif
 
-#include "cpp/logging.h"
+/**
+ * Free standing functions for the module's C-API
+ */
+int PyBobCoreLogging_APIVersion = BOB_CORE_API_VERSION;
+
+boost::iostreams::stream<bob::core::AutoOutputDevice>& PyBobCoreLogging_Debug() {
+  return bob::core::debug;
+}
+
+boost::iostreams::stream<bob::core::AutoOutputDevice>& PyBobCoreLogging_Info() {
+  return bob::core::info;
+}
+
+boost::iostreams::stream<bob::core::AutoOutputDevice>& PyBobCoreLogging_Warn() {
+  return bob::core::warn;
+}
+
+boost::iostreams::stream<bob::core::AutoOutputDevice>& PyBobCoreLogging_Error() {
+  return bob::core::error;
+}
 
 /**
  * Objects of this class are able to redirect the data injected into a
@@ -512,7 +533,40 @@ static PyObject* create_module (void) {
   auto m_ = make_safe(m);
 
   /* register some constants */
+  if (PyModule_AddIntConstant(m, "__api_version__", BOB_CORE_API_VERSION) < 0) return 0;
   if (PyModule_AddStringConstant(m, "__version__", BOB_EXT_MODULE_VERSION) < 0) return 0;
+
+  static void* PyBobCoreLogging_API[PyBobCoreLogging_API_pointers];
+
+  /* exhaustive list of C APIs */
+  PyBobCoreLogging_API[PyBobCoreLogging_APIVersion_NUM] = (void *)&PyBobCoreLogging_APIVersion;
+
+  /*********************************
+   * Bindings for bob.core.logging *
+   *********************************/
+
+  PyBobCoreLogging_API[PyBobCoreLogging_Debug_NUM] = (void *)PyBobCoreLogging_Debug;
+
+  PyBobCoreLogging_API[PyBobCoreLogging_Info_NUM] = (void *)PyBobCoreLogging_Info;
+
+  PyBobCoreLogging_API[PyBobCoreLogging_Warn_NUM] = (void *)PyBobCoreLogging_Warn;
+
+  PyBobCoreLogging_API[PyBobCoreLogging_Error_NUM] = (void *)PyBobCoreLogging_Error;
+
+#if PY_VERSION_HEX >= 0x02070000
+
+  /* defines the PyCapsule */
+
+  PyObject* c_api_object = PyCapsule_New((void *)PyBobCoreLogging_API,
+      BOB_EXT_MODULE_PREFIX "." BOB_EXT_MODULE_NAME "._C_API", 0);
+
+#else
+
+  PyObject* c_api_object = PyCObject_FromVoidPtr((void *)PyBobCoreLogging_API, 0);
+
+#endif
+
+  if (c_api_object) PyModule_AddObject(m, "_C_API", c_api_object);
 
   Py_INCREF(m);
   return m;

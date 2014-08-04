@@ -336,7 +336,7 @@ typedef struct {
 
 #else
 
-  /* This section is used in modules that use `blitz.array's' C-API */
+  /* This section is used in modules that use `bob.core.random's' C-API */
 
 #  if defined(NO_IMPORT_ARRAY)
   extern void **PyBobCoreRandom_API;

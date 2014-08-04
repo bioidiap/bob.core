@@ -34,7 +34,7 @@
 #warning Disabling MT locks because Boost < 1.35!
 #endif
 
-#include "logging.h"
+#include <bob.core/_logging_api.h>
 
 bob::core::OutputDevice::~OutputDevice() {}
 
@@ -168,26 +168,3 @@ boost::iostreams::stream<bob::core::AutoOutputDevice> bob::core::debug("stdout")
 boost::iostreams::stream<bob::core::AutoOutputDevice> bob::core::info("stdout");
 boost::iostreams::stream<bob::core::AutoOutputDevice> bob::core::warn("stderr");
 boost::iostreams::stream<bob::core::AutoOutputDevice> bob::core::error("stderr");
-
-std::string bob::core::tmpdir() {
-  const char* value = getenv("TMPDIR");
-  if (value) return value;
-  else return "/tmp";
-}
-
-std::string bob::core::tmpfile(const std::string& extension) {
-  boost::filesystem::path tpl = bob::core::tmpdir();
-  tpl /= std::string("bob_tmpfile_XXXXXX");
-  boost::shared_array<char> char_tpl(new char[tpl.string().size()+1]);
-  strcpy(char_tpl.get(), tpl.string().c_str());
-#ifdef _WIN32
-  mktemp(char_tpl.get());
-#else
-  int fd = mkstemp(char_tpl.get());
-  close(fd);
-  boost::filesystem::remove(char_tpl.get());
-#endif
-  std::string res = char_tpl.get();
-  res += extension;
-  return res;
-}
