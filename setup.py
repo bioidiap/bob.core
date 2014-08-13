@@ -54,6 +54,7 @@ setup(
         target_directory = target_dir,
         version = version,
         packages = packages,
+        boost_modules = ['iostreams', 'filesystem'],
       ),
       Extension("bob.core._convert",
         [
