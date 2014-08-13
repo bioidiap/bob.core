@@ -1,172 +1,148 @@
 /**
- * @author Andre Anjos <andre.anjos@idiap.ch>
- * @date Mon 04 Aug 2014 13:17:07 CEST
+ * @date Tue Jan 18 17:07:26 2011 +0100
+ * @author André Anjos <andre.anjos@idiap.ch>
  *
- * @brief C/C++-API for the logging module
+ * @brief This file contains contructions for logging and its configuration
+ * within bob. All streams and filters are heavily based on the boost
+ * iostreams framework. Manual here:
+ * http://www.boost.org/doc/libs/release/libs/iostreams/doc/index.html
+ *
+ * Copyright (C) Idiap Research Institute, Martigny, Switzerland
  */
 
-#ifndef BOB_CORE_LOGGING_H
-#define BOB_CORE_LOGGING_H
+#ifndef BOB_CORE_LOGGING_API_H
+#define BOB_CORE_LOGGING_API_H
 
-#include <Python.h>
-#include <bob.core/config.h>
+#include <string>
+#include <boost/iostreams/stream.hpp>
+#include <boost/iostreams/concepts.hpp>
 #include <boost/shared_ptr.hpp>
-#include <bob.core/_logging_api.h>
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/date_time/posix_time/posix_time_io.hpp>
 
-/* Define Module Name and Prefix for other Modules
-   Note: We cannot use BOB_EXT_* macros here, unfortunately */
-#define BOB_CORE_LOGGING_PREFIX    "bob.core"
-#define BOB_CORE_LOGGING_FULL_NAME "bob.core._logging"
-
-/*******************
- * C API functions *
- *******************/
-
-/**************
- * Versioning *
- **************/
-
-#define PyBobCoreLogging_APIVersion_NUM 0
-#define PyBobCoreLogging_APIVersion_TYPE int
-
-/*********************************
- * Bindings for bob.core.logging *
- *********************************/
-
-#define PyBobCoreLogging_Debug_NUM 1
-#define PyBobCoreLogging_Debug_RET boost::iostreams::stream<bob::core::AutoOutputDevice>&
-#define PyBobCoreLogging_Debug_PROTO ()
-
-#define PyBobCoreLogging_Info_NUM 2
-#define PyBobCoreLogging_Info_RET boost::iostreams::stream<bob::core::AutoOutputDevice>&
-#define PyBobCoreLogging_Info_PROTO ()
-
-#define PyBobCoreLogging_Warn_NUM 3
-#define PyBobCoreLogging_Warn_RET boost::iostreams::stream<bob::core::AutoOutputDevice>&
-#define PyBobCoreLogging_Warn_PROTO ()
-
-#define PyBobCoreLogging_Error_NUM 4
-#define PyBobCoreLogging_Error_RET boost::iostreams::stream<bob::core::AutoOutputDevice>&
-#define PyBobCoreLogging_Error_PROTO ()
-
-/* Total number of C API pointers */
-#define PyBobCoreLogging_API_pointers 5
-
-#ifdef BOB_CORE_LOGGING_MODULE
-
-  /* This section is used when compiling `bob.core.logging' itself */
-
-  /**************
-   * Versioning *
-   **************/
-
-  extern int PyBobCoreLogging_APIVersion;
-
-  /*********************************
-   * Bindings for bob.core.logging *
-   *********************************/
-
-  PyBobCoreLogging_Debug_RET PyBobCoreLogging_Debug PyBobCoreLogging_Debug_PROTO;
-
-  PyBobCoreLogging_Info_RET PyBobCoreLogging_Info PyBobCoreLogging_Info_PROTO;
-
-  PyBobCoreLogging_Warn_RET PyBobCoreLogging_Warn PyBobCoreLogging_Warn_PROTO;
-
-  PyBobCoreLogging_Error_RET PyBobCoreLogging_Error PyBobCoreLogging_Error_PROTO;
-
-#else
-
-  /* This section is used in modules that use `bob.core.logging's' C-API */
-
-#  if defined(NO_IMPORT_ARRAY)
-  extern void **PyBobCoreLogging_API;
-#  else
-#    if defined(PY_ARRAY_UNIQUE_SYMBOL)
-  void **PyBobCoreLogging_API;
-#    else
-  static void **PyBobCoreLogging_API=NULL;
-#    endif
-#  endif
-
-  /**************
-   * Versioning *
-   **************/
-
-# define PyBobCoreLogging_APIVersion (*(PyBobCoreLogging_APIVersion_TYPE *)PyBobCoreLogging_API[PyBobCoreLogging_APIVersion_NUM])
-
-  /*********************************
-   * Bindings for bob.core.logging *
-   *********************************/
-
-# define PyBobCoreLogging_Debug (*(PyBobCoreLogging_Debug_RET (*)PyBobCoreLogging_Debug_PROTO) PyBobCoreLogging_API[PyBobCoreLogging_Debug_NUM])
-
-# define PyBobCoreLogging_Info (*(PyBobCoreLogging_Info_RET (*)PyBobCoreLogging_Info_PROTO) PyBobCoreLogging_API[PyBobCoreLogging_Info_NUM])
-
-# define PyBobCoreLogging_Warn (*(PyBobCoreLogging_Warn_RET (*)PyBobCoreLogging_Warn_PROTO) PyBobCoreLogging_API[PyBobCoreLogging_Warn_NUM])
-
-# define PyBobCoreLogging_Error (*(PyBobCoreLogging_Error_RET (*)PyBobCoreLogging_Error_PROTO) PyBobCoreLogging_API[PyBobCoreLogging_Error_NUM])
-
-# if !defined(NO_IMPORT_ARRAY)
+/**
+ * @addtogroup CORE core
+ * @brief Core module API
+ */
+namespace bob { namespace core {
 
   /**
-   * Returns -1 on error, 0 on success.
+   * @brief The device is what tells the sink where to actually send the
+   * messages to. If the AutoOutputDevice does not have a device, the
+   * messages are discarded.
    */
-  static int import_bob_core_logging(void) {
+  struct OutputDevice {
+    /**
+     * @brief Virtual destructor.
+     */
+    virtual ~OutputDevice();
 
-    PyObject *c_api_object;
-    PyObject *module;
+    /**
+     * @brief Writes n bytes of data into this device
+     */
+    virtual std::streamsize write(const char* s, std::streamsize n) =0;
 
-    module = PyImport_ImportModule(BOB_CORE_LOGGING_FULL_NAME);
+    /**
+     * @brief Closes this device
+     */
+    virtual void close() {}
+  };
 
-    if (module == NULL) return -1;
+  /**
+   * @brief Use this sink always in bob C++ programs. You can configure it
+   * to send messages to stdout, stderr, to a file or discard them.
+   */
+  class AutoOutputDevice: public boost::iostreams::sink {
 
-    c_api_object = PyObject_GetAttrString(module, "_C_API");
+    public:
 
-    if (c_api_object == NULL) {
-      Py_DECREF(module);
-      return -1;
-    }
+      /**
+       * @brief C'tor, empty, discards all input.
+       */
+      AutoOutputDevice();
 
-#   if PY_VERSION_HEX >= 0x02070000
-    if (PyCapsule_CheckExact(c_api_object)) {
-      PyBobCoreLogging_API = (void **)PyCapsule_GetPointer(c_api_object,
-          PyCapsule_GetName(c_api_object));
-    }
-#   else
-    if (PyCObject_Check(c_api_object)) {
-      PyBobCoreLogging_API = (void **)PyCObject_AsVoidPtr(c_api_object);
-    }
-#   endif
+      /**
+       * @brief Creates a new sink using one of the built-in strategies.
+       * - null: discards all messages
+       * - stdout: send all messages to stdout
+       * - stderr: send all messages to stderr
+       * - filename: send all messages to the file named "filename"
+       * - filename.gz: send all messagses to the file named "filename.gz",
+       *   in compressed format.
+       *
+       * @param configuration The configuration string to use for this sink
+       * as declared above
+       */
+      AutoOutputDevice(const std::string& configuration);
 
-    Py_DECREF(c_api_object);
-    Py_DECREF(module);
+      /**
+       * @brief Intializes with a device.
+       */
+      AutoOutputDevice(boost::shared_ptr<OutputDevice> device);
 
-    if (!PyBobCoreLogging_API) {
-      PyErr_SetString(PyExc_ImportError, "cannot find C/C++ API "
-#   if PY_VERSION_HEX >= 0x02070000
-          "capsule"
-#   else
-          "cobject"
-#   endif
-          " at `" BOB_CORE_LOGGING_FULL_NAME "._C_API'");
-      return -1;
-    }
+      /**
+       * @brief D'tor
+       */
+      virtual ~AutoOutputDevice();
 
-    /* Checks that the imported version matches the compiled version */
-    int imported_version = *(int*)PyBobCoreLogging_API[PyBobCoreLogging_APIVersion_NUM];
+      /**
+       * @brief Forwards call to underlying OutputDevice
+       */
+      virtual std::streamsize write(const char* s, std::streamsize n);
 
-    if (BOB_CORE_API_VERSION != imported_version) {
-      PyErr_Format(PyExc_ImportError, BOB_CORE_LOGGING_FULL_NAME " import error: you compiled against API version 0x%04x, but are now importing an API with version 0x%04x which is not compatible - check your Python runtime environment for errors", BOB_CORE_API_VERSION, imported_version);
-      return -1;
-    }
+      /**
+       * @brief Closes this base sink
+       */
+      virtual void close();
 
-    /* If you get to this point, all is good */
-    return 0;
+    private:
 
-  }
+      boost::shared_ptr<OutputDevice> m_device; ///< Who does the real job.
 
-# endif //!defined(NO_IMPORT_ARRAY)
+  };
 
-#endif /* BOB_CORE_LOGGING_MODULE */
+  // standard streams
+  extern boost::iostreams::stream<AutoOutputDevice> debug;
+  extern boost::iostreams::stream<AutoOutputDevice> info;
+  extern boost::iostreams::stream<AutoOutputDevice> warn;
+  extern boost::iostreams::stream<AutoOutputDevice> error;
 
-#endif /* BOB_CORE_LOGGING_H */
+  /**
+   * @brief This method is used by our TDEBUGX macros to define if the
+   * current debug level set in the environment is enough to print the
+   * current debug message.
+   *
+   * If BOB_DEBUG is defined and has an integer value of 1, 2 or 3, this
+   * method will return 'true', if the value of 'i' is smaller or equal to
+   * the value collected from the environment. Otherwise, returns false.
+   */
+  bool debug_level(unsigned int i);
+
+}}
+
+//returns the current location where the message is being printed
+#ifndef TLOCATION
+#define TLOCATION __FILE__ << "+" << __LINE__
+#endif
+
+//returns the current date and time
+#ifndef TNOW
+#define TNOW boost::posix_time::second_clock::local_time()
+#endif
+
+//an unified marker for the location, date and time
+#ifndef TMARKER
+#define TMARKER TLOCATION << ", " << TNOW << ": "
+#endif
+
+#ifdef BOB_DEBUG
+#define TDEBUG1(v) if (bob::core::debug_level(1)) { bob::core::debug << "DEBUG1@" << TMARKER << v << std::endl; }
+#define TDEBUG2(v) if (bob::core::debug_level(2)) { bob::core::debug << "DEBUG2@" << TMARKER << v << std::endl; }
+#define TDEBUG3(v) if (bob::core::debug_level(3)) { bob::core::debug << "DEBUG3@" << TMARKER << v << std::endl; }
+#else
+#define TDEBUG1(v)
+#define TDEBUG2(v)
+#define TDEBUG3(v)
+#endif
+
+#endif /* BOB_CORE_LOGGING_API_H */

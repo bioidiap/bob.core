@@ -5,12 +5,11 @@
 
 from setuptools import setup, find_packages, dist
 dist.Distribution(dict(setup_requires=['bob.blitz']))
-from bob.blitz.extension import Extension
+from bob.blitz.extension import Extension, Library, build_ext
 
 import os
 package_dir = os.path.dirname(os.path.realpath(__file__))
-package_dir = os.path.join(package_dir, 'bob', 'core', 'include')
-include_dirs = [package_dir]
+target_dir = os.path.join(package_dir, 'bob', 'core')
 
 packages = ['blitz >= 0.10', 'boost']
 version = '2.0.0a0'
@@ -46,24 +45,29 @@ setup(
           ],
         version = version,
         packages = packages,
-        include_dirs = include_dirs,
         ),
+      Library("bob_core",
+        [
+          "bob/core/cpp/logging.cpp",
+        ],
+        package_directory = package_dir,
+        target_directory = target_dir,
+        version = version,
+      ),
       Extension("bob.core._convert",
         [
           "bob/core/convert.cpp",
           ],
         version = version,
         packages = packages,
-        include_dirs = include_dirs,
         ),
       Extension("bob.core._logging",
         [
-          "bob/core/cpp/logging.cpp",
           "bob/core/logging.cpp",
           ],
         version = version,
         packages = packages,
-        include_dirs = include_dirs,
+        libraries = ['bob_core'],
         boost_modules = ['iostreams', 'filesystem'],
         ),
       Extension("bob.core.random._library",
@@ -79,9 +83,12 @@ setup(
           ],
         version = version,
         packages = packages,
-        include_dirs = include_dirs,
         ),
       ],
+
+    cmdclass = {
+      'build_ext': build_ext
+    },
 
     classifiers = [
       'Development Status :: 3 - Alpha',

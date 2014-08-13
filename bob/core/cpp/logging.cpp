@@ -34,7 +34,7 @@
 #warning Disabling MT locks because Boost < 1.35!
 #endif
 
-#include <bob.core/_logging_api.h>
+#include <bob.core/logging.h>
 
 bob::core::OutputDevice::~OutputDevice() {}
 

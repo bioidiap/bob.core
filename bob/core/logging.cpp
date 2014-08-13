@@ -6,7 +6,7 @@
  */
 
 #define BOB_CORE_LOGGING_MODULE
-#include <bob.core/logging.h>
+#include <bob.core/api.h>
 
 #include <boost/shared_array.hpp>
 #include <boost/make_shared.hpp>
