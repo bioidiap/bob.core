@@ -53,6 +53,7 @@ setup(
         package_directory = package_dir,
         target_directory = target_dir,
         version = version,
+        packages = packages,
       ),
       Extension("bob.core._convert",
         [
