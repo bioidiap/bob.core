@@ -45,6 +45,7 @@ setup(
           ],
         version = version,
         packages = packages,
+        boost_modules = ['system']
         ),
       Library("bob_core",
         [
@@ -54,7 +55,7 @@ setup(
         target_directory = target_dir,
         version = version,
         packages = packages,
-        boost_modules = ['iostreams', 'filesystem'],
+        boost_modules = ['system', 'iostreams', 'filesystem'],
       ),
       Extension("bob.core._convert",
         [
@@ -70,7 +71,7 @@ setup(
         version = version,
         packages = packages,
         libraries = ['bob_core'],
-        boost_modules = ['iostreams', 'filesystem'],
+        boost_modules = ['system', 'iostreams', 'filesystem'],
         ),
       Extension("bob.core.random._library",
         [
@@ -85,6 +86,7 @@ setup(
           ],
         version = version,
         packages = packages,
+        boost_modules = ['system', 'iostreams', 'filesystem'],
         ),
       ],
 
