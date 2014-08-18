@@ -7,10 +7,6 @@ from setuptools import setup, find_packages, dist
 dist.Distribution(dict(setup_requires=['bob.blitz']))
 from bob.blitz.extension import Extension, Library, build_ext
 
-import os
-package_dir = os.path.dirname(os.path.realpath(__file__))
-target_dir = os.path.join(package_dir, 'bob', 'core')
-
 packages = ['blitz >= 0.10', 'boost']
 version = '2.0.0a0'
 
@@ -47,12 +43,10 @@ setup(
         packages = packages,
         boost_modules = ['system']
         ),
-      Library("bob_core",
+      Library("bob.core.bob_core",
         [
           "bob/core/cpp/logging.cpp",
         ],
-        package_directory = package_dir,
-        target_directory = target_dir,
         version = version,
         packages = packages,
         boost_modules = ['system', 'iostreams', 'filesystem'],
@@ -70,7 +64,6 @@ setup(
           ],
         version = version,
         packages = packages,
-        libraries = ['bob_core'],
         boost_modules = ['system', 'iostreams', 'filesystem'],
         ),
       Extension("bob.core.random._library",
