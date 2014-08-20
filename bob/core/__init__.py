@@ -1,3 +1,7 @@
+# import our own Library
+import bob.extension
+bob.extension.load_bob_library('bob.core', __file__)
+
 from ._convert import convert
 from . import log
 from . import random

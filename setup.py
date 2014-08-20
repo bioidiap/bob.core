@@ -38,11 +38,12 @@ setup(
       Extension("bob.core.version",
         [
           "bob/core/version.cpp",
-          ],
+        ],
         version = version,
         packages = packages,
         boost_modules = ['system']
-        ),
+      ),
+
       Library("bob.core.bob_core",
         [
           "bob/core/cpp/logging.cpp",
@@ -51,13 +52,15 @@ setup(
         packages = packages,
         boost_modules = ['system', 'iostreams', 'filesystem'],
       ),
+
       Extension("bob.core._convert",
         [
           "bob/core/convert.cpp",
           ],
         version = version,
         packages = packages,
-        ),
+      ),
+
       Extension("bob.core._logging",
         [
           "bob/core/logging.cpp",
@@ -65,7 +68,8 @@ setup(
         version = version,
         packages = packages,
         boost_modules = ['system', 'iostreams', 'filesystem'],
-        ),
+      ),
+
       Extension("bob.core.random._library",
         [
           "bob/core/random/mt19937.cpp",
@@ -76,12 +80,12 @@ setup(
           "bob/core/random/binomial.cpp",
           "bob/core/random/discrete.cpp",
           "bob/core/random/main.cpp",
-          ],
+        ],
         version = version,
         packages = packages,
         boost_modules = ['system', 'iostreams', 'filesystem'],
-        ),
-      ],
+      ),
+    ],
 
     cmdclass = {
       'build_ext': build_ext
@@ -95,6 +99,6 @@ setup(
       'Programming Language :: Python',
       'Programming Language :: Python :: 3',
       'Topic :: Software Development :: Libraries :: Python Modules',
-      ],
+    ],
 
-    )
+  )
