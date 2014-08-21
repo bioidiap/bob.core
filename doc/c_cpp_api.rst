@@ -45,10 +45,6 @@ the import function:
 
    }
 
-.. note::
-
-  The include directory can be discovered using
-  :py:func:`bob.core.get_include`.
 
 Mersenne Twister Random Number Generator (mt19937)
 --------------------------------------------------

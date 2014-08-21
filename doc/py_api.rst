@@ -41,8 +41,4 @@ Functions
 .. autofunction:: bob.core.convert
 
 
-C++ API Helpers
----------------
-
-.. autofunction:: bob.core.get_include
 
