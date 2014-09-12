@@ -4,8 +4,11 @@
 # Mon 16 Apr 08:18:08 2012 CEST
 
 from setuptools import setup, find_packages, dist
-dist.Distribution(dict(setup_requires=['bob.blitz']))
+dist.Distribution(dict(setup_requires=['bob.extension', 'bob.blitz']))
 from bob.blitz.extension import Extension, Library, build_ext
+
+from bob.extension.utils import load_requirements
+build_requires = load_requirements()
 
 packages = ['blitz >= 0.10', 'boost']
 version = '2.0.0a0'
@@ -25,14 +28,12 @@ setup(
     packages=find_packages(),
     include_package_data=True,
 
-    install_requires=[
-      'setuptools',
-      'bob.blitz',
-    ],
-
     namespace_packages=[
       "bob",
       ],
+
+    setup_requires = build_requires,
+    install_requires = build_requires,
 
     ext_modules = [
       Extension("bob.core.version",
