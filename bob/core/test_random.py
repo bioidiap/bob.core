@@ -8,8 +8,29 @@
 
 from __future__ import division
 from . import random
+from .version import externals
 import numpy
 import nose.tools
+import nose.plugins.skip
+from distutils.version import LooseVersion
+import functools
+
+def boost_greater_or_equal(version):
+
+  def test_wrapper(test):
+
+    @functools.wraps(test)
+    def wrapper(*args, **kwargs):
+      boost_req = LooseVersion(version)
+      boost_cur = LooseVersion(externals['Boost'])
+      if boost_cur >= boost_req:
+        return test(*args, **kwargs)
+      else:
+        raise nose.plugins.skip.SkipTest("This test requires Boost >= %s, but you have %s" % (version, externals['Boost']))
+
+    return wrapper
+
+  return test_wrapper
 
 def test_mt19937_creation():
 
@@ -136,19 +157,17 @@ def test_binomial():
   assert abs(m.mean() - 0.30) < 0.1
   assert abs(m.std() - 0.52) < 0.1
 
+@boost_greater_or_equal('1.47')
 def test_discrete():
 
   probs = (0.5, 0.2, 0.3) # mean == 0*0.5 + 1*0.2 + 2*0.3 = 0.8
 
-  try:
-    d = random.discrete(int, probs)
-    assert numpy.allclose(probs, d.probabilities)
+  d = random.discrete(int, probs)
+  assert numpy.allclose(probs, d.probabilities)
 
-    x = random.variate_generator(random.mt19937(), d)
-    m = x(10000)
-    assert abs(m.mean() - 0.8) < 0.1
-  except NotImplementedError:
-    pass
+  x = random.variate_generator(random.mt19937(), d)
+  m = x(10000)
+  assert abs(m.mean() - 0.8) < 0.1
 
 def test_repr():
 
@@ -163,13 +182,11 @@ def test_repr():
   x = random.binomial(float)
   repr(x)
 
+@boost_greater_or_equal('1.47')
 def test_repr_discrete():
 
-  try:
-    x = random.discrete(int, (0.1, 0.9))
-    repr(x)
-  except NotImplementedError:
-    pass
+  x = random.discrete(int, (0.1, 0.9))
+  repr(x)
 
 def test_consistent_uniform_uint32():
 
@@ -187,18 +204,24 @@ def test_consistent_uniform_float64():
   assert numpy.allclose(expected, values), \
       '%s not close to %s' % (expected, values)
 
+@boost_greater_or_equal('1.56')
 def test_consistent_normal_float64():
 
   x = random.variate_generator(random.mt19937(42), random.normal('float64'))
-  expected = [-1.25821243, 0.6063474,  -0.19636614]
+  # from Boost >= 1.56 (see: https://svn.boost.org/trac/boost/ticket/9513)
+  #expected = [-1.25821243, 0.6063474,  -0.19636614] #from <  1.56
+  expected = [-0.63871374, -0.83680813, -0.40056644] #from >= 1.56
   values = x(3)
   assert numpy.allclose(expected, values), \
       '%s not close to %s' % (expected, values)
 
+@boost_greater_or_equal('1.56')
 def test_consistent_lognormal_float64():
 
   x = random.variate_generator(random.mt19937(42), random.lognormal('float64', mean=.5))
-  expected = [0.04531668, 0.48256876, 0.17429895]
+  # from Boost >= 1.56 (see: https://svn.boost.org/trac/boost/ticket/9513)
+  #expected = [0.04531668, 0.48256876, 0.17429895] #from <  1.56
+  expected = [0.09944391, 0.07734563, 0.13452042]  #from >= 1.56
   values = x(3)
   assert numpy.allclose(expected, values), \
       '%s not close to %s' % (expected, values)
@@ -211,6 +234,7 @@ def test_consistent_gamma_float64():
   assert numpy.allclose(expected, values), \
       '%s not close to %s' % (expected, values)
 
+@boost_greater_or_equal('1.56') #buggy?
 def test_consistent_binomial_float64():
 
   x = random.variate_generator(random.mt19937(42), random.binomial('float64'))
@@ -219,12 +243,13 @@ def test_consistent_binomial_float64():
   assert numpy.allclose(expected, values), \
       '%s not close to %s' % (expected, values)
 
+@boost_greater_or_equal('1.56') #buggy?
 def test_consistent_discrete_uint64():
 
   try:
     x = random.variate_generator(random.mt19937(42),
         random.discrete('uint64', [0.3, 0.3, 0.4]))
-    expected = [2, 2, 2, 1, 1, 0, 1, 1, 0, 1]
+    expected = [1, 2, 2, 1, 0, 0, 0, 2, 1, 2]
     values = x(10)
     assert numpy.allclose(expected, values), \
         '%s not close to %s' % (expected, values)
