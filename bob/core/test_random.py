@@ -170,3 +170,63 @@ def test_repr_discrete():
     repr(x)
   except NotImplementedError:
     pass
+
+def test_consistent_uniform_uint32():
+
+  x = random.variate_generator(random.mt19937(42), random.uniform('uint32'))
+  expected = [3, 7, 9]
+  values = x(3)
+  assert numpy.allclose(expected, values), \
+      '%s not close to %s' % (expected, values)
+
+def test_consistent_uniform_float64():
+
+  x = random.variate_generator(random.mt19937(42), random.uniform('float64'))
+  expected = [0.37454011, 0.79654298, 0.95071431]
+  values = x(3)
+  assert numpy.allclose(expected, values), \
+      '%s not close to %s' % (expected, values)
+
+def test_consistent_normal_float64():
+
+  x = random.variate_generator(random.mt19937(42), random.normal('float64'))
+  expected = [-1.25821243, 0.6063474,  -0.19636614]
+  values = x(3)
+  assert numpy.allclose(expected, values), \
+      '%s not close to %s' % (expected, values)
+
+def test_consistent_lognormal_float64():
+
+  x = random.variate_generator(random.mt19937(42), random.lognormal('float64', mean=.5))
+  expected = [0.04531668, 0.48256876, 0.17429895]
+  values = x(3)
+  assert numpy.allclose(expected, values), \
+      '%s not close to %s' % (expected, values)
+
+def test_consistent_gamma_float64():
+
+  x = random.variate_generator(random.mt19937(42), random.gamma('float64'))
+  expected = [ 0.46926808, 1.59230052, 3.01012154]
+  values = x(3)
+  assert numpy.allclose(expected, values), \
+      '%s not close to %s' % (expected, values)
+
+def test_consistent_binomial_float64():
+
+  x = random.variate_generator(random.mt19937(42), random.binomial('float64'))
+  expected = [0, 1, 1, 0, 1, 1, 1, 1, 0, 0]
+  values = x(10)
+  assert numpy.allclose(expected, values), \
+      '%s not close to %s' % (expected, values)
+
+def test_consistent_discrete_uint64():
+
+  try:
+    x = random.variate_generator(random.mt19937(42),
+        random.discrete('uint64', [0.3, 0.3, 0.4]))
+    expected = [2, 2, 2, 1, 1, 0, 1, 1, 0, 1]
+    values = x(10)
+    assert numpy.allclose(expected, values), \
+        '%s not close to %s' % (expected, values)
+  except NotImplementedError:
+    pass
