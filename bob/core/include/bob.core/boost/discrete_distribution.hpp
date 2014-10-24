@@ -20,7 +20,7 @@
 #include <iterator>
 #include <boost/assert.hpp>
 #include <boost/random/uniform_01.hpp>
-#include <boost/random/uniform_int_distribution.hpp>
+#include <boost/random/uniform_int.hpp>
 #include <boost/random/detail/config.hpp>
 #include <boost/random/detail/vector_io.hpp>
 
@@ -102,7 +102,7 @@ struct integer_alias_table {
     template<class URNG>
     WeightType test(URNG &urng) const
     {
-        return boost::random::uniform_int_distribution<WeightType>(0, _average)(urng);
+        return boost::uniform_int<WeightType>(0, _average)(urng);
     }
     bool accept(IntType result, WeightType val) const
     {
@@ -125,7 +125,7 @@ struct integer_alias_table {
     template<class URNG>
     static WeightType generate_in_range(URNG &urng, WeightType max)
     {
-        return boost::random::uniform_int_distribution<WeightType>(
+        return boost::uniform_int<WeightType>(
             static_cast<WeightType>(0), max-1)(urng);
     }
     typedef std::vector<std::pair<WeightType, IntType> > alias_table_t;
@@ -179,7 +179,7 @@ struct real_alias_table {
     template<class URNG>
     WeightType test(URNG &urng) const
     {
-        return boost::random::uniform_01<WeightType>()(urng);
+        return boost::uniform_01<WeightType>()(urng);
     }
     bool accept(IntType, WeightType) const
     {
@@ -192,7 +192,7 @@ struct real_alias_table {
     template<class URNG>
     static WeightType generate_in_range(URNG &urng, WeightType)
     {
-        return boost::random::uniform_01<WeightType>()(urng);
+        return boost::uniform_01<WeightType>()(urng);
     }
     typedef std::vector<std::pair<WeightType, IntType> > alias_table_t;
     alias_table_t _alias_table;
@@ -433,7 +433,7 @@ public:
         IntType result;
         WeightType test;
         do {
-            result = boost::random::uniform_int_distribution<IntType>((min)(), (max)())(urng);
+            result = boost::uniform_int<IntType>((min)(), (max)())(urng);
             test = _impl.test(urng);
         } while(!_impl.accept(result, test));
         if(test < _impl._alias_table[result].first) {

@@ -29,7 +29,7 @@
 #include <boost/type_traits/make_unsigned.hpp>
 #include <boost/random/detail/config.hpp>
 #include <boost/random/uniform_01.hpp>
-#include <boost/random/uniform_int_distribution.hpp>
+#include <boost/random/uniform_int.hpp>
 #include <boost/random/exponential_distribution.hpp>
 
 #include <bob.core/boost/operators.hpp>
@@ -192,8 +192,8 @@ std::pair<RealType, int> generate_int_float_pair(Engine& eng, boost::mpl::true_)
 template<class RealType, std::size_t w, class Engine>
 inline std::pair<RealType, int> generate_int_float_pair(Engine& eng, boost::mpl::false_)
 {
-    int bucket = boost::random::uniform_int_distribution<>(0, (1 << w) - 1)(eng);
-    RealType r = boost::random::uniform_01<RealType>()(eng);
+    int bucket = boost::uniform_int<>(0, (1 << w) - 1)(eng);
+    RealType r = boost::uniform_01<RealType>()(eng);
     return std::make_pair(r, bucket);
 }
 
@@ -220,7 +220,7 @@ struct unit_normal_distribution
             RealType x = vals.first * RealType(table_x[i]);
             if(x < table_x[i + 1]) return x * sign;
             if(i == 0) return generate_tail(eng) * sign;
-            RealType y = RealType(table_y[i]) + boost::random::uniform_01<RealType>()(eng) * RealType(table_y[i + 1] - table_y[i]);
+            RealType y = RealType(table_y[i]) + boost::uniform_01<RealType>()(eng) * RealType(table_y[i + 1] - table_y[i]);
             if (y < f(x)) return x * sign;
         }
     }
