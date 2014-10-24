@@ -10,6 +10,7 @@
 #include <bob.blitz/cppapi.h>
 #include <boost/make_shared.hpp>
 
+#include <boost/random.hpp>
 #include <bob.core/random.h>
 
 PyDoc_STRVAR(s_gamma_str, BOB_EXT_MODULE_PREFIX ".gamma");
@@ -52,7 +53,7 @@ template <typename T>
 boost::shared_ptr<void> make_gamma(PyObject* alpha) {
   T calpha = 1.;
   if (alpha) calpha = PyBlitzArrayCxx_AsCScalar<T>(alpha);
-  return boost::make_shared<bob::core::random::gamma_distribution<T>>(calpha);
+  return boost::make_shared<boost::gamma_distribution<T>>(calpha);
 }
 
 PyObject* PyBoostGamma_SimpleNew (int type_num, PyObject* alpha) {
@@ -129,7 +130,7 @@ int PyBoostGamma_Converter(PyObject* o, PyBoostGammaObject** a) {
 }
 
 template <typename T> PyObject* get_alpha(PyBoostGammaObject* self) {
-  return PyBlitzArrayCxx_FromCScalar(boost::static_pointer_cast<bob::core::random::gamma_distribution<T>>(self->distro)->alpha());
+  return PyBlitzArrayCxx_FromCScalar(boost::static_pointer_cast<boost::gamma_distribution<T>>(self->distro)->alpha());
 }
 
 /**
@@ -155,7 +156,7 @@ static PyObject* PyBoostGamma_GetDtype(PyBoostGammaObject* self) {
 }
 
 template <typename T> PyObject* reset(PyBoostGammaObject* self) {
-  boost::static_pointer_cast<bob::core::random::gamma_distribution<T>>(self->distro)->reset();
+  boost::static_pointer_cast<boost::gamma_distribution<T>>(self->distro)->reset();
   Py_RETURN_NONE;
 }
 
@@ -176,7 +177,7 @@ static PyObject* PyBoostGamma_Reset(PyBoostGammaObject* self) {
 }
 
 template <typename T> PyObject* call(PyBoostGammaObject* self, PyBoostMt19937Object* rng) {
-  typedef bob::core::random::gamma_distribution<T> distro_t;
+  typedef boost::gamma_distribution<T> distro_t;
   return PyBlitzArrayCxx_FromCScalar((*boost::static_pointer_cast<distro_t>(self->distro))(*rng->rng));
 }
 
