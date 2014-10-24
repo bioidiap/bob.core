@@ -15,10 +15,10 @@ namespace bob { namespace core { namespace random {
   // for completeness, we provide the interfaces for other distributions through bob::core::random
 
   template <class UniformRandomNumberGenerator=double, class RealType=double>
-    using uniform_01 = boost::random::uniform_01<UniformRandomNumberGenerator,RealType>;
+    using uniform_01 = boost::uniform_01<UniformRandomNumberGenerator,RealType>;
 
   template <class IntType=int>
-    using uniform_smallint_distribution = boost::random::uniform_smallint<IntType>;
+    using uniform_smallint_distribution = boost::uniform_smallint<IntType>;
 
   template <class IntType=int>
     using uniform_int_distribution = boost::uniform_int<IntType>;
@@ -27,7 +27,7 @@ namespace bob { namespace core { namespace random {
     using uniform_real_distribution = boost::uniform_real<RealType>;
 
   template <class RealType=double>
-    using gamma_distribution = boost::random::gamma_distribution<RealType>;
+    using gamma_distribution = boost::gamma_distribution<RealType>;
 
 } } }
 
