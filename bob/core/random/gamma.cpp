@@ -10,8 +10,8 @@
 #include <bob.blitz/cppapi.h>
 #include <boost/make_shared.hpp>
 
-#include <boost/random.hpp>
 #include <bob.core/random.h>
+#include <boost/random.hpp>
 
 PyDoc_STRVAR(s_gamma_str, BOB_EXT_MODULE_PREFIX ".gamma");
 

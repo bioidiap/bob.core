@@ -8,8 +8,6 @@
 #ifndef BOB_CORE_RANDOM_H
 #define BOB_CORE_RANDOM_H
 
-#include <boost/random.hpp>
-
 #include <boost/version.hpp>
 
 #if BOOST_VERSION >= 105600

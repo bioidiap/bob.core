@@ -30,10 +30,10 @@
 #include <boost/random/detail/config.hpp>
 #include <boost/random/uniform_01.hpp>
 #include <boost/random/uniform_int.hpp>
-#include <boost/random/exponential_distribution.hpp>
 
 #include <bob.core/boost/operators.hpp>
 #include <bob.core/boost/integer_log2.hpp>
+#include <bob.core/boost/exponential_distribution.hpp>
 
 
 namespace bob { namespace core { namespace random {
@@ -212,10 +212,8 @@ struct unit_normal_distribution
     RealType operator()(Engine& eng) {
         const double * const table_x = normal_table<double>::table_x;
         const double * const table_y = normal_table<double>::table_y;
-        std::cout << "Enter" << std::endl;
         for(;;) {
             std::pair<RealType, int> vals = generate_int_float_pair<RealType, 8>(eng);
-            std::cout << vals.first << ", " << vals.second << std::endl;
             int i = vals.second;
             int sign = (i & 1) * 2 - 1;
             i = i >> 1;
