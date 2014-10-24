@@ -212,8 +212,10 @@ struct unit_normal_distribution
     RealType operator()(Engine& eng) {
         const double * const table_x = normal_table<double>::table_x;
         const double * const table_y = normal_table<double>::table_y;
+        std::cout << "Enter" << std::endl;
         for(;;) {
             std::pair<RealType, int> vals = generate_int_float_pair<RealType, 8>(eng);
+            std::cout << vals.first << ", " << vals.second << std::endl;
             int i = vals.second;
             int sign = (i & 1) * 2 - 1;
             i = i >> 1;
