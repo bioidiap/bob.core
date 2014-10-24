@@ -303,7 +303,7 @@ private:
 
         while(true) {
             RealType u;
-            RealType v = boost::random::uniform_01<RealType>()(urng);
+            RealType v = boost::uniform_01<RealType>()(urng);
             if(v <= btrd.u_rv_r) {
                 RealType u = v/btrd.v_r - 0.43;
                 return static_cast<IntType>(floor(
@@ -311,11 +311,11 @@ private:
             }
 
             if(v >= btrd.v_r) {
-                u = boost::random::uniform_01<RealType>()(urng) - 0.5;
+                u = boost::uniform_01<RealType>()(urng) - 0.5;
             } else {
                 u = v/btrd.v_r - 0.93;
                 u = ((u < 0)? -0.5 : 0.5) - u;
-                v = boost::random::uniform_01<RealType>()(urng) * btrd.v_r;
+                v = boost::uniform_01<RealType>()(urng) * btrd.v_r;
             }
 
             RealType us = 0.5 - abs(u);
@@ -374,7 +374,7 @@ private:
         RealType s = p / q;
         RealType a = (t + 1) * s;
         RealType r = q_n;
-        RealType u = boost::random::uniform_01<RealType>()(urng);
+        RealType u = boost::uniform_01<RealType>()(urng);
         IntType x = 0;
         while(u > r) {
             u = u - r;
