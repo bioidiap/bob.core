@@ -232,9 +232,11 @@ struct unit_normal_distribution
     RealType generate_tail(Engine& eng) {
         boost::exponential_distribution<RealType> exponential;
         const RealType tail_start = RealType(normal_table<double>::table_x[1]);
+        std::cout << "Enter" << std::endl;
         for(;;) {
             RealType x = exponential(eng)/tail_start;
             RealType y = exponential(eng);
+            std::cout << "x = "  << x << "; y = " << y << std::endl;
             if(2*y > x*x) return x + tail_start;
         }
     }
