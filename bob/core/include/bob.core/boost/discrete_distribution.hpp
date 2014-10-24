@@ -22,7 +22,6 @@
 #include <boost/random/uniform_01.hpp>
 #include <boost/random/uniform_int.hpp>
 #include <boost/random/detail/config.hpp>
-#include <boost/random/detail/vector_io.hpp>
 
 #include <bob.core/boost/operators.hpp>
 
