@@ -6,9 +6,11 @@
  */
 
 #define BOB_CORE_RANDOM_MODULE
-#include <bob.core/random.h>
+#include <bob.core/random_api.h>
 #include <bob.blitz/cppapi.h>
 #include <boost/make_shared.hpp>
+
+#include <bob.core/random.h>
 
 PyDoc_STRVAR(s_uniform_str, BOB_EXT_MODULE_PREFIX ".uniform");
 
@@ -32,7 +34,7 @@ static void PyBoostUniform_Delete (PyBoostUniformObject* o) {
 }
 
 static boost::shared_ptr<void> make_uniform_bool() {
-  return boost::make_shared<boost::uniform_smallint<uint8_t>>(0, 1);
+  return boost::make_shared<bob::core::random::uniform_smallint_distribution<uint8_t>>(0, 1);
 }
 
 template <typename T>
@@ -41,7 +43,7 @@ boost::shared_ptr<void> make_uniform_int(PyObject* min, PyObject* max) {
   if (min) cmin = PyBlitzArrayCxx_AsCScalar<T>(min);
   T cmax = 9;
   if (max) cmax = PyBlitzArrayCxx_AsCScalar<T>(max);
-  return boost::make_shared<boost::uniform_int<T>>(cmin, cmax);
+  return boost::make_shared<bob::core::random::uniform_int_distribution<T>>(cmin, cmax);
 }
 
 template <typename T>
@@ -50,7 +52,7 @@ boost::shared_ptr<void> make_uniform_real(PyObject* min, PyObject* max) {
   if (min) cmin = PyBlitzArrayCxx_AsCScalar<T>(min);
   T cmax = 1;
   if (max) cmax = PyBlitzArrayCxx_AsCScalar<T>(max);
-  return boost::make_shared<boost::uniform_real<T>>(cmin, cmax);
+  return boost::make_shared<bob::core::random::uniform_real_distribution<T>>(cmin, cmax);
 }
 
 PyObject* PyBoostUniform_SimpleNew (int type_num, PyObject* min, PyObject* max) {
@@ -330,16 +332,16 @@ static PyObject* PyBoostUniform_Reset(PyBoostUniformObject* self) {
 }
 
 static PyObject* call_bool(PyBoostUniformObject* self, PyBoostMt19937Object* rng) {
-  if (boost::static_pointer_cast<boost::uniform_smallint<uint8_t>>(self->distro)->operator()(*rng->rng)) Py_RETURN_TRUE;
+  if (boost::static_pointer_cast<bob::core::random::uniform_smallint_distribution<uint8_t>>(self->distro)->operator()(*rng->rng)) Py_RETURN_TRUE;
   Py_RETURN_FALSE;
 }
 
 template <typename T> PyObject* call_int(PyBoostUniformObject* self, PyBoostMt19937Object* rng) {
-  return PyBlitzArrayCxx_FromCScalar(boost::static_pointer_cast<boost::uniform_int<T>>(self->distro)->operator()(*rng->rng));
+  return PyBlitzArrayCxx_FromCScalar(boost::static_pointer_cast<bob::core::random::uniform_int_distribution<T>>(self->distro)->operator()(*rng->rng));
 }
 
 template <typename T> PyObject* call_real(PyBoostUniformObject* self, PyBoostMt19937Object* rng) {
-  return PyBlitzArrayCxx_FromCScalar(boost::static_pointer_cast<boost::uniform_real<T>>(self->distro)->operator()(*rng->rng));
+  return PyBlitzArrayCxx_FromCScalar(boost::static_pointer_cast<bob::core::random::uniform_real_distribution<T>>(self->distro)->operator()(*rng->rng));
 }
 
 /**

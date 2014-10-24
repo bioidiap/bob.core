@@ -6,7 +6,7 @@
  */
 
 #define BOB_CORE_RANDOM_MODULE
-#include <bob.core/random.h>
+#include <bob.core/random_api.h>
 
 PyDoc_STRVAR(s_mt19937_str, BOB_EXT_MODULE_PREFIX ".mt19937");
 

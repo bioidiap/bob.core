@@ -8,7 +8,7 @@
 
 The C++ API of ``bob.core`` allows users to leverage from automatic converters
 for classes in :py:class:`bob.core.random`.  To use the C API, clients should
-first, include the header file ``<bob.core/random.h>`` on their compilation
+first, include the header file ``<bob.core/random_api.h>`` on their compilation
 units and then, make sure to call once ``import_bob_core_random()`` at their
 module instantiation, as explained at the `Python manual
 <http://docs.python.org/2/extending/extending.html#using-capsules>`_.
@@ -19,7 +19,7 @@ the import function:
 .. code-block:: c++
 
    #include <bob.blitz/capi.h>
-   #include <bob.core/random.h>
+   #include <bob.core/random_api.h>
 
    PyMODINIT_FUNC initclient(void) {
 

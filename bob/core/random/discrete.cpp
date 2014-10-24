@@ -6,15 +6,13 @@
  */
 
 #define BOB_CORE_RANDOM_MODULE
-#include <bob.core/random.h>
+#include <bob.core/random_api.h>
 #include <bob.blitz/cppapi.h>
 #include <bob.blitz/cleanup.h>
 #include <boost/make_shared.hpp>
 #include <boost/version.hpp>
 
-#if BOOST_VERSION >= 104700
-#include <boost/random/discrete_distribution.hpp>
-#endif
+#include <bob.core/random.h>
 
 PyDoc_STRVAR(s_discrete_str, BOB_EXT_MODULE_PREFIX ".discrete");
 
@@ -54,12 +52,7 @@ boost::shared_ptr<void> make_discrete(PyObject* probabilities) {
   }
 
 
-#if BOOST_VERSION >= 104700
-  return boost::make_shared<boost::random::discrete_distribution<T,double>>(cxx_probabilities);
-#else
-  PyErr_SetString(PyExc_NotImplementedError, "discrete distribution requires boost >= 1.47");
-  return boost::shared_ptr<void>();
-#endif
+  return boost::make_shared<bob::core::random::discrete_distribution<T,double>>(cxx_probabilities);
 }
 
 PyObject* PyBoostDiscrete_SimpleNew (int type_num, PyObject* probabilities) {
@@ -173,18 +166,13 @@ int PyBoostDiscrete_Converter(PyObject* o, PyBoostDiscreteObject** a) {
 
 template <typename T>
 PyObject* get_probabilities(PyBoostDiscreteObject* self) {
-#if BOOST_VERSION >= 104700
-  std::vector<double> w = boost::static_pointer_cast<boost::random::discrete_distribution<T,double>>(self->distro)->probabilities();
+  std::vector<double> w = boost::static_pointer_cast<bob::core::random::discrete_distribution<T,double>>(self->distro)->probabilities();
   PyObject* retval = PyTuple_New(w.size());
   if (!retval) return 0;
   for (size_t k=0; k<w.size(); ++k) {
     PyTuple_SET_ITEM(retval, k, Py_BuildValue("d", w[k]));
   }
   return retval;
-#else
-  PyErr_SetString(PyExc_NotImplementedError, "discrete distribution requires boost >= 1.47");
-  return 0;
-#endif
 }
 
 /**
@@ -222,13 +210,8 @@ static PyObject* PyBoostDiscrete_GetDtype(PyBoostDiscreteObject* self) {
 }
 
 template <typename T> PyObject* reset(PyBoostDiscreteObject* self) {
-#if BOOST_VERSION >= 104700
-  boost::static_pointer_cast<boost::random::discrete_distribution<T,double>>(self->distro)->reset();
+  boost::static_pointer_cast<bob::core::random::discrete_distribution<T,double>>(self->distro)->reset();
   Py_RETURN_NONE;
-#else
-  PyErr_SetString(PyExc_NotImplementedError, "discrete distribution requires boost >= 1.47");
-  return 0;
-#endif
 }
 
 /**
@@ -248,12 +231,7 @@ static PyObject* PyBoostDiscrete_Reset(PyBoostDiscreteObject* self) {
 }
 
 template <typename T> PyObject* call(PyBoostDiscreteObject* self, PyBoostMt19937Object* rng) {
-#if BOOST_VERSION >= 104700
-  return PyBlitzArrayCxx_FromCScalar(boost::static_pointer_cast<boost::random::discrete_distribution<T,double>>(self->distro)->operator()(*rng->rng));
-#else
-  PyErr_SetString(PyExc_NotImplementedError, "discrete distribution requires boost >= 1.47");
-  return 0;
-#endif
+  return PyBlitzArrayCxx_FromCScalar(boost::static_pointer_cast<bob::core::random::discrete_distribution<T,double>>(self->distro)->operator()(*rng->rng));
 }
 
 /**

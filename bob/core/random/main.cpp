@@ -6,7 +6,7 @@
  */
 
 #define BOB_CORE_RANDOM_MODULE
-#include <bob.core/random.h>
+#include <bob.core/random_api.h>
 
 #ifdef NO_IMPORT_ARRAY
 #undef NO_IMPORT_ARRAY

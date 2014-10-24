@@ -6,9 +6,11 @@
  */
 
 #define BOB_CORE_RANDOM_MODULE
-#include <bob.core/random.h>
+#include <bob.core/random_api.h>
 #include <bob.blitz/cppapi.h>
 #include <boost/make_shared.hpp>
+
+#include <bob.core/random.h>
 
 PyDoc_STRVAR(s_binomial_str, BOB_EXT_MODULE_PREFIX ".binomial");
 
@@ -64,7 +66,7 @@ boost::shared_ptr<void> make_binomial(PyObject* t, PyObject* p) {
     PyErr_SetString(PyExc_ValueError, "parameter p must lie in the interval [0.0, 1.0]");
     return boost::shared_ptr<void>();
   }
-  return boost::make_shared<boost::binomial_distribution<int64_t,T>>(ct, cp);
+  return boost::make_shared<bob::core::random::binomial_distribution<int64_t,T>>(ct, cp);
 }
 
 PyObject* PyBoostBinomial_SimpleNew (int type_num, PyObject* t, PyObject* p) {
@@ -142,7 +144,7 @@ int PyBoostBinomial_Converter(PyObject* o, PyBoostBinomialObject** a) {
 }
 
 template <typename T> PyObject* get_t(PyBoostBinomialObject* self) {
-  return PyBlitzArrayCxx_FromCScalar(boost::static_pointer_cast<boost::binomial_distribution<int64_t,T>>(self->distro)->t());
+  return PyBlitzArrayCxx_FromCScalar(boost::static_pointer_cast<bob::core::random::binomial_distribution<int64_t,T>>(self->distro)->t());
 }
 
 /**
@@ -161,7 +163,7 @@ static PyObject* PyBoostBinomial_GetT(PyBoostBinomialObject* self) {
 }
 
 template <typename T> PyObject* get_p(PyBoostBinomialObject* self) {
-  return PyBlitzArrayCxx_FromCScalar(boost::static_pointer_cast<boost::binomial_distribution<int64_t,T>>(self->distro)->p());
+  return PyBlitzArrayCxx_FromCScalar(boost::static_pointer_cast<bob::core::random::binomial_distribution<int64_t,T>>(self->distro)->p());
 }
 
 /**
@@ -187,7 +189,7 @@ static PyObject* PyBoostBinomial_GetDtype(PyBoostBinomialObject* self) {
 }
 
 template <typename T> PyObject* reset(PyBoostBinomialObject* self) {
-  boost::static_pointer_cast<boost::binomial_distribution<int64_t,T>>(self->distro)->reset();
+  boost::static_pointer_cast<bob::core::random::binomial_distribution<int64_t,T>>(self->distro)->reset();
   Py_RETURN_NONE;
 }
 
@@ -208,7 +210,7 @@ static PyObject* PyBoostBinomial_Reset(PyBoostBinomialObject* self) {
 }
 
 template <typename T> PyObject* call(PyBoostBinomialObject* self, PyBoostMt19937Object* rng) {
-  return PyBlitzArrayCxx_FromCScalar(boost::static_pointer_cast<boost::binomial_distribution<int64_t,T>>(self->distro)->operator()(*rng->rng));
+  return PyBlitzArrayCxx_FromCScalar(boost::static_pointer_cast<bob::core::random::binomial_distribution<int64_t,T>>(self->distro)->operator()(*rng->rng));
 }
 
 /**

@@ -9,7 +9,7 @@
 #define BOB_CORE_ARRAY_RANDOM_H
 
 #include <blitz/array.h>
-#include <boost/random.hpp>
+#include <bob.core/random.h>
 
 namespace bob { namespace core { namespace array {
 /**
@@ -29,12 +29,10 @@ template <typename T, int N>
 void randn(boost::mt19937& rng, blitz::Array<T,N>& dest,
   const T mean=0., const T var=1.)
 {
-  boost::normal_distribution<T> distrib(mean, var);
-  boost::variate_generator<boost::mt19937, boost::normal_distribution<T> >
-    vg(rng, distrib);
+  bob::core::random::normal_distribution<T> distrib(mean, var);
   typedef typename blitz::Array<T,N>::iterator BA_iterator;
   for (BA_iterator it=dest.begin(); it !=dest.end(); ++it)
-    *it = vg();
+    *it = distrib(rng);
 }
 
 /**

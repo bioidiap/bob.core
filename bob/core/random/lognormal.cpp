@@ -6,9 +6,11 @@
  */
 
 #define BOB_CORE_RANDOM_MODULE
-#include <bob.core/random.h>
+#include <bob.core/random_api.h>
 #include <bob.blitz/cppapi.h>
 #include <boost/make_shared.hpp>
+
+#include <bob.core/random.h>
 
 PyDoc_STRVAR(s_lognormal_str, BOB_EXT_MODULE_PREFIX ".lognormal");
 
@@ -53,7 +55,7 @@ boost::shared_ptr<void> make_lognormal(PyObject* mean, PyObject* sigma) {
   if (mean) cmean = PyBlitzArrayCxx_AsCScalar<T>(mean);
   T csigma = 1.;
   if (sigma) csigma = PyBlitzArrayCxx_AsCScalar<T>(sigma);
-  return boost::make_shared<boost::lognormal_distribution<T>>(cmean, csigma);
+  return boost::make_shared<bob::core::random::lognormal_distribution<T>>(cmean, csigma);
 }
 
 PyObject* PyBoostLogNormal_SimpleNew (int type_num, PyObject* mean, PyObject* sigma) {
@@ -131,7 +133,7 @@ int PyBoostLogNormal_Converter(PyObject* o, PyBoostLogNormalObject** a) {
 }
 
 template <typename T> PyObject* get_mean(PyBoostLogNormalObject* self) {
-  return PyBlitzArrayCxx_FromCScalar(boost::static_pointer_cast<boost::lognormal_distribution<T>>(self->distro)->mean());
+  return PyBlitzArrayCxx_FromCScalar(boost::static_pointer_cast<bob::core::random::lognormal_distribution<T>>(self->distro)->m());
 }
 
 /**
@@ -150,7 +152,7 @@ static PyObject* PyBoostLogNormal_GetMean(PyBoostLogNormalObject* self) {
 }
 
 template <typename T> PyObject* get_sigma(PyBoostLogNormalObject* self) {
-  return PyBlitzArrayCxx_FromCScalar(boost::static_pointer_cast<boost::lognormal_distribution<T>>(self->distro)->sigma());
+  return PyBlitzArrayCxx_FromCScalar(boost::static_pointer_cast<bob::core::random::lognormal_distribution<T>>(self->distro)->s());
 }
 
 /**
@@ -176,7 +178,7 @@ static PyObject* PyBoostLogNormal_GetDtype(PyBoostLogNormalObject* self) {
 }
 
 template <typename T> PyObject* reset(PyBoostLogNormalObject* self) {
-  boost::static_pointer_cast<boost::lognormal_distribution<T>>(self->distro)->reset();
+  boost::static_pointer_cast<bob::core::random::lognormal_distribution<T>>(self->distro)->reset();
   Py_RETURN_NONE;
 }
 
@@ -197,9 +199,8 @@ static PyObject* PyBoostLogNormal_Reset(PyBoostLogNormalObject* self) {
 }
 
 template <typename T> PyObject* call(PyBoostLogNormalObject* self, PyBoostMt19937Object* rng) {
-  typedef boost::mt19937 rng_t;
-  typedef boost::lognormal_distribution<T> distro_t;
-  return PyBlitzArrayCxx_FromCScalar(boost::variate_generator<rng_t&, distro_t>(*rng->rng, *boost::static_pointer_cast<distro_t>(self->distro))());
+  typedef bob::core::random::lognormal_distribution<T> distro_t;
+  return PyBlitzArrayCxx_FromCScalar((*boost::static_pointer_cast<distro_t>(self->distro))(*rng->rng));
 }
 
 /**
