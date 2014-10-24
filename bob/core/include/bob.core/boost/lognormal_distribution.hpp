@@ -23,8 +23,8 @@
 #include <istream>
 #include <boost/limits.hpp>
 #include <boost/random/detail/config.hpp>
-#include <boost/random/detail/operators.hpp>
 
+#include <bob.core/boost/operators.hpp>
 #include <bob.core/boost/normal_distribution.hpp>
 
 namespace bob {

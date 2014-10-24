@@ -22,8 +22,9 @@
 #include <boost/random/uniform_01.hpp>
 #include <boost/random/uniform_int_distribution.hpp>
 #include <boost/random/detail/config.hpp>
-#include <boost/random/detail/operators.hpp>
 #include <boost/random/detail/vector_io.hpp>
+
+#include <bob.core/boost/operators.hpp>
 
 #ifndef BOOST_NO_CXX11_HDR_INITIALIZER_LIST
 #include <initializer_list>

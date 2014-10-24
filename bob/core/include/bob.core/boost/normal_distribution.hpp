@@ -28,11 +28,13 @@
 #include <boost/type_traits/is_integral.hpp>
 #include <boost/type_traits/make_unsigned.hpp>
 #include <boost/random/detail/config.hpp>
-#include <boost/random/detail/operators.hpp>
 #include <boost/random/detail/integer_log2.hpp>
 #include <boost/random/uniform_01.hpp>
 #include <boost/random/uniform_int_distribution.hpp>
 #include <boost/random/exponential_distribution.hpp>
+
+#include <bob.core/boost/operators.hpp>
+
 
 namespace bob { namespace core { namespace random {
 
