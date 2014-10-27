@@ -24,7 +24,6 @@
 #include <boost/random/detail/config.hpp>
 #include <boost/random/uniform_01.hpp>
 
-
 #include <bob.core/boost/operators.hpp>
 
 namespace bob {

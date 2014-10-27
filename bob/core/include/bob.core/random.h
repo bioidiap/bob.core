@@ -21,11 +21,15 @@ namespace bob { namespace core { namespace random {
   template <class RealType=double>
     using lognormal_distribution = boost::random::lognormal_distribution<RealType>;
 
+  template<class RealType=double>
+    using gamma_distribution = boost::random::gamma_distribution<RealType>;
+
   template<class IntType=int, class RealType=double>
     using binomial_distribution = boost::random::binomial_distribution<IntType, RealType>;
 
-  template<class IntType, class WeightType>
+  template<class IntType=int, class WeightType=double>
     using discrete_distribution = boost::random::discrete_distribution<IntType, WeightType>;
+
 
 } } } // namespaces
 
@@ -37,6 +41,7 @@ namespace bob { namespace core { namespace random {
 #include <bob.core/boost/lognormal_distribution.hpp>
 #include <bob.core/boost/binomial_distribution.hpp>
 #include <bob.core/boost/discrete_distribution.hpp>
+#include <bob.core/boost/gamma_distribution.hpp>
 
 #endif // BOOST VERSION
 
