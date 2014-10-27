@@ -10,8 +10,8 @@
  * $Id$
  */
 
-#ifndef BOOST_RANDOM_DETAIL_OPERATORS_HPP
-#define BOOST_RANDOM_DETAIL_OPERATORS_HPP
+#ifndef BOB_BOOST_RANDOM_DETAIL_OPERATORS_HPP
+#define BOB_BOOST_RANDOM_DETAIL_OPERATORS_HPP
 
 #include <boost/random/detail/config.hpp>
 #include <boost/detail/workaround.hpp>
@@ -84,7 +84,8 @@
 
 // from vector_io.hpp
 
-namespace boost {
+namespace bob {
+namespace core {
 namespace random {
 namespace detail {
 
@@ -135,8 +136,6 @@ void read_vector(std::basic_istream<CharT, Traits>& is, std::vector<T>& vec)
     }
 }
 
-}
-}
-}
+} } } } // namespaces
 
 #endif

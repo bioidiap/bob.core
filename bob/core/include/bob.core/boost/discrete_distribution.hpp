@@ -306,7 +306,7 @@ public:
         /** Writes the parameters to a @c std::ostream. */
         BOOST_RANDOM_DETAIL_OSTREAM_OPERATOR(os, param_type, parm)
         {
-            boost::random::detail::print_vector(os, parm._probabilities);
+            bob::core::random::detail::print_vector(os, parm._probabilities);
             return os;
         }
 
@@ -314,7 +314,7 @@ public:
         BOOST_RANDOM_DETAIL_ISTREAM_OPERATOR(is, param_type, parm)
         {
             std::vector<WeightType> temp;
-            boost::random::detail::read_vector(is, temp);
+            bob::core::random::detail::read_vector(is, temp);
             if(is) {
                 parm._probabilities.swap(temp);
             }

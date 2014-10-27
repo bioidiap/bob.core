@@ -151,7 +151,7 @@ std::pair<RealType, int> generate_int_float_pair(Engine& eng, boost::mpl::true_)
     std::size_t m =
         (range == (std::numeric_limits<base_unsigned>::max)()) ?
             std::numeric_limits<base_unsigned>::digits :
-            boost::random::detail::integer_log2(range + 1);
+            bob::core::random::detail::integer_log2(range + 1);
 
     int bucket = 0;
     // process as many full digits as possible into the int part
@@ -230,13 +230,11 @@ struct unit_normal_distribution
     }
     template<class Engine>
     RealType generate_tail(Engine& eng) {
-        boost::exponential_distribution<RealType> exponential;
+        bob::core::random::exponential_distribution<RealType> exponential;
         const RealType tail_start = RealType(normal_table<double>::table_x[1]);
-        std::cout << "Enter" << std::endl;
         for(;;) {
             RealType x = exponential(eng)/tail_start;
             RealType y = exponential(eng);
-            std::cout << "x = "  << x << "; y = " << y << std::endl;
             if(2*y > x*x) return x + tail_start;
         }
     }

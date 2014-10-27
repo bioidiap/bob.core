@@ -11,14 +11,15 @@
  *
  */
 
-#ifndef BOOST_RANDOM_DETAIL_INTEGER_LOG2_HPP
-#define BOOST_RANDOM_DETAIL_INTEGER_LOG2_HPP
+#ifndef BOB_BOOST_RANDOM_DETAIL_INTEGER_LOG2_HPP
+#define BOB_BOOST_RANDOM_DETAIL_INTEGER_LOG2_HPP
 
 #include <boost/config.hpp>
 #include <boost/limits.hpp>
 #include <boost/pending/integer_log2.hpp>
 
-namespace boost {
+namespace bob {
+namespace core {
 namespace random {
 namespace detail {
 
@@ -79,6 +80,7 @@ BOOST_RANDOM_DETAIL_CONSTEXPR int integer_log2(T t)
 
 } // namespace detail
 } // namespace random
-} // namespace boost
+} // namespace core
+} // namespace bob
 
-#endif // BOOST_RANDOM_DETAIL_INTEGER_LOG2_HPP
+#endif // BOB_BOOST_RANDOM_DETAIL_INTEGER_LOG2_HPP

@@ -14,8 +14,8 @@
  *  2001-02-18  moved to individual header files
  */
 
-#ifndef BOOST_RANDOM_EXPONENTIAL_DISTRIBUTION_HPP
-#define BOOST_RANDOM_EXPONENTIAL_DISTRIBUTION_HPP
+#ifndef BOB_BOOST_RANDOM_EXPONENTIAL_DISTRIBUTION_HPP
+#define BOB_BOOST_RANDOM_EXPONENTIAL_DISTRIBUTION_HPP
 
 #include <boost/config/no_tr1/cmath.hpp>
 #include <iosfwd>
@@ -27,7 +27,8 @@
 
 #include <bob.core/boost/operators.hpp>
 
-namespace boost {
+namespace bob {
+namespace core {
 namespace random {
 
 /**
@@ -131,7 +132,7 @@ public:
     {
         using std::log;
         return -result_type(1) /
-            _lambda * log(result_type(1)-uniform_01<RealType>()(eng));
+            _lambda * log(result_type(1)-boost::uniform_01<RealType>()(eng));
     }
 
     /**
@@ -175,10 +176,6 @@ private:
     result_type _lambda;
 };
 
-} // namespace random
+} } } // namespaces
 
-using random::exponential_distribution;
-
-} // namespace boost
-
-#endif // BOOST_RANDOM_EXPONENTIAL_DISTRIBUTION_HPP
+#endif // BOB_BOOST_RANDOM_EXPONENTIAL_DISTRIBUTION_HPP
