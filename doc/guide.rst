@@ -14,8 +14,9 @@
 Array Conversion
 ----------------
 
+
 The function :py:func:`bob.core.convert` allows you to convert objects of type
-:py:class:`numpy.ndarray` between different types, with range compression or
+:py:class:`numpy.ndarray` or :py:class:`bob.blitz.array` between different types, with range compression or
 decompression. For example, here we demonstrate a conversion using default
 ranges. In this type of conversion, our implementation will assume that the
 source array contains values within the range of ``uint8_t`` numbers and will

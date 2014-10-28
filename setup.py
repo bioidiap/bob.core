@@ -30,7 +30,7 @@ setup(
 
     namespace_packages=[
       "bob",
-      ],
+    ],
 
     setup_requires = build_requires,
     install_requires = build_requires,
@@ -57,7 +57,7 @@ setup(
       Extension("bob.core._convert",
         [
           "bob/core/convert.cpp",
-          ],
+        ],
         version = version,
         packages = packages,
       ),
@@ -65,7 +65,7 @@ setup(
       Extension("bob.core._logging",
         [
           "bob/core/logging.cpp",
-          ],
+        ],
         version = version,
         packages = packages,
         boost_modules = ['system', 'iostreams', 'filesystem'],
@@ -93,6 +93,7 @@ setup(
     },
 
     classifiers = [
+      'Framework :: Bob',
       'Development Status :: 3 - Alpha',
       'Intended Audience :: Developers',
       'License :: OSI Approved :: BSD License',
@@ -102,4 +103,4 @@ setup(
       'Topic :: Software Development :: Libraries :: Python Modules',
     ],
 
-  )
+)

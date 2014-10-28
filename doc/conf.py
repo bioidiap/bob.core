@@ -278,7 +278,11 @@ numpy_manual = 'http://docs.scipy.org/doc/numpy-%s/' % numpy_version
 intersphinx_mapping = {
   'http://docs.python.org/%d.%d/' % sys.version_info[:2]: None,
   numpy_manual: None,
-  }
+}
+
+from bob.extension.utils import link_documentation
+intersphinx_mapping.update(link_documentation())
+
 
 def setup(app):
   pass
