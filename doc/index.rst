@@ -2,6 +2,8 @@
 .. Andre Anjos <andre.anjos@idiap.ch>
 .. Mon  4 Nov 20:58:04 2013 CET
 
+.. _bob.core:
+
 =====================
  Bob's Core Routines
 =====================
