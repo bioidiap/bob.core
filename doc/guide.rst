@@ -94,7 +94,7 @@ two RNGs:
    True
 
 Distributions skew numbers produced by the RNG so they look like the
-parameterized distribution. By calling a distribution with an RNG, one
+parametrized distribution. By calling a distribution with an RNG, one
 effectively generates random numbers:
 
 .. doctest:: coretest
@@ -129,3 +129,38 @@ which case it generates a :py:class:`numpy.ndarray` of the specified size:
           [ 3,  2,  6],
           [10, 10, 10]])
 
+Logging
+-------
+
+Bob provides logging capabilities to integrate log output from C++ using the python :py:mod:`logging` module.
+In the :py:mod:`bob.core.log` module, there exist several functions to ease up the integration and the set-up of the logging module.
+
+In an external python module you can use the :py:func:`bob.core.log.setup` function to generate and initialize a logger for you:
+
+.. doctest:: coretest
+   :options: +NORMALIZE_WHITESPACE
+
+   >>> logger = bob.core.log.setup("my.module.name")
+
+This will instantiate a :py:class:`logging.Logger` object that you can use for logging information, such as:
+
+.. doctest:: coretest
+   :options: +NORMALIZE_WHITESPACE
+
+   >>> logger.info("This might be an interesting information...")
+
+Now, when writing a python script, you can provide the command line option for your script, to increase the verbosity level of your script:
+
+.. doctest:: coretest
+   :options: +NORMALIZE_WHITESPACE
+
+   >>> import argparse
+   >>> parser = argparse.ArgumentParser()
+   >>> # initialize command line arguments
+   >>> # ...
+   >>> bob.core.log.add_command_line_option(parser)
+   >>> args = parser.parse_args([])
+   >>> bob.core.log.set_verbosity_level(logger, args.verbose)
+
+Of course, you can use several loggers and set different log levels for all loggers.
+Anyways, the root logger ``logging.getLogger('bob')`` will always be affected by the last call.

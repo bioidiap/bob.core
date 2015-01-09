@@ -14,31 +14,20 @@
 This section includes information for using the pure Python API of
 ``bob.core``.
 
-
-Classes
+Logging
 -------
 
-.. autoclass:: bob.core.random.mt19937
+.. automodule:: bob.core.log
 
-.. autoclass:: bob.core.random.uniform
 
-.. autoclass:: bob.core.random.normal
+Random Numbers
+--------------
 
-.. autoclass:: bob.core.random.lognormal
+.. automodule:: bob.core.random
 
-.. autoclass:: bob.core.random.gamma
-
-.. autoclass:: bob.core.random.binomial
-
-.. autoclass:: bob.core.random.discrete
-
-.. autoclass:: bob.core.random.variate_generator
 
 
 Functions
 ---------
 
 .. autofunction:: bob.core.convert
-
-
-

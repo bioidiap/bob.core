@@ -6,12 +6,69 @@
 """Tests for the logging subsystem
 """
 
-from . import _logging
+import bob.core
+
+def test_from_python():
+  logger = bob.core.log.setup("bob.core")
+  bob.core.log.set_verbosity_level(logger, 2)
+
+  # send a log message
+  logger.debug("This is a test debug message")
+  logger.info("This is a test info message")
+  bob.core.log.set_verbosity_level(logger, 0)
+  logger.warn("This is a test warn message")
+  logger.error("This is a test error message")
+
+
+def test_from_python_output():
+  import logging, sys
+
+  if sys.version_info[0] < 3:
+    from StringIO import StringIO
+  else:
+    from io import StringIO
+  # create an artificial logger using the logging module
+  logger = logging.getLogger("XXX.YYY")
+
+  # add handlers
+  out, err = StringIO(), StringIO()
+  _warn_err = logging.StreamHandler(err)
+  _warn_err.setLevel(logging.WARNING)
+  logger.addHandler(_warn_err)
+
+  _debug_info = logging.StreamHandler(out)
+  _debug_info.setLevel(logging.DEBUG)
+  _debug_info.addFilter(bob.core.log._InfoFilter())
+  logger.addHandler(_debug_info)
+
+  # now, set up the logger
+  logger = bob.core.log.setup("XXX.YYY")
+
+  # send log messages
+  bob.core.log.set_verbosity_level(logger, 2)
+  logger.debug("This is a test debug message")
+  logger.info("This is a test info message")
+
+  bob.core.log.set_verbosity_level(logger, 0)
+  logger.warn("This is a test warn message")
+  logger.error("This is a test error message")
+
+  out = out.getvalue().rstrip()
+  err = err.getvalue().rstrip()
+
+  assert out.startswith("XXX.YYY")
+  assert "INFO" in out
+  assert out.endswith("This is a test info message")
+
+  assert err.startswith("XXX.YYY")
+  assert "ERROR" in err
+  assert err.endswith("This is a test error message")
+
 
 def test_from_cxx():
 
-  _logging.__log_message__(1, 'error', 'this is a test message')
+  bob.core._logging.__log_message__(1, 'error', 'this is a test message')
 
 def test_from_cxx_multithreaded():
 
-  _logging.__log_message_mt__(2, 1, 'error', 'this is a test message')
+  bob.core._logging.__log_message_mt__(2, 1, 'error', 'this is a test message')
