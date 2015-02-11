@@ -66,8 +66,7 @@ struct PythonLoggingOutputDevice: public bob::core::OutputDevice {
   {
 
       if (logger && logger != Py_None) {
-        m_logger = logger;
-        Py_INCREF(m_logger);
+        m_logger = Py_BuildValue("O", logger);
         m_name = Py_BuildValue("s", name);
       }
 
@@ -568,8 +567,7 @@ static PyObject* create_module (void) {
 
   if (c_api_object) PyModule_AddObject(m, "_C_API", c_api_object);
 
-  Py_INCREF(m);
-  return m;
+  return Py_BuildValue("O", m);
 
 }
 
