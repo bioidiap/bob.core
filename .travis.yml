@@ -23,7 +23,7 @@ before_install:
 install:
 - SETUPTOOLS_VERSION=`python -c "import setuptools; print(setuptools.version.__version__)"`
 - python bootstrap-buildout.py --setuptools-version $SETUPTOOLS_VERSION
-- CFLAGS=-coverage ./bin/buildout
+- CFLAGS=--coverage LDFLAGS=--coverage ./bin/buildout
 script:
 - ./bin/python -c 'from bob.core import get_config; print(get_config())'
 - ./bin/coverage run --source=bob.core ./bin/nosetests -sv
