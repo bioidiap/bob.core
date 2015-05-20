@@ -262,9 +262,6 @@ static PyObject* create_module (void) {
   if (!m) return 0;
   auto m_ = make_safe(m);
 
-  /* register some constants */
-  if (PyModule_AddStringConstant(m, "__version__", BOB_EXT_MODULE_VERSION) < 0) return 0;
-
   /* imports dependencies */
   if (import_bob_blitz() < 0) {
     PyErr_Print();
@@ -273,7 +270,6 @@ static PyObject* create_module (void) {
   }
 
   return Py_BuildValue("O", m);
-
 }
 
 PyMODINIT_FUNC BOB_EXT_ENTRY_NAME (void) {

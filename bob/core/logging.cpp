@@ -531,10 +531,6 @@ static PyObject* create_module (void) {
   if (!m) return 0;
   auto m_ = make_safe(m);
 
-  /* register some constants */
-  if (PyModule_AddIntConstant(m, "__api_version__", BOB_CORE_API_VERSION) < 0) return 0;
-  if (PyModule_AddStringConstant(m, "__version__", BOB_EXT_MODULE_VERSION) < 0) return 0;
-
   static void* PyBobCoreLogging_API[PyBobCoreLogging_API_pointers];
 
   /* exhaustive list of C APIs */

@@ -1,4 +1,5 @@
-from ._library import __doc__, __api_version__, mt19937, uniform, normal, lognormal, gamma, binomial, discrete
+from ._library import __doc__, mt19937, uniform, normal, lognormal, gamma, binomial, discrete
+from ..version import api as __api_version__
 import numpy
 
 class variate_generator:
