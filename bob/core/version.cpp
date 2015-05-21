@@ -5,95 +5,13 @@
  * @brief Binds configuration information available from bob
  */
 
-#include <Python.h>
-
 #include <bob.core/config.h>
 
-#include <string>
-#include <cstdlib>
-#include <blitz/blitz.h>
-#include <boost/preprocessor/stringize.hpp>
-#include <boost/version.hpp>
-#include <boost/format.hpp>
-#if WITH_PERFTOOLS
-#include <google/tcmalloc.h>
-#endif
-
+#define BOB_IMPORT_VERSION
 #ifdef NO_IMPORT_ARRAY
 #undef NO_IMPORT_ARRAY
 #endif
 #include <bob.blitz/capi.h>
-#include <bob.blitz/cleanup.h>
-
-static int dict_steal(PyObject* d, const char* key, PyObject* value) {
-  if (!value) return 0;
-  int retval = PyDict_SetItemString(d, key, value);
-  Py_DECREF(value);
-  if (retval == 0) return 1; //all good
-  return 0; //a problem occurred
-}
-
-static int dict_set(PyObject* d, const char* key, const char* value) {
-  PyObject* v = Py_BuildValue("s", value);
-  return dict_steal(d, key, v);
-}
-
-
-/**
- * Describes the version of Boost libraries installed
- */
-static PyObject* boost_version() {
-  boost::format f("%d.%d.%d");
-  f % (BOOST_VERSION / 100000);
-  f % (BOOST_VERSION / 100 % 1000);
-  f % (BOOST_VERSION % 100);
-  return Py_BuildValue("s", f.str().c_str());
-}
-
-/**
- * Describes the compiler version
- */
-static PyObject* compiler_version() {
-# if defined(__GNUC__) && !defined(__llvm__)
-  boost::format f("%s.%s.%s");
-  f % BOOST_PP_STRINGIZE(__GNUC__);
-  f % BOOST_PP_STRINGIZE(__GNUC_MINOR__);
-  f % BOOST_PP_STRINGIZE(__GNUC_PATCHLEVEL__);
-  return Py_BuildValue("ss", "gcc", f.str().c_str());
-# elif defined(__llvm__) && !defined(__clang__)
-  return Py_BuildValue("ss", "llvm-gcc", __VERSION__);
-# elif defined(__clang__)
-  return Py_BuildValue("ss", "clang", __clang_version__);
-# else
-  return Py_BuildValue("s", "unsupported");
-# endif
-}
-
-/**
- * Python version with which we compiled the extensions
- */
-static PyObject* python_version() {
-  boost::format f("%s.%s.%s");
-  f % BOOST_PP_STRINGIZE(PY_MAJOR_VERSION);
-  f % BOOST_PP_STRINGIZE(PY_MINOR_VERSION);
-  f % BOOST_PP_STRINGIZE(PY_MICRO_VERSION);
-  return Py_BuildValue("s", f.str().c_str());
-}
-
-/**
- * Numpy version
- */
-static PyObject* numpy_version() {
-  return Py_BuildValue("{ssss}", "abi", BOOST_PP_STRINGIZE(NPY_VERSION),
-      "api", BOOST_PP_STRINGIZE(NPY_API_VERSION));
-}
-
-/**
- * bob.blitz c/c++ api version
- */
-static PyObject* bob_blitz_version() {
-  return Py_BuildValue("{ss}", "api", BOOST_PP_STRINGIZE(BOB_BLITZ_API_VERSION));
-}
 
 static PyObject* build_version_dictionary() {
 
@@ -149,11 +67,7 @@ static PyObject* create_module (void) {
   if (PyModule_AddObject(m, "externals", externals) < 0) return 0;
 
   /* imports dependencies */
-  if (import_bob_blitz() < 0) {
-    PyErr_Print();
-    PyErr_Format(PyExc_ImportError, "cannot import `%s'", BOB_EXT_MODULE_NAME);
-    return 0;
-  }
+  if (import_bob_blitz() < 0) return 0;
 
   return Py_BuildValue("O", m);
 }
