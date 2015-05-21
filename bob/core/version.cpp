@@ -8,9 +8,6 @@
 #include <bob.core/config.h>
 
 #define BOB_IMPORT_VERSION
-#ifdef NO_IMPORT_ARRAY
-#undef NO_IMPORT_ARRAY
-#endif
 #include <bob.blitz/config.h>
 #include <bob.blitz/cleanup.h>
 
