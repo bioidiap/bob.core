@@ -8,10 +8,14 @@
 #define BOB_CORE_LOGGING_MODULE
 #include <bob.core/api.h>
 
+#ifdef NO_IMPORT_ARRAY
+#undef NO_IMPORT_ARRAY
+#endif
+#include <bob.blitz/capi.h>
+#include <bob.blitz/cleanup.h>
+
 #include <boost/shared_array.hpp>
 #include <boost/make_shared.hpp>
-#include <bob.core/config.h>
-#include <bob.blitz/cleanup.h>
 
 #define PYTHON_LOGGING_DEBUG 0
 
@@ -563,8 +567,10 @@ static PyObject* create_module (void) {
 
   if (c_api_object) PyModule_AddObject(m, "_C_API", c_api_object);
 
-  return Py_BuildValue("O", m);
+  /* imports dependencies */
+  if (import_bob_blitz() < 0) return 0;
 
+  return Py_BuildValue("O", m);
 }
 
 PyMODINIT_FUNC BOB_EXT_ENTRY_NAME (void) {

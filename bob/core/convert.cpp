@@ -263,11 +263,7 @@ static PyObject* create_module (void) {
   auto m_ = make_safe(m);
 
   /* imports dependencies */
-  if (import_bob_blitz() < 0) {
-    PyErr_Print();
-    PyErr_Format(PyExc_ImportError, "cannot import `%s'", BOB_EXT_MODULE_NAME);
-    return 0;
-  }
+  if (import_bob_blitz() < 0) return 0;
 
   return Py_BuildValue("O", m);
 }

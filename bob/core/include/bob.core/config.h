@@ -18,6 +18,8 @@
   * There will be a compiler warning, when these functions are not used, so use them!
   ***************************************/
 
+  #include <Python.h>
+  #include <boost/preprocessor/stringize.hpp>
 
   /**
    * bob.core c/c++ api version
