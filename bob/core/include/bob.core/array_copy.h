@@ -34,6 +34,17 @@ namespace bob {
     }
 
     /**
+     * @brief Copies blitz array 'a' into 'b' like copy() does, but resets the storage
+     * ordering. The shape of 'b' is adapted to that of 'a', so iterators of 'b' are invalid afterward.
+     */
+    template <typename T, int D>
+    void ccopy(const blitz::Array<T,D>& a, blitz::Array<T,D>& b)
+    {
+      b.resize(a.shape());
+      b = a;
+    }
+
+    /**
      * @brief Copies a std::vector of blitz arrays, making deep copies of the
      * arrays.
      * @warning Previous content of the destination will be erased
