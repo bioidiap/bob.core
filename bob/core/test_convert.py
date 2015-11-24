@@ -32,3 +32,12 @@ def test_from_and_to_range():
   x = numpy.array(range(6), 'uint8').reshape(2,3)
   c = convert(x, 'float64', source_range=(0,255), dest_range=(0.,255.))
   assert numpy.array_equal(x.astype('float64'), c)
+
+
+def test_sorting():
+  # tests the sorting functionality implemented in C++
+  from ._convert import _sort
+  unsorted = numpy.random.random((100))
+  py = numpy.sort(unsorted)
+  _sort(unsorted)
+  assert (py==unsorted).all()

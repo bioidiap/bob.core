@@ -11,8 +11,10 @@
 #endif
 #include <bob.blitz/cppapi.h>
 #include <bob.blitz/cleanup.h>
+#include <bob.extension/documentation.h>
 
 #include <bob.core/array_convert.h>
+#include <bob.core/array_sort.h>
 
 template <typename Tdst, typename Tsrc, int N>
 PyObject* inner_convert (PyBlitzArrayObject* src,
@@ -229,12 +231,52 @@ with its element type as indicated by the user.\n\
 "
 );
 
+
+static auto sort_doc = bob::extension::FunctionDoc(
+  "_sort",
+  "Sorts a blitz::Array.",
+  "This function should only be used in the C++ code. "
+  "The binding is only for test purposes."
+)
+.add_prototype("array")
+.add_parameter("array", "array_like(float,1D)", "The unsorted array, which will be sorted afterwards")
+;
+
+static PyObject* sort(PyObject*, PyObject* args, PyObject* kwds) {
+BOB_TRY
+  /* Parses input arguments in a single shot */
+  char** kwlist = sort_doc.kwlist();
+
+  PyBlitzArrayObject* array;
+
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&", kwlist, &PyBlitzArray_OutputConverter, &array)) return 0;
+  auto array_ = make_safe(array);
+
+  if (array->ndim != 1 || array->type_num != NPY_FLOAT64){
+    PyErr_SetString(PyExc_TypeError, "Invalid input");
+    return 0;
+  }
+
+  bob::core::array::sort(*PyBlitzArrayCxx_AsBlitz<double,1>(array));
+
+  Py_RETURN_NONE;
+BOB_CATCH_FUNCTION("sort", 0)
+}
+
+
+
 static PyMethodDef module_methods[] = {
     {
       s_convert_str,
       (PyCFunction)py_convert,
       METH_VARARGS|METH_KEYWORDS,
       s_convert__doc__
+    },
+    {
+      sort_doc.name(),
+      (PyCFunction)sort,
+      METH_VARARGS|METH_KEYWORDS,
+      sort_doc.doc()
     },
     {0}  /* Sentinel */
 };
