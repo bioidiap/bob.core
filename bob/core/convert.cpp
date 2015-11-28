@@ -50,116 +50,67 @@ PyObject* inner_convert (PyBlitzArrayObject* src,
 
   //use all defaults
   auto bz_dst = convert<Tdst,Tsrc>(*bz_src);
-  return PyBlitzArrayCxx_NewFromArray(bz_dst);
-
+  return PyBlitzArrayCxx_AsNumpy(bz_dst);
 }
+
 
 template <typename Tdst, typename Tsrc>
 PyObject* convert_dim (PyBlitzArrayObject* src,
     PyObject* dst_min, PyObject* dst_max,
     PyObject* src_min, PyObject* src_max) {
 
-  PyObject* retval = 0;
-
   switch (src->ndim) {
-    case 1:
-      retval = inner_convert<Tdst, Tsrc, 1>(src, dst_min, dst_max, src_min, src_max);
-      break;
-
-    case 2:
-      retval = inner_convert<Tdst, Tsrc, 2>(src, dst_min, dst_max, src_min, src_max);
-      break;
-
-    case 3:
-      retval = inner_convert<Tdst, Tsrc, 3>(src, dst_min, dst_max, src_min, src_max);
-      break;
-
-    case 4:
-      retval = inner_convert<Tdst, Tsrc, 4>(src, dst_min, dst_max, src_min, src_max);
-      break;
-
+    case 1: return inner_convert<Tdst, Tsrc, 1>(src, dst_min, dst_max, src_min, src_max);
+    case 2: return inner_convert<Tdst, Tsrc, 2>(src, dst_min, dst_max, src_min, src_max);
+    case 3: return inner_convert<Tdst, Tsrc, 3>(src, dst_min, dst_max, src_min, src_max);
+    case 4: return inner_convert<Tdst, Tsrc, 4>(src, dst_min, dst_max, src_min, src_max);
     default:
       PyErr_Format(PyExc_TypeError, "conversion does not support %" PY_FORMAT_SIZE_T "d dimensions", src->ndim);
-
   }
-
-  return retval;
+  return 0;
 }
 
 template <typename T> PyObject* convert_to(PyBlitzArrayObject* src,
     PyObject* dst_min, PyObject* dst_max,
     PyObject* src_min, PyObject* src_max) {
 
-  PyObject* retval = 0;
-
   switch (src->type_num) {
-    case NPY_BOOL:
-      retval = convert_dim<T, bool>(src, dst_min, dst_max, src_min, src_max);
-      break;
-
-    case NPY_INT8:
-      retval = convert_dim<T, int8_t>(src, dst_min, dst_max, src_min, src_max);
-      break;
-
-    case NPY_INT16:
-      retval = convert_dim<T, int16_t>(src, dst_min, dst_max, src_min, src_max);
-      break;
-
-    case NPY_INT32:
-      retval = convert_dim<T, int32_t>(src, dst_min, dst_max, src_min, src_max);
-      break;
-
-    case NPY_INT64:
-      retval = convert_dim<T, int64_t>(src, dst_min, dst_max, src_min, src_max);
-      break;
-
-    case NPY_UINT8:
-      retval = convert_dim<T, uint8_t>(src, dst_min, dst_max, src_min, src_max);
-      break;
-
-    case NPY_UINT16:
-      retval = convert_dim<T, uint16_t>(src, dst_min, dst_max, src_min, src_max);
-      break;
-
-    case NPY_UINT32:
-      retval = convert_dim<T, uint32_t>(src, dst_min, dst_max, src_min, src_max);
-      break;
-
-    case NPY_UINT64:
-      retval = convert_dim<T, uint64_t>(src, dst_min, dst_max, src_min, src_max);
-      break;
-
-    case NPY_FLOAT32:
-      retval = convert_dim<T, float>(src, dst_min, dst_max, src_min, src_max);
-      break;
-
-    case NPY_FLOAT64:
-      retval = convert_dim<T, double>(src, dst_min, dst_max, src_min, src_max);
-      break;
-
+    case NPY_BOOL: return convert_dim<T, bool>(src, dst_min, dst_max, src_min, src_max);
+    case NPY_INT8: return convert_dim<T, int8_t>(src, dst_min, dst_max, src_min, src_max);
+    case NPY_INT16: return convert_dim<T, int16_t>(src, dst_min, dst_max, src_min, src_max);
+    case NPY_INT32: return convert_dim<T, int32_t>(src, dst_min, dst_max, src_min, src_max);
+    case NPY_INT64: return convert_dim<T, int64_t>(src, dst_min, dst_max, src_min, src_max);
+    case NPY_UINT8: return convert_dim<T, uint8_t>(src, dst_min, dst_max, src_min, src_max);
+    case NPY_UINT16: return convert_dim<T, uint16_t>(src, dst_min, dst_max, src_min, src_max);
+    case NPY_UINT32: return convert_dim<T, uint32_t>(src, dst_min, dst_max, src_min, src_max);
+    case NPY_UINT64: return convert_dim<T, uint64_t>(src, dst_min, dst_max, src_min, src_max);
+    case NPY_FLOAT32: return convert_dim<T, float>(src, dst_min, dst_max, src_min, src_max);
+    case NPY_FLOAT64: return convert_dim<T, double>(src, dst_min, dst_max, src_min, src_max);
     default:
       PyErr_Format(PyExc_TypeError, "conversion from `%s' (%d) is not supported", PyBlitzArray_TypenumAsString(src->type_num), src->type_num);
-
   }
-
-  return retval;
-
+  return 0;
 }
 
+static auto convert_doc = bob::extension::FunctionDoc(
+  "convert",
+  "Converts array data type, with optional range squash/expansion",
+  "This function allows to convert/rescale a array of a given type into another array of a possibly different type. "
+  "Typically, this can be used to rescale a 16 bit precision grayscale image (2D array) into an 8 bit precision grayscale image."
+)
+.add_prototype("src, dtype, [dest_range], [source_range]", "converted")
+.add_parameter("src", "array_like", "Input array")
+.add_parameter("dtype", ":py:class:`numpy.dtype` or anything convertible", "The element data type for the returned ``converted`` array")
+.add_parameter("dest_range", "(dtype, dtype)", "[Default: full range of ``dtype``] The range ``[min, max]`` to be deployed at the ``converted`` array")
+.add_parameter("source_range", "(X, X)", "[Default: full range of ``src`` data type]  Determines the input range ``[min,max]`` that will be used for scaling")
+.add_return("converted", "array_like", "A new array with the same shape as ``src``, but re-scaled and with its element type as given by the ``dtype``")
+;
 static PyObject* py_convert(PyObject*, PyObject* args, PyObject* kwds) {
+BOB_TRY
+  char** kwlist = convert_doc.kwlist();
 
-  /* Parses input arguments in a single shot */
-  static const char* const_kwlist[] = {
-    "src",
-    "dtype",
-    "dest_range",
-    "source_range",
-    0 /* Sentinel */
-  };
-  static char** kwlist = const_cast<char**>(const_kwlist);
-
-  PyBlitzArrayObject* src = 0;
-  int type_num = NPY_NOTYPE;
+  PyBlitzArrayObject* src;
+  int type_num;
   PyObject* dst_min = 0;
   PyObject* dst_max = 0;
   PyObject* src_min = 0;
@@ -174,62 +125,23 @@ static PyObject* py_convert(PyObject*, PyObject* args, PyObject* kwds) {
         )) return 0;
   auto src_ = make_safe(src);
 
-  PyObject* retval = 0;
-
   switch (type_num) {
-    case NPY_UINT8:
-      retval = convert_to<uint8_t>(src, dst_min, dst_max, src_min, src_max);
+    case NPY_UINT8: return convert_to<uint8_t>(src, dst_min, dst_max, src_min, src_max);
       break;
 
-    case NPY_UINT16:
-      retval = convert_to<uint16_t>(src, dst_min, dst_max, src_min, src_max);
+    case NPY_UINT16: return convert_to<uint16_t>(src, dst_min, dst_max, src_min, src_max);
       break;
 
-    case NPY_FLOAT64:
-      retval = convert_to<double>(src, dst_min, dst_max, src_min, src_max);
+    case NPY_FLOAT64: return convert_to<double>(src, dst_min, dst_max, src_min, src_max);
       break;
 
     default:
       PyErr_Format(PyExc_TypeError, "conversion to `%s' (%d) is not supported", PyBlitzArray_TypenumAsString(type_num), type_num);
-
   }
-
-  if (!retval) return 0;
-
-  return PyBlitzArray_NUMPY_WRAP(retval);
+  return 0;
+BOB_CATCH_FUNCTION("convert", 0)
 }
 
-PyDoc_STRVAR(s_convert_str, "convert");
-PyDoc_STRVAR(s_convert__doc__,
-"convert(array, dtype, [dst_range, [src_range]]) -> array\n\
-\n\
-Converts array data type, with optional range squash/expansion.\n\
-\n\
-Function which allows to convert/rescale a array of a given type into\n\
-another array of a possibly different type with re-scaling. Typically,\n\
-this can be used to rescale a 16 bit precision grayscale image (2D\n\
-array) into an 8 bit precision grayscale image.\n\
-\n\
-Keyword Parameters:\n\
-\n\
-  array\n\
-    (array) Input array\n\
-  \n\
-  dtype\n\
-    (object) Any object that can be convertible to a\n\
-    :py:class:`numpy.dtype`. Controls the output element type for the\n\
-    returned array.\n\
-  \n\
-  dest_range\n\
-    (tuple) Determines the range to be deployed at the returned array.\n\
-  \n\
-  source_range\n\
-    (tuple) Determines the input range that will be used for scaling.\n\
-  \n\
-Returns a new array with the same shape as this one, but re-scaled and\n\
-with its element type as indicated by the user.\n\
-"
-);
 
 
 static auto sort_doc = bob::extension::FunctionDoc(
@@ -267,10 +179,10 @@ BOB_CATCH_FUNCTION("sort", 0)
 
 static PyMethodDef module_methods[] = {
     {
-      s_convert_str,
+      convert_doc.name(),
       (PyCFunction)py_convert,
       METH_VARARGS|METH_KEYWORDS,
-      s_convert__doc__
+      convert_doc.doc()
     },
     {
       sort_doc.name(),

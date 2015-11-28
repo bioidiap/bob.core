@@ -9,12 +9,26 @@
 #include <bob.core/random_api.h>
 #include <bob.blitz/cppapi.h>
 #include <bob.blitz/cleanup.h>
+#include <bob.extension/documentation.h>
 #include <boost/make_shared.hpp>
 #include <boost/version.hpp>
 
 #include <bob.core/random.h>
 
-PyDoc_STRVAR(s_discrete_str, BOB_EXT_MODULE_PREFIX ".discrete");
+static auto discrete_doc = bob::extension::ClassDoc(
+  BOB_EXT_MODULE_PREFIX ".discrete",
+  "Models a random discrete distribution",
+  "A discrete distribution can only assume certain values, which for this class is defined as a number ``i`` in the range ``[0, len(probabilities)[``. "
+  "Note that the condition :math:`\\sum(P) = 1`, with ``P = probabilities``, is enforced by normalizing the input values so that the sum over all probabilities always equals 1."
+)
+.add_constructor(bob::extension::FunctionDoc(
+  "discrete",
+  "Constructs a new discrete distribution object"
+)
+.add_prototype("dtype, probabilities", "")
+.add_parameter("dtype", ":py:class:`numpy.dtype` or anything that converts to a dtype", "The data type to get the distribution for; only integral types are supported")
+.add_parameter("probabilities", "[float] or iterable of floats", "The probabilities for drawing index ``i``; this also defines the number of values that are drawn")
+);
 
 /* How to create a new PyBoostDiscreteObject */
 static PyObject* PyBoostDiscrete_New(PyTypeObject* type, PyObject*, PyObject*) {
@@ -24,15 +38,13 @@ static PyObject* PyBoostDiscrete_New(PyTypeObject* type, PyObject*, PyObject*) {
   self->type_num = NPY_NOTYPE;
   self->distro.reset();
 
-  return reinterpret_cast<PyObject*>(self);
+  return Py_BuildValue("N", self);
 }
 
 /* How to delete a PyBoostDiscreteObject */
 static void PyBoostDiscrete_Delete (PyBoostDiscreteObject* o) {
-
   o->distro.reset();
   Py_TYPE(o)->tp_free((PyObject*)o);
-
 }
 
 template <typename T>
@@ -51,15 +63,14 @@ boost::shared_ptr<void> make_discrete(PyObject* probabilities) {
     cxx_probabilities.push_back(v);
   }
 
-
   return boost::make_shared<bob::core::random::discrete_distribution<T,double>>(cxx_probabilities);
 }
 
 PyObject* PyBoostDiscrete_SimpleNew (int type_num, PyObject* probabilities) {
-
+BOB_TRY
   PyBoostDiscreteObject* retval = (PyBoostDiscreteObject*)PyBoostDiscrete_New(&PyBoostDiscrete_Type, 0, 0);
-
   if (!retval) return 0;
+  auto retval_ = make_safe(retval);
 
   retval->type_num = type_num;
 
@@ -90,28 +101,23 @@ PyObject* PyBoostDiscrete_SimpleNew (int type_num, PyObject* probabilities) {
       break;
     default:
       PyErr_Format(PyExc_NotImplementedError, "cannot create %s(T) with T having an unsupported numpy type number of %d", Py_TYPE(retval)->tp_name, retval->type_num);
-      Py_DECREF(retval);
       return 0;
   }
 
   if (!retval->distro) { // a problem occurred
-    Py_DECREF(retval);
     return 0;
   }
 
-  return reinterpret_cast<PyObject*>(retval);
-
+  return Py_BuildValue("O", retval);
+BOB_CATCH_FUNCTION("SimpleNew", 0)
 }
 
 /* Implements the __init__(self) function */
-static
-int PyBoostDiscrete_Init(PyBoostDiscreteObject* self, PyObject *args, PyObject* kwds) {
+static int PyBoostDiscrete_Init(PyBoostDiscreteObject* self, PyObject *args, PyObject* kwds) {
+BOB_TRY
+  char** kwlist = discrete_doc.kwlist();
 
-  /* Parses input arguments in a single shot */
-  static const char* const_kwlist[] = {"dtype", "probabilities", 0};
-  static char** kwlist = const_cast<char**>(const_kwlist);
-
-  PyObject* probabilities = 0;
+  PyObject* probabilities;
 
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "O&O", kwlist, &PyBlitzArray_TypenumConverter, &self->type_num, &probabilities)) return -1; ///< FAILURE
 
@@ -150,6 +156,7 @@ int PyBoostDiscrete_Init(PyBoostDiscreteObject* self, PyObject *args, PyObject* 
   }
 
   return 0; ///< SUCCESS
+BOB_CATCH_MEMBER("constructor", -1)
 }
 
 int PyBoostDiscrete_Check(PyObject* o) {
@@ -164,6 +171,11 @@ int PyBoostDiscrete_Converter(PyObject* o, PyBoostDiscreteObject** a) {
   return 1;
 }
 
+static auto probabilities_doc = bob::extension::VariableDoc(
+  "probabilities",
+  "[float]",
+  "The values have been set for the discrete probabilities of every entry in this distribution"
+);
 template <typename T>
 PyObject* get_probabilities(PyBoostDiscreteObject* self) {
   std::vector<double> w = boost::static_pointer_cast<bob::core::random::discrete_distribution<T,double>>(self->distro)->probabilities();
@@ -175,10 +187,8 @@ PyObject* get_probabilities(PyBoostDiscreteObject* self) {
   return retval;
 }
 
-/**
- * Accesses the mean value
- */
 static PyObject* PyBoostDiscrete_GetProbabilities(PyBoostDiscreteObject* self) {
+BOB_TRY
   switch (self->type_num) {
     case NPY_UINT8:
       return get_probabilities<uint8_t>(self);
@@ -200,25 +210,52 @@ static PyObject* PyBoostDiscrete_GetProbabilities(PyBoostDiscreteObject* self) {
       PyErr_Format(PyExc_NotImplementedError, "cannot get minimum of %s(T) with T having an unsupported numpy type number of %d (DEBUG ME)", Py_TYPE(self)->tp_name, self->type_num);
       return 0;
   }
+BOB_CATCH_MEMBER("probabilities", 0)
 }
 
-/**
- * Accesses the datatype
- */
+static auto dtype_doc = bob::extension::VariableDoc(
+  "dtype",
+  ":py:class:`numpy.dtype`",
+  "The type of scalars produced by this discrete distribution"
+);
 static PyObject* PyBoostDiscrete_GetDtype(PyBoostDiscreteObject* self) {
   return reinterpret_cast<PyObject*>(PyArray_DescrFromType(self->type_num));
 }
 
+static PyGetSetDef PyBoostDiscrete_getseters[] = {
+    {
+      dtype_doc.name(),
+      (getter)PyBoostDiscrete_GetDtype,
+      0,
+      dtype_doc.doc(),
+      0,
+    },
+    {
+      probabilities_doc.name(),
+      (getter)PyBoostDiscrete_GetProbabilities,
+      0,
+      probabilities_doc.doc(),
+      0,
+    },
+    {0}  /* Sentinel */
+};
+
+
+static auto reset_doc = bob::extension::FunctionDoc(
+  "reset",
+  "Resets this distribution",
+  "After calling this method, subsequent uses of the distribution do not depend on values produced by any random number generator prior to invoking reset",
+  true
+)
+.add_prototype("")
+;
 template <typename T> PyObject* reset(PyBoostDiscreteObject* self) {
   boost::static_pointer_cast<bob::core::random::discrete_distribution<T,double>>(self->distro)->reset();
   Py_RETURN_NONE;
 }
 
-/**
- * Resets the distribution - this is a noop for discrete distributions, here
- * only for compatibility reasons
- */
 static PyObject* PyBoostDiscrete_Reset(PyBoostDiscreteObject* self) {
+BOB_TRY
   switch (self->type_num) {
     case NPY_FLOAT32:
       return reset<float>(self);
@@ -228,23 +265,29 @@ static PyObject* PyBoostDiscrete_Reset(PyBoostDiscreteObject* self) {
       PyErr_Format(PyExc_NotImplementedError, "cannot reset %s(T) with T having an unsupported numpy type number of %d (DEBUG ME)", Py_TYPE(self)->tp_name, self->type_num);
       return 0;
   }
+BOB_CATCH_MEMBER("reset", 0)
 }
 
+
+static auto call_doc = bob::extension::FunctionDoc(
+  "draw",
+  "Draws one random number from this distribution using the given ``rng``",
+  ".. note:: The :py:meth:`__call__` function is a synonym for this ``draw``.",
+  true
+)
+.add_prototype("rng", "value")
+.add_parameter("rng", ":py:class:`mt19937`", "The random number generator to use")
+.add_return("value", "dtype", "A random value that follows the discrete distribution")
+;
 template <typename T> PyObject* call(PyBoostDiscreteObject* self, PyBoostMt19937Object* rng) {
   return PyBlitzArrayCxx_FromCScalar(boost::static_pointer_cast<bob::core::random::discrete_distribution<T,double>>(self->distro)->operator()(*rng->rng));
 }
 
-/**
- * Calling a PyBoostDiscreteObject to generate a random number
- */
-static
-PyObject* PyBoostDiscrete_Call(PyBoostDiscreteObject* self, PyObject *args, PyObject* kwds) {
+static PyObject* PyBoostDiscrete_Call(PyBoostDiscreteObject* self, PyObject *args, PyObject* kwds) {
+BOB_TRY
+  char** kwlist = call_doc.kwlist();
 
-  /* Parses input arguments in a single shot */
-  static const char* const_kwlist[] = {"rng", 0};
-  static char** kwlist = const_cast<char**>(const_kwlist);
-
-  PyBoostMt19937Object* rng = 0;
+  PyBoostMt19937Object* rng;
 
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!", kwlist, &PyBoostMt19937_Type, &rng)) return 0; ///< FAILURE
 
@@ -278,62 +321,25 @@ PyObject* PyBoostDiscrete_Call(PyBoostDiscreteObject* self, PyObject *args, PyOb
   }
 
   return 0; ///< FAILURE
+BOB_CATCH_MEMBER("call", 0)
 }
-
-PyDoc_STRVAR(s_reset_str, "reset");
-PyDoc_STRVAR(s_reset_doc,
-"x.reset() -> None\n\
-\n\
-After calling this method, subsequent uses of the distribution do\n\
-not depend on values produced by any random number generator prior\n\
-to invoking reset.\n\
-"
-);
 
 static PyMethodDef PyBoostDiscrete_methods[] = {
     {
-      s_reset_str,
+      call_doc.name(),
+      (PyCFunction)PyBoostDiscrete_Call,
+      METH_VARARGS|METH_KEYWORDS,
+      call_doc.doc(),
+    },
+    {
+      reset_doc.name(),
       (PyCFunction)PyBoostDiscrete_Reset,
       METH_NOARGS,
-      s_reset_doc,
+      reset_doc.doc(),
     },
     {0}  /* Sentinel */
 };
 
-PyDoc_STRVAR(s_dtype_str, "dtype");
-PyDoc_STRVAR(s_dtype_doc,
-"x.dtype -> numpy dtype\n\
-\n\
-The type of scalars produced by this discrete distribution.\n\
-"
-);
-
-PyDoc_STRVAR(s_probabilities_str, "probabilities");
-PyDoc_STRVAR(s_probabilities_doc,
-"x.probabilities -> sequence\n\
-\n\
-This property corresponds to the values you have set for the\n\
-discrete probabilities of every entry in this distribution.\n\
-"
-);
-
-static PyGetSetDef PyBoostDiscrete_getseters[] = {
-    {
-      s_dtype_str,
-      (getter)PyBoostDiscrete_GetDtype,
-      0,
-      s_dtype_doc,
-      0,
-    },
-    {
-      s_probabilities_str,
-      (getter)PyBoostDiscrete_GetProbabilities,
-      0,
-      s_probabilities_doc,
-      0,
-    },
-    {0}  /* Sentinel */
-};
 
 #if PY_VERSION_HEX >= 0x03000000
 #  define PYOBJECT_STR PyObject_Str
@@ -348,9 +354,10 @@ static PyObject* PyBoostDiscrete_Repr(PyBoostDiscreteObject* self) {
 
   PyObject* probabilities = PyBoostDiscrete_GetProbabilities(self);
   if (!probabilities) return 0;
+  auto probabilities_ = make_safe(probabilities);
   PyObject* prob_str = PYOBJECT_STR(probabilities);
-  Py_DECREF(probabilities);
   if (!prob_str) return 0;
+  auto prob_str_ = make_safe(prob_str);
 
   PyObject* retval = PyUnicode_FromFormat(
       "%s(dtype='%s' , probabilities=%U)",
@@ -358,7 +365,6 @@ static PyObject* PyBoostDiscrete_Repr(PyBoostDiscreteObject* self) {
       PyBlitzArray_TypenumAsString(self->type_num),
       prob_str
       );
-  Py_DECREF(prob_str);
 
 #if PYTHON_VERSION_HEX < 0x03000000
   if (!retval) return 0;
@@ -371,58 +377,32 @@ static PyObject* PyBoostDiscrete_Repr(PyBoostDiscreteObject* self) {
 
 }
 
-PyDoc_STRVAR(s_discrete_doc,
-"discrete(dtype, probabilities) -> new discrete distribution\n\
-\n\
-Models a random discrete distribution\n\
-\n\
-A discrete distribution can only assume certain values, which\n\
-for this class is defined as a number ``i`` in the range\n\
-``[0, len(probabilities)]``. Notice that the condition\n\
-:math:`\\sum(P) = 1`, with ``P = probabilities``, is\n\
-enforced by normalizing the input values so that the sum\n\
-over all probabilities always equals 1.\n\
-\n\
-"
-);
-
 PyTypeObject PyBoostDiscrete_Type = {
-    PyVarObject_HEAD_INIT(0, 0)
-    s_discrete_str,                             /*tp_name*/
-    sizeof(PyBoostDiscreteObject),              /*tp_basicsize*/
-    0,                                          /*tp_itemsize*/
-    (destructor)PyBoostDiscrete_Delete,         /*tp_dealloc*/
-    0,                                          /*tp_print*/
-    0,                                          /*tp_getattr*/
-    0,                                          /*tp_setattr*/
-    0,                                          /*tp_compare*/
-    (reprfunc)PyBoostDiscrete_Repr,             /*tp_repr*/
-    0,                                          /*tp_as_number*/
-    0,                                          /*tp_as_sequence*/
-    0,                                          /*tp_as_mapping*/
-    0,                                          /*tp_hash */
-    (ternaryfunc)PyBoostDiscrete_Call,          /*tp_call*/
-    (reprfunc)PyBoostDiscrete_Repr,             /*tp_str*/
-    0,                                          /*tp_getattro*/
-    0,                                          /*tp_setattro*/
-    0,                                          /*tp_as_buffer*/
-    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,   /*tp_flags*/
-    s_discrete_doc,                             /* tp_doc */
-    0,		                                      /* tp_traverse */
-    0,		                                      /* tp_clear */
-    0,                                          /* tp_richcompare */
-    0,		                                      /* tp_weaklistoffset */
-    0,		                                      /* tp_iter */
-    0,		                                      /* tp_iternext */
-    PyBoostDiscrete_methods,                    /* tp_methods */
-    0,                                          /* tp_members */
-    PyBoostDiscrete_getseters,                  /* tp_getset */
-    0,                                          /* tp_base */
-    0,                                          /* tp_dict */
-    0,                                          /* tp_descr_get */
-    0,                                          /* tp_descr_set */
-    0,                                          /* tp_dictoffset */
-    (initproc)PyBoostDiscrete_Init,             /* tp_init */
-    0,                                          /* tp_alloc */
-    PyBoostDiscrete_New,                        /* tp_new */
+  PyVarObject_HEAD_INIT(0,0)
+  0
 };
+
+bool init_BoostDiscrete(PyObject* module)
+{
+  // initialize the type struct
+  PyBoostDiscrete_Type.tp_name = discrete_doc.name();
+  PyBoostDiscrete_Type.tp_basicsize = sizeof(PyBoostDiscreteObject);
+  PyBoostDiscrete_Type.tp_flags = Py_TPFLAGS_DEFAULT;
+  PyBoostDiscrete_Type.tp_doc = discrete_doc.doc();
+  PyBoostDiscrete_Type.tp_str = reinterpret_cast<reprfunc>(PyBoostDiscrete_Repr);
+  PyBoostDiscrete_Type.tp_repr = reinterpret_cast<reprfunc>(PyBoostDiscrete_Repr);
+
+  // set the functions
+  PyBoostDiscrete_Type.tp_new = PyBoostDiscrete_New;
+  PyBoostDiscrete_Type.tp_init = reinterpret_cast<initproc>(PyBoostDiscrete_Init);
+  PyBoostDiscrete_Type.tp_dealloc = reinterpret_cast<destructor>(PyBoostDiscrete_Delete);
+  PyBoostDiscrete_Type.tp_methods = PyBoostDiscrete_methods;
+  PyBoostDiscrete_Type.tp_getset = PyBoostDiscrete_getseters;
+  PyBoostDiscrete_Type.tp_call = reinterpret_cast<ternaryfunc>(PyBoostDiscrete_Call);
+
+  // check that everything is fine
+  if (PyType_Ready(&PyBoostDiscrete_Type) < 0) return false;
+
+  // add the type to the module
+  return PyModule_AddObject(module, "discrete", Py_BuildValue("O", &PyBoostDiscrete_Type)) >= 0;
+}

@@ -35,28 +35,15 @@ static PyModuleDef module_definition = {
 
 int PyBobCoreRandom_APIVersion = BOB_CORE_API_VERSION;
 
+extern bool init_BoostMt19937(PyObject* module);
+extern bool init_BoostUniform(PyObject* module);
+extern bool init_BoostNormal(PyObject* module);
+extern bool init_BoostLogNormal(PyObject* module);
+extern bool init_BoostGamma(PyObject* module);
+extern bool init_BoostBinomial(PyObject* module);
+extern bool init_BoostDiscrete(PyObject* module);
+
 static PyObject* create_module (void) {
-
-  PyBoostMt19937_Type.tp_new = PyType_GenericNew;
-  if (PyType_Ready(&PyBoostMt19937_Type) < 0) return 0;
-
-  PyBoostUniform_Type.tp_new = PyType_GenericNew;
-  if (PyType_Ready(&PyBoostUniform_Type) < 0) return 0;
-
-  PyBoostNormal_Type.tp_new = PyType_GenericNew;
-  if (PyType_Ready(&PyBoostNormal_Type) < 0) return 0;
-
-  PyBoostLogNormal_Type.tp_new = PyType_GenericNew;
-  if (PyType_Ready(&PyBoostLogNormal_Type) < 0) return 0;
-
-  PyBoostGamma_Type.tp_new = PyType_GenericNew;
-  if (PyType_Ready(&PyBoostGamma_Type) < 0) return 0;
-
-  PyBoostBinomial_Type.tp_new = PyType_GenericNew;
-  if (PyType_Ready(&PyBoostBinomial_Type) < 0) return 0;
-
-  PyBoostDiscrete_Type.tp_new = PyType_GenericNew;
-  if (PyType_Ready(&PyBoostDiscrete_Type) < 0) return 0;
 
 # if PY_VERSION_HEX >= 0x03000000
   PyObject* m = PyModule_Create(&module_definition);
@@ -67,26 +54,13 @@ static PyObject* create_module (void) {
   auto m_ = make_safe(m);
 
   /* register the types to python */
-  Py_INCREF(&PyBoostMt19937_Type);
-  if (PyModule_AddObject(m, "mt19937", (PyObject *)&PyBoostMt19937_Type) < 0) return 0;
-
-  Py_INCREF(&PyBoostUniform_Type);
-  if (PyModule_AddObject(m, "uniform", (PyObject *)&PyBoostUniform_Type) < 0) return 0;
-
-  Py_INCREF(&PyBoostNormal_Type);
-  if (PyModule_AddObject(m, "normal", (PyObject *)&PyBoostNormal_Type) < 0) return 0;
-
-  Py_INCREF(&PyBoostLogNormal_Type);
-  if (PyModule_AddObject(m, "lognormal", (PyObject *)&PyBoostLogNormal_Type) < 0) return 0;
-
-  Py_INCREF(&PyBoostGamma_Type);
-  if (PyModule_AddObject(m, "gamma", (PyObject *)&PyBoostGamma_Type) < 0) return 0;
-
-  Py_INCREF(&PyBoostBinomial_Type);
-  if (PyModule_AddObject(m, "binomial", (PyObject *)&PyBoostBinomial_Type) < 0) return 0;
-
-  Py_INCREF(&PyBoostDiscrete_Type);
-  if (PyModule_AddObject(m, "discrete", (PyObject *)&PyBoostDiscrete_Type) < 0) return 0;
+  if (!init_BoostMt19937(m)) return 0;
+  if (!init_BoostUniform(m)) return 0;
+  if (!init_BoostNormal(m)) return 0;
+  if (!init_BoostLogNormal(m)) return 0;
+  if (!init_BoostGamma(m)) return 0;
+  if (!init_BoostBinomial(m)) return 0;
+  if (!init_BoostDiscrete(m)) return 0;
 
   static void* PyBobCoreRandom_API[PyBobCoreRandom_API_pointers];
 

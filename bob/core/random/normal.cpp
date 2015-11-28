@@ -8,11 +8,28 @@
 #define BOB_CORE_RANDOM_MODULE
 #include <bob.core/random_api.h>
 #include <bob.blitz/cppapi.h>
+#include <bob.blitz/cleanup.h>
+#include <bob.extension/documentation.h>
 #include <boost/make_shared.hpp>
 
 #include <bob.core/random.h>
 
-PyDoc_STRVAR(s_normal_str, BOB_EXT_MODULE_PREFIX ".normal");
+static auto normal_doc = bob::extension::ClassDoc(
+  BOB_EXT_MODULE_PREFIX ".normal",
+  "Models a random normal distribution",
+  "This distribution produces random numbers :math:`x` distributed with the probability density function\n\n"
+  ".. math::\n\n   p(x) = \\frac{1}{\\sqrt{2\\pi\\sigma}} e^{-\\frac{(x-\\mu)^2}{2\\sigma^2}}\n\n"
+  "where the ``mean`` (:math:`\\mu`) and ``sigma`` (:math:`\\sigma`, the standard deviation) are the parameters of this distribution class."
+)
+.add_constructor(bob::extension::FunctionDoc(
+  "normal",
+  "Constructs a new normal distribution object"
+)
+.add_prototype("dtype, [mean], [sigma]", "")
+.add_parameter("dtype", ":py:class:`numpy.dtype` or anything that converts to a dtype", "The data type to get the distribution for; only real-valued types are supported")
+.add_parameter("mean", "dtype", "[Default: 0.] The mean :math:`\\mu` of the normal distibution")
+.add_parameter("sigma", "dtype", "[Default: 1.] The standard deviation :math:`\\sigma` of the normal distributiuon")
+);
 
 /* How to create a new PyBoostNormalObject */
 static PyObject* PyBoostNormal_New(PyTypeObject* type, PyObject*, PyObject*) {
@@ -22,15 +39,13 @@ static PyObject* PyBoostNormal_New(PyTypeObject* type, PyObject*, PyObject*) {
   self->type_num = NPY_NOTYPE;
   self->distro.reset();
 
-  return reinterpret_cast<PyObject*>(self);
+  return Py_BuildValue("N", self);
 }
 
 /* How to delete a PyBoostNormalObject */
 static void PyBoostNormal_Delete (PyBoostNormalObject* o) {
-
   o->distro.reset();
   Py_TYPE(o)->tp_free((PyObject*)o);
-
 }
 
 template <typename T>
@@ -43,10 +58,10 @@ boost::shared_ptr<void> make_normal(PyObject* mean, PyObject* sigma) {
 }
 
 PyObject* PyBoostNormal_SimpleNew (int type_num, PyObject* mean, PyObject* sigma) {
-
+BOB_TRY
   PyBoostNormalObject* retval = (PyBoostNormalObject*)PyBoostNormal_New(&PyBoostNormal_Type, 0, 0);
-
   if (!retval) return 0;
+  auto retval_ = make_safe(retval);
 
   retval->type_num = type_num;
 
@@ -59,26 +74,21 @@ PyObject* PyBoostNormal_SimpleNew (int type_num, PyObject* mean, PyObject* sigma
       break;
     default:
       PyErr_Format(PyExc_NotImplementedError, "cannot create %s(T) with T having an unsupported numpy type number of %d (it only supports numpy.float32 or numpy.float64)", Py_TYPE(retval)->tp_name, retval->type_num);
-      Py_DECREF(retval);
       return 0;
   }
 
   if (!retval->distro) { // a problem occurred
-    Py_DECREF(retval);
     return 0;
   }
 
-  return reinterpret_cast<PyObject*>(retval);
-
+  return Py_BuildValue("O", retval);
+BOB_CATCH_FUNCTION("SimpleNew", 0)
 }
 
 /* Implements the __init__(self) function */
-static
-int PyBoostNormal_Init(PyBoostNormalObject* self, PyObject *args, PyObject* kwds) {
-
-  /* Parses input arguments in a single shot */
-  static const char* const_kwlist[] = {"dtype", "mean", "sigma", 0};
-  static char** kwlist = const_cast<char**>(const_kwlist);
+static int PyBoostNormal_Init(PyBoostNormalObject* self, PyObject *args, PyObject* kwds) {
+BOB_TRY
+  char** kwlist = normal_doc.kwlist();
 
   PyObject* mean = 0;
   PyObject* sigma = 0;
@@ -102,6 +112,7 @@ int PyBoostNormal_Init(PyBoostNormalObject* self, PyObject *args, PyObject* kwds
   }
 
   return 0; ///< SUCCESS
+BOB_CATCH_MEMBER("constructor", -1)
 }
 
 int PyBoostNormal_Check(PyObject* o) {
@@ -116,14 +127,18 @@ int PyBoostNormal_Converter(PyObject* o, PyBoostNormalObject** a) {
   return 1;
 }
 
+
+static auto mean_doc = bob::extension::VariableDoc(
+  "mean",
+  "dtype",
+  "The mean value the distribution will produce."
+);
 template <typename T> PyObject* get_mean(PyBoostNormalObject* self) {
   return PyBlitzArrayCxx_FromCScalar(boost::static_pointer_cast<bob::core::random::normal_distribution<T>>(self->distro)->mean());
 }
 
-/**
- * Accesses the mean value
- */
 static PyObject* PyBoostNormal_GetMean(PyBoostNormalObject* self) {
+BOB_TRY
   switch (self->type_num) {
     case NPY_FLOAT32:
       return get_mean<float>(self);
@@ -133,16 +148,21 @@ static PyObject* PyBoostNormal_GetMean(PyBoostNormalObject* self) {
       PyErr_Format(PyExc_NotImplementedError, "cannot get mean of %s(T) with T having an unsupported numpy type number of %d (DEBUG ME)", Py_TYPE(self)->tp_name, self->type_num);
       return 0;
   }
+BOB_CATCH_MEMBER("mean", 0)
 }
 
+
+static auto sigma_doc = bob::extension::VariableDoc(
+  "sigma",
+  "dtype",
+  "The standard deviation the distribution will have"
+);
 template <typename T> PyObject* get_sigma(PyBoostNormalObject* self) {
   return PyBlitzArrayCxx_FromCScalar(boost::static_pointer_cast<bob::core::random::normal_distribution<T>>(self->distro)->sigma());
 }
 
-/**
- * Accesses the sigma value
- */
 static PyObject* PyBoostNormal_GetSigma(PyBoostNormalObject* self) {
+BOB_TRY
   switch (self->type_num) {
     case NPY_FLOAT32:
       return get_sigma<float>(self);
@@ -152,15 +172,55 @@ static PyObject* PyBoostNormal_GetSigma(PyBoostNormalObject* self) {
       PyErr_Format(PyExc_NotImplementedError, "cannot get sigma of %s(T) with T having an unsupported numpy type number of %d (DEBUG ME)", Py_TYPE(self)->tp_name, self->type_num);
       return 0;
   }
+BOB_CATCH_MEMBER("sigma", 0)
 }
 
-/**
- * Accesses the datatype
- */
+static auto dtype_doc = bob::extension::VariableDoc(
+  "dtype",
+  ":py:class:`numpy.dtype`",
+  "The type of scalars produced by this normal distribution"
+);
 static PyObject* PyBoostNormal_GetDtype(PyBoostNormalObject* self) {
-  return reinterpret_cast<PyObject*>(PyArray_DescrFromType(self->type_num));
+BOB_TRY
+  return Py_BuildValue("N", PyArray_DescrFromType(self->type_num));
+BOB_CATCH_MEMBER("dtype", 0)
 }
 
+
+static PyGetSetDef PyBoostNormal_getseters[] = {
+    {
+      dtype_doc.name(),
+      (getter)PyBoostNormal_GetDtype,
+      0,
+      dtype_doc.doc(),
+      0,
+    },
+    {
+      mean_doc.name(),
+      (getter)PyBoostNormal_GetMean,
+      0,
+      mean_doc.doc(),
+      0,
+    },
+    {
+      sigma_doc.name(),
+      (getter)PyBoostNormal_GetSigma,
+      0,
+      sigma_doc.doc(),
+      0,
+    },
+    {0}  /* Sentinel */
+};
+
+
+static auto reset_doc = bob::extension::FunctionDoc(
+  "reset",
+  "Resets this distribution",
+  "After calling this method, subsequent uses of the distribution do not depend on values produced by any random number generator prior to invoking reset",
+  true
+)
+.add_prototype("")
+;
 template <typename T> PyObject* reset(PyBoostNormalObject* self) {
   boost::static_pointer_cast<bob::core::random::normal_distribution<T>>(self->distro)->reset();
   Py_RETURN_NONE;
@@ -182,6 +242,17 @@ static PyObject* PyBoostNormal_Reset(PyBoostNormalObject* self) {
   }
 }
 
+
+static auto call_doc = bob::extension::FunctionDoc(
+  "draw",
+  "Draws one random number from this distribution using the given ``rng``",
+  ".. note:: The :py:meth:`__call__` function is a synonym for this ``draw``.",
+  true
+)
+.add_prototype("rng", "value")
+.add_parameter("rng", ":py:class:`mt19937`", "The random number generator to use")
+.add_return("value", "dtype", "A random value that follows the normal distribution")
+;
 template <typename T> PyObject* call(PyBoostNormalObject* self, PyBoostMt19937Object* rng) {
   typedef bob::core::random::normal_distribution<T> distro_t;
   return PyBlitzArrayCxx_FromCScalar((*boost::static_pointer_cast<distro_t>(self->distro))(*rng->rng));
@@ -190,14 +261,11 @@ template <typename T> PyObject* call(PyBoostNormalObject* self, PyBoostMt19937Ob
 /**
  * Calling a PyBoostNormalObject to generate a random number
  */
-static
-PyObject* PyBoostNormal_Call(PyBoostNormalObject* self, PyObject *args, PyObject* kwds) {
+static PyObject* PyBoostNormal_Call(PyBoostNormalObject* self, PyObject *args, PyObject* kwds) {
+BOB_TRY
+  char** kwlist = call_doc.kwlist();
 
-  /* Parses input arguments in a single shot */
-  static const char* const_kwlist[] = {"rng", 0};
-  static char** kwlist = const_cast<char**>(const_kwlist);
-
-  PyBoostMt19937Object* rng = 0;
+  PyBoostMt19937Object* rng;
 
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!", kwlist, &PyBoostMt19937_Type, &rng)) return 0; ///< FAILURE
 
@@ -213,83 +281,31 @@ PyObject* PyBoostNormal_Call(PyBoostNormalObject* self, PyObject *args, PyObject
   }
 
   return 0; ///< FAILURE
+BOB_CATCH_MEMBER("call", 0)
 }
-
-PyDoc_STRVAR(s_reset_str, "reset");
-PyDoc_STRVAR(s_reset_doc,
-"x.reset() -> None\n\
-\n\
-After calling this method, subsequent uses of the distribution do\n\
-not depend on values produced by any random number generator prior\n\
-to invoking reset.\n\
-"
-);
 
 static PyMethodDef PyBoostNormal_methods[] = {
     {
-      s_reset_str,
+      call_doc.name(),
+      (PyCFunction)PyBoostNormal_Call,
+      METH_VARARGS|METH_KEYWORDS,
+      call_doc.doc(),
+    },
+    {
+      reset_doc.name(),
       (PyCFunction)PyBoostNormal_Reset,
       METH_NOARGS,
-      s_reset_doc,
+      reset_doc.doc(),
     },
     {0}  /* Sentinel */
 };
 
-PyDoc_STRVAR(s_dtype_str, "dtype");
-PyDoc_STRVAR(s_dtype_doc,
-"x.dtype -> numpy dtype\n\
-\n\
-The type of scalars produced by this normal distribution.\n\
-"
-);
-
-PyDoc_STRVAR(s_mean_str, "mean");
-PyDoc_STRVAR(s_mean_doc,
-"x.mean -> scalar\n\
-\n\
-This value corresponds to the mean value the distribution\n\
-will produce.\n\
-"
-);
-
-PyDoc_STRVAR(s_sigma_str, "sigma");
-PyDoc_STRVAR(s_sigma_doc,
-"x.sigma -> scalar\n\
-\n\
-This value corresponds to the standard deviation value the\n\
-distribution will have.\n\
-"
-);
-
-static PyGetSetDef PyBoostNormal_getseters[] = {
-    {
-      s_dtype_str,
-      (getter)PyBoostNormal_GetDtype,
-      0,
-      s_dtype_doc,
-      0,
-    },
-    {
-      s_mean_str,
-      (getter)PyBoostNormal_GetMean,
-      0,
-      s_mean_doc,
-      0,
-    },
-    {
-      s_sigma_str,
-      (getter)PyBoostNormal_GetSigma,
-      0,
-      s_sigma_doc,
-      0,
-    },
-    {0}  /* Sentinel */
-};
 
 /**
  * Converts a scalar, that will be stolen, into a str/bytes
  */
 static PyObject* scalar_to_bytes(PyObject* s) {
+  if (!s) return s;
 # if PY_VERSION_HEX >= 0x03000000
   PyObject* b = PyObject_Bytes(s);
 # else
@@ -300,102 +316,53 @@ static PyObject* scalar_to_bytes(PyObject* s) {
 }
 
 /**
- * Accesses the char* buffer on a str/bytes object
- */
-static const char* bytes_to_charp(PyObject* s) {
-# if PY_VERSION_HEX >= 0x03000000
-  return PyBytes_AS_STRING(s);
-# else
-  return PyString_AS_STRING(s);
-# endif
-}
-
-/**
  * String representation and print out
  */
 static PyObject* PyBoostNormal_Repr(PyBoostNormalObject* self) {
-
-  PyObject* mean = PyBoostNormal_GetMean(self);
-  if (!mean) return 0;
-  PyObject* sigma = PyBoostNormal_GetSigma(self);
-  if (!sigma) return 0;
-
-  PyObject* smean = scalar_to_bytes(mean);
+BOB_TRY
+  PyObject* smean = scalar_to_bytes(PyBoostNormal_GetMean(self));
   if (!smean) return 0;
-  PyObject* ssigma = scalar_to_bytes(sigma);
+  auto smean_ = make_safe(smean);
+  PyObject* ssigma = scalar_to_bytes(PyBoostNormal_GetSigma(self));
   if (!ssigma) return 0;
+  auto ssigma_ = make_safe(ssigma);
 
-  PyObject* retval =
-# if PY_VERSION_HEX >= 0x03000000
-    PyUnicode_FromFormat
-#else
+  return
     PyString_FromFormat
-#endif
       (
        "%s(dtype='%s', mean=%s, sigma=%s)",
        Py_TYPE(self)->tp_name, PyBlitzArray_TypenumAsString(self->type_num),
-       bytes_to_charp(smean), bytes_to_charp(ssigma)
+       PyString_AS_STRING(smean), PyString_AS_STRING(ssigma)
       );
-
-  Py_DECREF(smean);
-  Py_DECREF(ssigma);
-
-  return retval;
-
+BOB_CATCH_MEMBER("repr", 0)
 }
 
-PyDoc_STRVAR(s_normal_doc,
-"normal(dtype, [mean=0., sigma=1.]]) -> new normal distribution\n\
-\n\
-Models a random normal distribution\n\
-\n\
-This distribution class models a normal random distribution.\n\
-Such a distribution produces random numbers :math:`x` distributed\n\
-with the probability density function\n\
-:math:`p(x) = \\frac{1}{\\sqrt{2\\pi\\sigma}} e^{-\\frac{(x-\\mu)^2}{2\\sigma^2}}`,\n\
-where the ``mean`` (:math:`\\mu`) and ``sigma`` (:math:`\\sigma`,\n\
-the standard deviation) the parameters of the distribution.\n\
-\n\
-"
-);
-
 PyTypeObject PyBoostNormal_Type = {
-    PyVarObject_HEAD_INIT(0, 0)
-    s_normal_str,                               /*tp_name*/
-    sizeof(PyBoostNormalObject),                /*tp_basicsize*/
-    0,                                          /*tp_itemsize*/
-    (destructor)PyBoostNormal_Delete,           /*tp_dealloc*/
-    0,                                          /*tp_print*/
-    0,                                          /*tp_getattr*/
-    0,                                          /*tp_setattr*/
-    0,                                          /*tp_compare*/
-    (reprfunc)PyBoostNormal_Repr,               /*tp_repr*/
-    0,                                          /*tp_as_number*/
-    0,                                          /*tp_as_sequence*/
-    0,                                          /*tp_as_mapping*/
-    0,                                          /*tp_hash */
-    (ternaryfunc)PyBoostNormal_Call,            /*tp_call*/
-    (reprfunc)PyBoostNormal_Repr,               /*tp_str*/
-    0,                                          /*tp_getattro*/
-    0,                                          /*tp_setattro*/
-    0,                                          /*tp_as_buffer*/
-    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,   /*tp_flags*/
-    s_normal_doc,                               /* tp_doc */
-    0,		                                      /* tp_traverse */
-    0,		                                      /* tp_clear */
-    0,                                          /* tp_richcompare */
-    0,		                                      /* tp_weaklistoffset */
-    0,		                                      /* tp_iter */
-    0,		                                      /* tp_iternext */
-    PyBoostNormal_methods,                      /* tp_methods */
-    0,                                          /* tp_members */
-    PyBoostNormal_getseters,                    /* tp_getset */
-    0,                                          /* tp_base */
-    0,                                          /* tp_dict */
-    0,                                          /* tp_descr_get */
-    0,                                          /* tp_descr_set */
-    0,                                          /* tp_dictoffset */
-    (initproc)PyBoostNormal_Init,               /* tp_init */
-    0,                                          /* tp_alloc */
-    PyBoostNormal_New,                          /* tp_new */
+  PyVarObject_HEAD_INIT(0,0)
+  0
 };
+
+bool init_BoostNormal(PyObject* module)
+{
+  // initialize the type struct
+  PyBoostNormal_Type.tp_name = normal_doc.name();
+  PyBoostNormal_Type.tp_basicsize = sizeof(PyBoostNormalObject);
+  PyBoostNormal_Type.tp_flags = Py_TPFLAGS_DEFAULT;
+  PyBoostNormal_Type.tp_doc = normal_doc.doc();
+  PyBoostNormal_Type.tp_str = reinterpret_cast<reprfunc>(PyBoostNormal_Repr);
+  PyBoostNormal_Type.tp_repr = reinterpret_cast<reprfunc>(PyBoostNormal_Repr);
+
+  // set the functions
+  PyBoostNormal_Type.tp_new = PyBoostNormal_New;
+  PyBoostNormal_Type.tp_init = reinterpret_cast<initproc>(PyBoostNormal_Init);
+  PyBoostNormal_Type.tp_dealloc = reinterpret_cast<destructor>(PyBoostNormal_Delete);
+  PyBoostNormal_Type.tp_methods = PyBoostNormal_methods;
+  PyBoostNormal_Type.tp_getset = PyBoostNormal_getseters;
+  PyBoostNormal_Type.tp_call = reinterpret_cast<ternaryfunc>(PyBoostNormal_Call);
+
+  // check that everything is fine
+  if (PyType_Ready(&PyBoostNormal_Type) < 0) return false;
+
+  // add the type to the module
+  return PyModule_AddObject(module, "normal", Py_BuildValue("O", &PyBoostNormal_Type)) >= 0;
+}

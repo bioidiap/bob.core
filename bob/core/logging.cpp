@@ -13,6 +13,7 @@
 #endif
 #include <bob.blitz/capi.h>
 #include <bob.blitz/cleanup.h>
+#include <bob.extension/documentation.h>
 
 #include <boost/shared_array.hpp>
 #include <boost/make_shared.hpp>
@@ -77,10 +78,10 @@ struct PythonLoggingOutputDevice: public bob::core::OutputDevice {
 #if   PYTHON_LOGGING_DEBUG != 0
       pthread_t thread_id = pthread_self();
       static_log << "(" << std::hex << thread_id << std::dec
-        << ") Constructing new PythonLoggingOutputDevice from logger `logging.logger('"
-        << PyString_AsString(PyObject_GetAttrString(m_logger, "name")) << "')."
-        << name << "' (@" << std::hex << m_logger << std::dec
-        << ")" << std::endl;
+                 << ") Constructing new PythonLoggingOutputDevice from logger `logging.logger('"
+                 << PyString_AsString(PyObject_GetAttrString(m_logger, "name")) << "')."
+                 << name << "' (@" << std::hex << m_logger << std::dec
+                 << ")" << std::endl;
 #endif
 
     }
@@ -96,8 +97,8 @@ struct PythonLoggingOutputDevice: public bob::core::OutputDevice {
       _name = PyString_AsString(PyObject_GetAttrString(m_logger, "name"));
     }
     static_log << "(" << std::hex << thread_id << std::dec
-      << ") Destroying PythonLoggingOutputDevice with logger `" << _name
-      << "' (" << std::hex << m_logger << std::dec << ")" << std::endl;
+               << ") Destroying PythonLoggingOutputDevice with logger `" << _name
+               << "' (" << std::hex << m_logger << std::dec << ")" << std::endl;
 #endif
     if (m_logger) close();
   }
@@ -113,8 +114,8 @@ struct PythonLoggingOutputDevice: public bob::core::OutputDevice {
       _name = PyString_AsString(PyObject_GetAttrString(m_logger, "name"));
     }
     static_log << "(" << std::hex << thread_id << std::dec
-      << ") Closing PythonLoggingOutputDevice with logger `" << _name
-      << "' (" << std::hex << m_logger << std::dec << ")" << std::endl;
+               << ") Closing PythonLoggingOutputDevice with logger `" << _name
+               << "' (" << std::hex << m_logger << std::dec << ")" << std::endl;
 #endif
     Py_XDECREF(m_logger);
     m_logger = 0;
@@ -141,21 +142,21 @@ struct PythonLoggingOutputDevice: public bob::core::OutputDevice {
     pthread_t thread_id = pthread_self();
     std::string message(s, n);
     static_log << "(" << std::hex << thread_id << std::dec
-      << ") Processing message `" << boost::algorithm::trim_right_copy(message)
-      << "' (size = " << n << ") with method `logging.logger('"
-      << PyString_AsString(PyObject_GetAttrString(m_logger, "name")) << "')."
-      << PyString_AsString(m_name) << "'" << std::endl;
+               << ") Processing message `" << boost::algorithm::trim_right_copy(message)
+               << "' (size = " << n << ") with method `logging.logger('"
+               << PyString_AsString(PyObject_GetAttrString(m_logger, "name")) << "')."
+               << PyString_AsString(m_name) << "'" << std::endl;
 #endif
 
     int len = n;
     while (std::isspace(s[len-1])) len -= 1;
 
     PyObject* value = Py_BuildValue("s#", s, len);
+    auto value_ = make_safe(value);
     PyObject* result = PyObject_CallMethodObjArgs(m_logger, m_name, value, 0);
-    Py_DECREF(value);
+    auto result_ = make_xsafe(result);
 
     if (!result) len = 0;
-    else Py_DECREF(result);
 
     PyGILState_Release(gil);
 
@@ -164,15 +165,28 @@ struct PythonLoggingOutputDevice: public bob::core::OutputDevice {
 
 };
 
-static int set_stream(boost::iostreams::stream<bob::core::AutoOutputDevice>& s, PyObject* o, const char* n) {
 
+static auto reset_doc = bob::extension::FunctionDoc(
+  "reset",
+  "Resets the standard C++ logging devices, or sets it to the given callable",
+  "This function allows you to manipulate the sinks for messages emitted in C++, using Python callables. "
+  "The first variant (without parameters) will reset all logging output to :py:data:`sys.stderr`. "
+  "The second variant will reset the given logger to the given callable. "
+  "If ``stream`` is not specified, it resets all loggers.\n\n"
+  "This function raises a :py:exc:`ValueError` in case of problems setting or resetting any of the streams."
+)
+.add_prototype("")
+.add_prototype("callable, [stream]")
+.add_parameter("callable", "callable", "A python callable that receives an ``str`` and dumps messages to the desired output channel")
+.add_parameter("stream", "one of ('debug', 'info', warn', 'error')", "[optional] If specified, only the given logger is send to the given callable. Otherwise all loggers are reset to that callable.")
+;
+static int set_stream(boost::iostreams::stream<bob::core::AutoOutputDevice>& s, PyObject* o, const char* n) {
   // if no argument or None, write everything else to stderr
   if (!o || o == Py_None) {
-
 #if   PYTHON_LOGGING_DEBUG != 0
     pthread_t thread_id = pthread_self();
     static_log << "(" << std::hex << thread_id << std::dec
-      << ") Resetting stream `" << n << "' to stderr" << std::endl;
+               << ") Resetting stream `" << n << "' to stderr" << std::endl;
 #endif
     s.close();
     s.open("stderr");
@@ -181,18 +195,17 @@ static int set_stream(boost::iostreams::stream<bob::core::AutoOutputDevice>& s, 
 
   if (PyObject_HasAttrString(o, n)) {
     PyObject* callable = PyObject_GetAttrString(o, n);
+    auto callable_ = make_safe(callable);
     if (callable && PyCallable_Check(callable)) {
-
 #if   PYTHON_LOGGING_DEBUG != 0
-    pthread_t thread_id = pthread_self();
-    static_log << "(" << std::hex << thread_id << std::dec
-      << ") Setting stream `" << n << "' to logger at " << std::hex
-      << o << std::dec << std::endl;
+      pthread_t thread_id = pthread_self();
+      static_log << "(" << std::hex << thread_id << std::dec
+                 << ") Setting stream `" << n << "' to logger at " << std::hex
+                 << o << std::dec << std::endl;
 #endif
 
       s.close();
       s.open(boost::make_shared<PythonLoggingOutputDevice>(o, n));
-      Py_DECREF(callable);
       return 1;
     }
   }
@@ -200,62 +213,34 @@ static int set_stream(boost::iostreams::stream<bob::core::AutoOutputDevice>& s, 
   // if you get to this point, set an error
   PyErr_Format(PyExc_ValueError, "argument to set stream `%s' needs to be either None or an object with a callable named `%s'", n, n);
   return 0;
-
 }
 
 static PyObject* reset(PyObject*, PyObject* args, PyObject* kwds) {
+BOB_TRY
+  char** kwlist = reset_doc.kwlist(1);
 
-  /* Parses input arguments in a single shot */
-  static const char* const_kwlist[] = {
-    "logger",
-    0 /* Sentinel */
-  };
-  static char** kwlist = const_cast<char**>(const_kwlist);
+  PyObject* callable = 0;
+  const char* stream = 0;
 
-  PyObject* logger = 0;
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|Os", kwlist, &callable, &stream)) return 0;
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|O",
-        kwlist, &logger)) return 0;
-
-  if (!set_stream(bob::core::debug, logger, "debug")) return 0;
-  if (!set_stream(bob::core::info, logger, "info")) return 0;
-  if (!set_stream(bob::core::warn, logger, "warn")) return 0;
-  if (!set_stream(bob::core::error, logger, "error")) return 0;
+  if (!stream){
+    // reset all streams to either stderr or the given callable
+    if (!set_stream(bob::core::debug, callable, "debug")) return 0;
+    if (!set_stream(bob::core::info, callable, "info")) return 0;
+    if (!set_stream(bob::core::warn, callable, "warn")) return 0;
+    if (!set_stream(bob::core::error, callable, "error")) return 0;
+  } else {
+    if (strcmp(stream, "debug") && strcmp(stream, "info") && strcmp(stream, "warn") && strcmp(stream, "error")){
+      PyErr_Format(PyExc_ValueError, "If given, the parameter 'stream' needs to be one of ('debug', 'info', warn', 'error), not %s", stream);
+      return 0;
+    }
+    if (!set_stream(bob::core::error, callable, stream)) return 0;
+  }
 
   Py_RETURN_NONE;
+BOB_CATCH_FUNCTION("reset", 0)
 }
-
-PyDoc_STRVAR(s_reset_str, "reset");
-PyDoc_STRVAR(s_reset__doc__,
-"reset([debug, [info, [warn, [error]]]]) -> None\n\
-\n\
-Resets the standard C++ logging devices.\n\
-\n\
-This function allows you to manipulate the sinks for messages emitted\n\
-in C++, using Python callables.\n\
-\n\
-Keyword Parameters:\n\
-\n\
-  debug\n\
-    [optional] (callable) A callable that receives a string and dumps\n\
-    messages to the desired output channel.\n\
-  \n\
-  info\n\
-    [optional] (callable) A callable that receives a string and dumps\n\
-    messages to the desired output channel.\n\
-  \n\
-  warn\n\
-    [optional] (callable) A callable that receives a string and dumps\n\
-    messages to the desired output channel.\n\
-  \n\
-  error\n\
-    [optional] (callable) A callable that receives a string and dumps\n\
-    messages to the desired output channel.\n\
-  \n\
-Raises a :py:class:`ValueError` in case of problems setting or resetting\n\
-any of the streams.\n\
-"
-);
 
 /**************************
  * Testing Infrastructure *
@@ -290,9 +275,9 @@ static void* log_message_inner(void* cookie) {
 
     *(mi->s) << mi->message
 #     if PYTHON_LOGGING_DEBUG != 0
-      << " (thread " << mi->thread_id << "; iteration " << i << ")"
+            << " (thread " << mi->thread_id << "; iteration " << i << ")"
 #     endif
-      << std::endl;
+            << std::endl;
 
     mi->s->flush();
   }
@@ -311,23 +296,23 @@ static void* log_message_inner(void* cookie) {
   return 0;
 }
 
-/**
- * A test function for your python bindings
- */
+static auto _logmsg_doc = bob::extension::FunctionDoc(
+  "_log_message",
+  "Logs a message into Bob's logging system from C++",
+  "This function is bound for testing purposes only and is not part of the Python API for bob.core"
+)
+.add_prototype("ntimes, stream, message")
+.add_parameter("ntimes", "int", "The number of times to print the given message")
+.add_parameter("stream", "str", "The stream to use for logging the message. Choose from ``('debug', 'info', 'warn', 'error')")
+.add_parameter("message", "str", "The message to be logged")
+;
 static PyObject* log_message(PyObject*, PyObject* args, PyObject* kwds) {
+BOB_TRY
+  char** kwlist = _logmsg_doc.kwlist();
 
-  /* Parses input arguments in a single shot */
-  static const char* const_kwlist[] = {
-    "ntimes",
-    "stream",
-    "message",
-    0 /* Sentinel */
-  };
-  static char** kwlist = const_cast<char**>(const_kwlist);
-
-  unsigned int ntimes = 0;
-  const char* stream = 0;
-  const char* message = 0;
+  unsigned int ntimes;
+  const char* stream;
+  const char* message;
 
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "Iss",
         kwlist, &ntimes, &stream, &message)) return 0;
@@ -340,7 +325,7 @@ static PyObject* log_message(PyObject*, PyObject* args, PyObject* kwds) {
   else if (strncmp(stream, "error", 5) == 0) s = &bob::core::error;
   else if (strncmp(stream, "fatal", 5) == 0) s = &bob::core::error;
   else {
-    PyErr_SetString(PyExc_ValueError, "parameter `stream' must be one of 'debug', 'info', 'warn', 'error' or 'fatal' (synomym for 'error')");
+    PyErr_Format(PyExc_ValueError, "parameter `stream' must be one of 'debug', 'info', 'warn', 'error' or 'fatal' (synomym for 'error'), not '%s'", stream);
     return 0;
   }
 
@@ -356,62 +341,41 @@ static PyObject* log_message(PyObject*, PyObject* args, PyObject* kwds) {
   PyEval_RestoreThread(no_gil);
 
   Py_RETURN_NONE;
+BOB_CATCH_FUNCTION("_log_message", 0)
 }
 
-PyDoc_STRVAR(s_logmsg_str, "__log_message__");
-PyDoc_STRVAR(s_logmsg__doc__,
-"__log_message__(ntimes, stream, message) -> None\n\
-\n\
-Logs a message into Bob's logging system from C++.\n\
-\n\
-This method is included for testing purposes only and should not be\n\
-considered part of the Python API for Bob.\n\
-\n\
-Keyword parameters:\n\
-\n\
-  ntimes\n\
-    (integer) The number of times to print the given message\n\
-  \n\
-  stream\n\
-    (string) The stream to use for logging the message. Choose from:\n\
-    ``'debug'``, ``'info'``, ``'warn'`` or ``'error'``\n\
-  \n\
-  message\n\
-    (string) The message to be logged.\n\
-\n"
-);
 
-/**
- * Logs a number of messages from a separate thread
- */
+static auto _logmsg_mt_doc = bob::extension::FunctionDoc(
+  "_log_message_mt",
+  "Logs a message into Bob's logging system from C++, in a separate thread",
+  "This function is bound for testing purposes only and is not part of the Python API for bob.core"
+)
+.add_prototype("nthreads, ntimes, stream, message")
+.add_parameter("nthreads", "int", "The total number of threads from which to write messages to the logging system using the C++->Python API")
+.add_parameter("ntimes", "int", "The number of times to print the given message")
+.add_parameter("stream", "str", "The stream to use for logging the message. Choose from ``('debug', 'info', 'warn', 'error')")
+.add_parameter("message", "str", "The message to be logged")
+;
 static PyObject* log_message_mt(PyObject*, PyObject* args, PyObject* kwds) {
+BOB_TRY
+  char** kwlist = _logmsg_mt_doc.kwlist();
 
-  /* Parses input arguments in a single shot */
-  static const char* const_kwlist[] = {
-    "nthreads",
-    "ntimes",
-    "stream",
-    "message",
-    0 /* Sentinel */
-  };
-  static char** kwlist = const_cast<char**>(const_kwlist);
-
-  unsigned int nthreads = 0;
-  unsigned int ntimes = 0;
-  const char* stream = 0;
-  const char* message = 0;
+  unsigned int nthreads;
+  unsigned int ntimes;
+  const char* stream;
+  const char* message;
 
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "IIss",
         kwlist, &nthreads, &ntimes, &stream, &message)) return 0;
 
   // implements: if stream not in ('debug', 'info', 'warn', 'error')
   boost::iostreams::stream<bob::core::AutoOutputDevice>* s = 0;
-  if (strncmp(stream, "debug", 5)) s = &bob::core::debug;
-  else if (strncmp(stream, "info", 4)) s = &bob::core::info;
-  else if (strncmp(stream, "warn", 4)) s = &bob::core::warn;
-  else if (strncmp(stream, "error", 5)) s = &bob::core::error;
+  if (strncmp(stream, "debug", 5) == 0) s = &bob::core::debug;
+  else if (strncmp(stream, "info", 4) == 0) s = &bob::core::info;
+  else if (strncmp(stream, "warn", 4) == 0) s = &bob::core::warn;
+  else if (strncmp(stream, "error", 5) == 0) s = &bob::core::error;
   else {
-    PyErr_SetString(PyExc_ValueError, "parameter `stream' must be one of 'debug', 'info', 'warn' or 'error'");
+    PyErr_Format(PyExc_ValueError, "parameter `stream' must be one of 'debug', 'info', 'warn' or 'error', not '%s'", stream);
     return 0;
   }
 
@@ -439,8 +403,8 @@ static PyObject* log_message_mt(PyObject*, PyObject* args, PyObject* kwds) {
 
 #   if PYTHON_LOGGING_DEBUG != 0
     static_log << "(thread 0) thread " << (i+1)
-      << " == " << std::hex << threads[i] << std::dec
-      << " launched" << std::endl;
+               << " == " << std::hex << threads[i] << std::dec
+               << " launched" << std::endl;
 #   endif
 
   }
@@ -462,52 +426,28 @@ static PyObject* log_message_mt(PyObject*, PyObject* args, PyObject* kwds) {
   PyEval_RestoreThread(no_gil);
 
   Py_RETURN_NONE;
+BOB_CATCH_FUNCTION("_log_message_mt", 0)
 }
 
-PyDoc_STRVAR(s_logmsg_mt_str, "__log_message_mt__");
-PyDoc_STRVAR(s_logmsg_mt__doc__,
-"__log_message_mt__(nthreads, ntimes, stream, message) -> None\n\
-\n\
-Logs a message into Bob's logging system from C++, in a separate thread.\n\
-\n\
-This method is included for testing purposes only and should not be\n\
-considered part of the Python API for Bob.\n\
-\n\
-Keyword parameters:\n\
-\n\
-  nthreads\n\
-    (integer) The total number of threads from which to write messages\n\
-    to the logging system using the C++->Python API.\n\
-  ntimes\n\
-    (integer) The number of times to print the given message\n\
-  \n\
-  stream\n\
-    (string) The stream to use for logging the message. Choose from:\n\
-    ``'debug'``, ``'info'``, ``'warn'`` or ``'error'``\n\
-  \n\
-  message\n\
-    (string) The message to be logged.\n\
-\n"
-);
 
 static PyMethodDef module_methods[] = {
     {
-      s_reset_str,
+      reset_doc.name(),
       (PyCFunction)reset,
       METH_VARARGS|METH_KEYWORDS,
-      s_reset__doc__
+      reset_doc.doc()
     },
     {
-      s_logmsg_str,
+      _logmsg_doc.name(),
       (PyCFunction)log_message,
       METH_VARARGS|METH_KEYWORDS,
-      s_logmsg__doc__
+      _logmsg_doc.doc()
     },
     {
-      s_logmsg_mt_str,
+      _logmsg_mt_doc.name(),
       (PyCFunction)log_message_mt,
       METH_VARARGS|METH_KEYWORDS,
-      s_logmsg_mt__doc__
+      _logmsg_mt_doc.doc()
     },
     {0}  /* Sentinel */
 };

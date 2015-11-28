@@ -67,8 +67,8 @@ def test_from_python_output():
 
 def test_from_cxx():
 
-  bob.core._logging.__log_message__(1, 'error', 'this is a test message')
+  bob.core._logging._log_message(1, 'error', 'this is a test message')
 
 def test_from_cxx_multithreaded():
 
-  bob.core._logging.__log_message_mt__(2, 1, 'error', 'this is a test message')
+  bob.core._logging._log_message_mt(2, 1, 'error', 'this is a test message')

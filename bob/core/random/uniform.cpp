@@ -8,11 +8,28 @@
 #define BOB_CORE_RANDOM_MODULE
 #include <bob.core/random_api.h>
 #include <bob.blitz/cppapi.h>
+#include <bob.blitz/cleanup.h>
+#include <bob.extension/documentation.h>
+
 #include <boost/make_shared.hpp>
 
 #include <boost/random.hpp>
 
-PyDoc_STRVAR(s_uniform_str, BOB_EXT_MODULE_PREFIX ".uniform");
+static auto uniform_doc = bob::extension::ClassDoc(
+  BOB_EXT_MODULE_PREFIX ".uniform",
+  "Models a random uniform distribution",
+  "On each invocation, it returns a random value uniformly distributed in the set of numbers [min, max] (integer) and [min, max[ (real-valued)"
+)
+.add_constructor(bob::extension::FunctionDoc(
+  "uniform",
+  "Constructs a new uniform distribution object",
+  "If the values ``min`` and ``max`` are not given, they are assumed to be ``min=0`` and ``max=9``, for integral distributions and ``min=0.0`` and ``max=1.0`` for real-valued distributions."
+)
+.add_prototype("dtype, [min], [max]", "")
+.add_parameter("dtype", ":py:class:`numpy.dtype` or anything that converts to a dtype", "The data type to get the distribution for")
+.add_parameter("min", "dtype", "[Default: 0] The minimum value to draw")
+.add_parameter("max", "dtype", "[Default: 1. (for real-valued ``dtype``) or 9 (for integral ``dtype``)] The maximum value to be drawn")
+);
 
 /* How to create a new PyBoostUniformObject */
 static PyObject* PyBoostUniform_New(PyTypeObject* type, PyObject*, PyObject*) {
@@ -22,15 +39,13 @@ static PyObject* PyBoostUniform_New(PyTypeObject* type, PyObject*, PyObject*) {
   self->type_num = NPY_NOTYPE;
   self->distro.reset();
 
-  return reinterpret_cast<PyObject*>(self);
+  return Py_BuildValue("N", self);
 }
 
 /* How to delete a PyBoostUniformObject */
 static void PyBoostUniform_Delete (PyBoostUniformObject* o) {
-
   o->distro.reset();
   Py_TYPE(o)->tp_free((PyObject*)o);
-
 }
 
 static boost::shared_ptr<void> make_uniform_bool() {
@@ -56,15 +71,15 @@ boost::shared_ptr<void> make_uniform_real(PyObject* min, PyObject* max) {
 }
 
 PyObject* PyBoostUniform_SimpleNew (int type_num, PyObject* min, PyObject* max) {
-
+BOB_TRY
   if (type_num == NPY_BOOL && (min || max)) {
     PyErr_Format(PyExc_ValueError, "uniform distributions of boolean scalars cannot have a maximum or minimum");
     return 0;
   }
 
   PyBoostUniformObject* retval = (PyBoostUniformObject*)PyBoostUniform_New(&PyBoostUniform_Type, 0, 0);
-
   if (!retval) return 0;
+  auto retval_ = make_safe(retval);
 
   retval->type_num = type_num;
 
@@ -104,26 +119,21 @@ PyObject* PyBoostUniform_SimpleNew (int type_num, PyObject* min, PyObject* max) 
       break;
     default:
       PyErr_Format(PyExc_NotImplementedError, "cannot create %s(T) with T having an unsupported numpy type number of %d", Py_TYPE(retval)->tp_name, retval->type_num);
-      Py_DECREF(retval);
       return 0;
   }
 
   if (!retval->distro) { // a problem occurred
-    Py_DECREF(retval);
     return 0;
   }
 
-  return reinterpret_cast<PyObject*>(retval);
-
+  return Py_BuildValue("O", retval);
+BOB_CATCH_FUNCTION("SimpleNew", 0)
 }
 
 /* Implements the __init__(self) function */
-static
-int PyBoostUniform_Init(PyBoostUniformObject* self, PyObject *args, PyObject* kwds) {
-
-  /* Parses input arguments in a single shot */
-  static const char* const_kwlist[] = {"dtype", "min", "max", 0};
-  static char** kwlist = const_cast<char**>(const_kwlist);
+static int PyBoostUniform_Init(PyBoostUniformObject* self, PyObject *args, PyObject* kwds) {
+BOB_TRY
+  char** kwlist = uniform_doc.kwlist();
 
   PyObject* min = 0;
   PyObject* max = 0;
@@ -179,6 +189,7 @@ int PyBoostUniform_Init(PyBoostUniformObject* self, PyObject *args, PyObject* kw
   }
 
   return 0; ///< SUCCESS
+BOB_CATCH_MEMBER("constructor", -1)
 }
 
 int PyBoostUniform_Check(PyObject* o) {
@@ -193,6 +204,12 @@ int PyBoostUniform_Converter(PyObject* o, PyBoostUniformObject** a) {
   return 1;
 }
 
+
+static auto min_doc = bob::extension::VariableDoc(
+  "min",
+  "dtype",
+  "The smallest value that the distribution can produce"
+);
 template <typename T> PyObject* get_minimum_int(PyBoostUniformObject* self) {
   return PyBlitzArrayCxx_FromCScalar(boost::static_pointer_cast<boost::uniform_int<T>>(self->distro)->min());
 }
@@ -205,6 +222,7 @@ template <typename T> PyObject* get_minimum_real(PyBoostUniformObject* self) {
  * Accesses the min value
  */
 static PyObject* PyBoostUniform_GetMin(PyBoostUniformObject* self) {
+BOB_TRY
   switch (self->type_num) {
     case NPY_BOOL:
       Py_RETURN_FALSE;
@@ -232,8 +250,16 @@ static PyObject* PyBoostUniform_GetMin(PyBoostUniformObject* self) {
       PyErr_Format(PyExc_NotImplementedError, "cannot get minimum of %s(T) with T having an unsupported numpy type number of %d (DEBUG ME)", Py_TYPE(self)->tp_name, self->type_num);
       return 0;
   }
+BOB_CATCH_MEMBER("min", 0)
 }
 
+
+static auto max_doc = bob::extension::VariableDoc(
+  "max",
+  "dtype",
+  "The largest value that the distributioncan produce",
+  "Integer uniform distributions are bound at [min, max], while real-valued distributions are bound at [min, max[."
+);
 template <typename T> PyObject* get_maximum_int(PyBoostUniformObject* self) {
   return PyBlitzArrayCxx_FromCScalar(boost::static_pointer_cast<boost::uniform_int<T>>(self->distro)->max());
 }
@@ -246,6 +272,7 @@ template <typename T> PyObject* get_maximum_real(PyBoostUniformObject* self) {
  * Accesses the max value
  */
 static PyObject* PyBoostUniform_GetMax(PyBoostUniformObject* self) {
+BOB_TRY
   switch (self->type_num) {
     case NPY_BOOL:
       Py_RETURN_TRUE;
@@ -273,15 +300,58 @@ static PyObject* PyBoostUniform_GetMax(PyBoostUniformObject* self) {
       PyErr_Format(PyExc_NotImplementedError, "cannot get maximum of %s(T) with T having an unsupported numpy type number of %d (DEBUG ME)", Py_TYPE(self)->tp_name, self->type_num);
       return 0;
   }
+BOB_CATCH_MEMBER("max", 0)
 }
 
-/**
- * Accesses the datatype
- */
+
+static auto dtype_doc = bob::extension::VariableDoc(
+  "dtype",
+  ":py:class:`numpy.dtype`",
+  "The type of scalars produced by this uniform distribution"
+);
 static PyObject* PyBoostUniform_GetDtype(PyBoostUniformObject* self) {
-  return reinterpret_cast<PyObject*>(PyArray_DescrFromType(self->type_num));
+BOB_TRY
+  return Py_BuildValue("N", PyArray_DescrFromType(self->type_num));
+BOB_CATCH_MEMBER("dtype", 0)
 }
 
+
+
+static PyGetSetDef PyBoostUniform_getseters[] = {
+    {
+      dtype_doc.name(),
+      (getter)PyBoostUniform_GetDtype,
+      0,
+      dtype_doc.doc(),
+      0,
+    },
+    {
+      min_doc.name(),
+      (getter)PyBoostUniform_GetMin,
+      0,
+      min_doc.doc(),
+      0,
+    },
+    {
+      max_doc.name(),
+      (getter)PyBoostUniform_GetMax,
+      0,
+      max_doc.doc(),
+      0,
+    },
+    {0}  /* Sentinel */
+};
+
+
+
+static auto reset_doc = bob::extension::FunctionDoc(
+  "reset",
+  "Resets this distribution",
+  "After calling this method, subsequent uses of the distribution do not depend on values produced by any random number generator prior to invoking reset",
+  true
+)
+.add_prototype("")
+;
 template <typename T> PyObject* reset_smallint(PyBoostUniformObject* self) {
   boost::static_pointer_cast<boost::uniform_smallint<T>>(self->distro)->reset();
   Py_RETURN_NONE;
@@ -297,11 +367,8 @@ template <typename T> PyObject* reset_real(PyBoostUniformObject* self) {
   Py_RETURN_NONE;
 }
 
-/**
- * Resets the distribution - this is a noop for uniform distributions, here
- * only for compatibility reasons
- */
 static PyObject* PyBoostUniform_Reset(PyBoostUniformObject* self) {
+BOB_TRY
   switch (self->type_num) {
     case NPY_BOOL:
       return reset_smallint<uint8_t>(self);
@@ -329,8 +396,19 @@ static PyObject* PyBoostUniform_Reset(PyBoostUniformObject* self) {
       PyErr_Format(PyExc_NotImplementedError, "cannot reset %s(T) with T having an unsupported numpy type number of %d (DEBUG ME)", Py_TYPE(self)->tp_name, self->type_num);
       return 0;
   }
+BOB_CATCH_MEMBER("reset", 0)
 }
 
+static auto call_doc = bob::extension::FunctionDoc(
+  "draw",
+  "Draws one random number from this distribution using the given ``rng``",
+  ".. note:: The :py:meth:`__call__` function is a synonym for this ``draw``.",
+  true
+)
+.add_prototype("rng", "value")
+.add_parameter("rng", ":py:class:`mt19937`", "The random number generator to use")
+.add_return("value", "dtype", "A random value that follows the uniform distribution")
+;
 static PyObject* call_bool(PyBoostUniformObject* self, PyBoostMt19937Object* rng) {
   if (boost::static_pointer_cast<boost::uniform_smallint<uint8_t>>(self->distro)->operator()(*rng->rng)) Py_RETURN_TRUE;
   Py_RETURN_FALSE;
@@ -347,14 +425,11 @@ template <typename T> PyObject* call_real(PyBoostUniformObject* self, PyBoostMt1
 /**
  * Calling a PyBoostUniformObject to generate a random number
  */
-static
-PyObject* PyBoostUniform_Call(PyBoostUniformObject* self, PyObject *args, PyObject* kwds) {
+static PyObject* PyBoostUniform_Call(PyBoostUniformObject* self, PyObject *args, PyObject* kwds) {
+BOB_TRY
+  char** kwlist = call_doc.kwlist();
 
-  /* Parses input arguments in a single shot */
-  static const char* const_kwlist[] = {"rng", 0};
-  static char** kwlist = const_cast<char**>(const_kwlist);
-
-  PyBoostMt19937Object* rng = 0;
+  PyBoostMt19937Object* rng;
 
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!", kwlist, &PyBoostMt19937_Type, &rng)) return 0; ///< FAILURE
 
@@ -397,84 +472,31 @@ PyObject* PyBoostUniform_Call(PyBoostUniformObject* self, PyObject *args, PyObje
   }
 
   return 0; ///< FAILURE
+BOB_CATCH_MEMBER("call", 0)
 }
-
-PyDoc_STRVAR(s_reset_str, "reset");
-PyDoc_STRVAR(s_reset_doc,
-"x.reset() -> None\n\
-\n\
-After calling this method, subsequent uses of the distribution do\n\
-not depend on values produced by any random number generator prior\n\
-to invoking reset.\n\
-"
-);
 
 static PyMethodDef PyBoostUniform_methods[] = {
     {
-      s_reset_str,
+      call_doc.name(),
+      (PyCFunction)PyBoostUniform_Call,
+      METH_VARARGS|METH_KEYWORDS,
+      call_doc.doc(),
+    },
+    {
+      reset_doc.name(),
       (PyCFunction)PyBoostUniform_Reset,
       METH_NOARGS,
-      s_reset_doc,
+      reset_doc.doc(),
     },
     {0}  /* Sentinel */
 };
 
-PyDoc_STRVAR(s_dtype_str, "dtype");
-PyDoc_STRVAR(s_dtype_doc,
-"x.dtype -> numpy dtype\n\
-\n\
-The type of scalars produced by this uniform distribution.\n\
-"
-);
-
-PyDoc_STRVAR(s_min_str, "min");
-PyDoc_STRVAR(s_min_doc,
-"x.min -> scalar\n\
-\n\
-This value corresponds to the smallest value that the distribution\n\
-can produce.\n\
-"
-);
-
-PyDoc_STRVAR(s_max_str, "max");
-PyDoc_STRVAR(s_max_doc,
-"x.max -> scalar\n\
-\n\
-This value corresponds to the largest value that the distribution\n\
-can produce. Integer uniform distributions are bound at [min, max],\n\
-while real-valued distributions are bound at [min, max[.\n\
-"
-);
-
-static PyGetSetDef PyBoostUniform_getseters[] = {
-    {
-      s_dtype_str,
-      (getter)PyBoostUniform_GetDtype,
-      0,
-      s_dtype_doc,
-      0,
-    },
-    {
-      s_min_str,
-      (getter)PyBoostUniform_GetMin,
-      0,
-      s_min_doc,
-      0,
-    },
-    {
-      s_max_str,
-      (getter)PyBoostUniform_GetMax,
-      0,
-      s_max_doc,
-      0,
-    },
-    {0}  /* Sentinel */
-};
 
 /**
  * Converts a scalar, that will be stolen, into a str/bytes
  */
 static PyObject* scalar_to_bytes(PyObject* s) {
+  if (!s) return s;
 # if PY_VERSION_HEX >= 0x03000000
   PyObject* b = PyObject_Bytes(s);
 # else
@@ -484,104 +506,56 @@ static PyObject* scalar_to_bytes(PyObject* s) {
   return b;
 }
 
-/**
- * Accesses the char* buffer on a str/bytes object
- */
-static const char* bytes_to_charp(PyObject* s) {
-# if PY_VERSION_HEX >= 0x03000000
-  return PyBytes_AS_STRING(s);
-# else
-  return PyString_AS_STRING(s);
-# endif
-}
 
 /**
  * String representation and print out
  */
 static PyObject* PyBoostUniform_Repr(PyBoostUniformObject* self) {
-
-  PyObject* min = PyBoostUniform_GetMin(self);
-  if (!min) return 0;
-  PyObject* max = PyBoostUniform_GetMax(self);
-  if (!max) return 0;
-
-  PyObject* smin = scalar_to_bytes(min);
+BOB_TRY
+  PyObject* smin = scalar_to_bytes(PyBoostUniform_GetMin(self));
   if (!smin) return 0;
-  PyObject* smax = scalar_to_bytes(max);
+  auto smin_ = make_safe(smin);
+  PyObject* smax = scalar_to_bytes(PyBoostUniform_GetMax(self));
   if (!smax) return 0;
+  auto smax_ = make_safe(smax);
 
-  PyObject* retval =
-# if PY_VERSION_HEX >= 0x03000000
-    PyUnicode_FromFormat
-#else
+  return
     PyString_FromFormat
-#endif
       (
        "%s(dtype='%s', min=%s, max=%s)",
        Py_TYPE(self)->tp_name, PyBlitzArray_TypenumAsString(self->type_num),
-       bytes_to_charp(smin), bytes_to_charp(smax)
+       PyString_AS_STRING(smin), PyString_AS_STRING(smax)
       );
-
-  Py_DECREF(smin);
-  Py_DECREF(smax);
-
-  return retval;
-
+BOB_CATCH_MEMBER("repr", 0)
 }
 
-PyDoc_STRVAR(s_uniform_doc,
-"uniform(dtype, [min=m, max=M]]) -> new uniform distribution\n\
-\n\
-Models a random uniform distribution\n\
-\n\
-On each invocation, it returns a random value uniformly\n\
-distributed in the set of numbers [min, max] (integer) and\n\
-[min, max[ (real-valued).\n\
-\n\
-If the values ``min`` and ``max`` are not given they are assumed\n\
-to be ``min=0`` and ``max=9``, for integral distributions and\n\
-``min=0.0`` and ``max=1.0`` for real-valued distributions.\n\
-\n\
-"
-);
 
 PyTypeObject PyBoostUniform_Type = {
-    PyVarObject_HEAD_INIT(0, 0)
-    s_uniform_str,                              /*tp_name*/
-    sizeof(PyBoostUniformObject),               /*tp_basicsize*/
-    0,                                          /*tp_itemsize*/
-    (destructor)PyBoostUniform_Delete,          /*tp_dealloc*/
-    0,                                          /*tp_print*/
-    0,                                          /*tp_getattr*/
-    0,                                          /*tp_setattr*/
-    0,                                          /*tp_compare*/
-    (reprfunc)PyBoostUniform_Repr,              /*tp_repr*/
-    0,                                          /*tp_as_number*/
-    0,                                          /*tp_as_sequence*/
-    0,                                          /*tp_as_mapping*/
-    0,                                          /*tp_hash */
-    (ternaryfunc)PyBoostUniform_Call,           /*tp_call*/
-    (reprfunc)PyBoostUniform_Repr,              /*tp_str*/
-    0,                                          /*tp_getattro*/
-    0,                                          /*tp_setattro*/
-    0,                                          /*tp_as_buffer*/
-    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,   /*tp_flags*/
-    s_uniform_doc,                              /* tp_doc */
-    0,		                                      /* tp_traverse */
-    0,		                                      /* tp_clear */
-    0,                                          /* tp_richcompare */
-    0,		                                      /* tp_weaklistoffset */
-    0,		                                      /* tp_iter */
-    0,		                                      /* tp_iternext */
-    PyBoostUniform_methods,                     /* tp_methods */
-    0,                                          /* tp_members */
-    PyBoostUniform_getseters,                   /* tp_getset */
-    0,                                          /* tp_base */
-    0,                                          /* tp_dict */
-    0,                                          /* tp_descr_get */
-    0,                                          /* tp_descr_set */
-    0,                                          /* tp_dictoffset */
-    (initproc)PyBoostUniform_Init,              /* tp_init */
-    0,                                          /* tp_alloc */
-    PyBoostUniform_New,                         /* tp_new */
+  PyVarObject_HEAD_INIT(0,0)
+  0
 };
+
+bool init_BoostUniform(PyObject* module)
+{
+  // initialize the type struct
+  PyBoostUniform_Type.tp_name = uniform_doc.name();
+  PyBoostUniform_Type.tp_basicsize = sizeof(PyBoostUniformObject);
+  PyBoostUniform_Type.tp_flags = Py_TPFLAGS_DEFAULT;
+  PyBoostUniform_Type.tp_doc = uniform_doc.doc();
+  PyBoostUniform_Type.tp_str = reinterpret_cast<reprfunc>(PyBoostUniform_Repr);
+  PyBoostUniform_Type.tp_repr = reinterpret_cast<reprfunc>(PyBoostUniform_Repr);
+
+  // set the functions
+  PyBoostUniform_Type.tp_new = PyBoostUniform_New;
+  PyBoostUniform_Type.tp_init = reinterpret_cast<initproc>(PyBoostUniform_Init);
+  PyBoostUniform_Type.tp_dealloc = reinterpret_cast<destructor>(PyBoostUniform_Delete);
+  PyBoostUniform_Type.tp_methods = PyBoostUniform_methods;
+  PyBoostUniform_Type.tp_getset = PyBoostUniform_getseters;
+  PyBoostUniform_Type.tp_call = reinterpret_cast<ternaryfunc>(PyBoostUniform_Call);
+
+  // check that everything is fine
+  if (PyType_Ready(&PyBoostUniform_Type) < 0) return false;
+
+  // add the type to the module
+  return PyModule_AddObject(module, "uniform", Py_BuildValue("O", &PyBoostUniform_Type)) >= 0;
+}

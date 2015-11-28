@@ -10,7 +10,7 @@ import sys
 import logging
 from ._logging import reset
 
-# get the default logger of Bob
+# get the default root logger of Bob
 _logger = logging.getLogger('bob')
 
 # by default, warning and error messages should be written to sys.stderr
@@ -38,18 +38,22 @@ del atexit
 
 # helper functions to instantiate and set-up logging
 def setup(logger_name, format="%(name)s@%(asctime)s -- %(levelname)s: %(message)s"):
-  """This function returns a logger object that is set up to perform logging using Bob loggers.
+  """setup(logger_name, [format]) -> logger
 
-  **Keyword parameters:**
+  This function returns a logger object that is set up to perform logging using Bob loggers.
 
-  logger_name : str
+  **Parameters:**
+
+  ``logger_name`` : str
     The name of the module to generate logs for
 
-  format : str
+  ``format`` : str
     The format of the logs, see :py:class:`logging.LogRecord` for more details.
     By default, the log contains the logger name, the log time, the log level and the massage.
 
-  Returns : :py:class:`logging.Logger`
+  **Returns:**
+
+  ``logger`` : :py:class:`logging.Logger`
     The logger configured for logging.
     The same logger can be retrieved using the :py:func:`logging.getLogger` function.
   """
@@ -76,33 +80,35 @@ def setup(logger_name, format="%(name)s@%(asctime)s -- %(levelname)s: %(message)
 
 def add_command_line_option(parser, short_option = '-v'):
   """Adds the verbosity command line option to the given parser.
+
   The verbosity can by set to 0 (error), 1 (warning), 2 (info) or 3 (debug) by including the according number of --verbose command line arguments (e.g., ``-vv`` for info level).
 
-  **Keyword parameters:**
+  **Parameters:**
 
-  parser : :py:class:`argparse.ArgumentParser` or one of its derivatives
-    A command line parser that you want to add a verbose option to.
+  ``parser`` : :py:class:`argparse.ArgumentParser` or one of its derivatives
+    A command line parser that you want to add a verbose option to
 
-  short_option : str
+  ``short_option`` : str
     The short command line option that should be used for increasing the verbosity.
+    By default, ``'-v'`` is considered as the shortcut
   """
   parser.add_argument(short_option, '--verbose', action = 'count', default = 0,
     help = "Increase the verbosity level from 0 (only error messages) to 1 (warnings), 2 (log messages), 3 (debug information) by adding the --verbose option as often as desired (e.g. '-vvv' for debug).")
 
 
 def set_verbosity_level(logger, level):
-  """Sets the log level.
+  """Sets the log level for the given logger.
 
-  **Keyword parameters:**
+  **Parameters:**
 
-  logger : :py:class:`logging.Logger` or str
+  ``logger`` : :py:class:`logging.Logger` or str
     The logger to generate logs for, or the name  of the module to generate logs for.
 
-  level : int
+  ``level`` : int
     Possible log levels are: 0: Error; 1: Warning; 2: Info; 3: Debug.
   """
   if level not in range(0,4):
-    raise ValueError("The verbosity level %d does not exist. Please reduce the number of '--verbose' parameters in your call" % level)
+    raise ValueError("The verbosity level %d does not exist. Please reduce the number of '--verbose' parameters in your command line" % level)
   # set up the verbosity level of the logging system
   log_level = {
       0: logging.ERROR,

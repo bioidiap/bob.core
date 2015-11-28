@@ -8,45 +8,44 @@
 #define BOB_CORE_RANDOM_MODULE
 #include <bob.core/random_api.h>
 #include <bob.blitz/cppapi.h>
+#include <bob.blitz/cleanup.h>
+#include <bob.extension/documentation.h>
 #include <boost/make_shared.hpp>
 
 #include <bob.core/random.h>
 #include <boost/random.hpp>
 
-PyDoc_STRVAR(s_gamma_str, BOB_EXT_MODULE_PREFIX ".gamma");
 
-PyDoc_STRVAR(s_gamma_doc,
-"gamma(dtype, [alpha=1.]]) -> new gamma distribution\n\
-\n\
-Models a random gamma distribution\n\
-\n\
-This distribution class models a gamma random distribution.\n\
-Such a distribution produces random numbers :math:`x` distributed\n\
-with the probability density function\n\
-:math:`p(x) = x^{\\alpha-1}\\frac{e^{-x}}{\\Gamma(\\alpha)}`,\n\
-where the ``alpha`` (:math:`\\alpha`) is a parameter of the\n\
-distribution.\n\
-\n\
-"
+static auto gamma_doc = bob::extension::ClassDoc(
+  BOB_EXT_MODULE_PREFIX ".gamma",
+  "Models a random gamma distribution",
+  "This distribution produces random numbers :math:`x` distributed with the probability density function\n\n"
+  ".. math::\n\n   p(x) = x^{\\alpha-1}\\frac{e^{-x}}{\\Gamma(\\alpha)}\n\n"
+  "where ``alpha`` (:math:`\\alpha`) is a parameter of this distribution class."
+)
+.add_constructor(bob::extension::FunctionDoc(
+  "gamma",
+  "Constructs a new gamma distribution object"
+)
+.add_prototype("dtype, [alpha]", "")
+.add_parameter("dtype", ":py:class:`numpy.dtype` or anything that converts to a dtype", "The data type to get the distribution for; only real-valued types are supported")
+.add_parameter("alpha", "dtype", "[Default: 1.] The mean :math:`\\alpha` of the gamma distibution")
 );
 
 /* How to create a new PyBoostGammaObject */
 static PyObject* PyBoostGamma_New(PyTypeObject* type, PyObject*, PyObject*) {
-
   /* Allocates the python object itself */
   PyBoostGammaObject* self = (PyBoostGammaObject*)type->tp_alloc(type, 0);
   self->type_num = NPY_NOTYPE;
   self->distro.reset();
 
-  return reinterpret_cast<PyObject*>(self);
+  return Py_BuildValue("N", self);
 }
 
 /* How to delete a PyBoostGammaObject */
 static void PyBoostGamma_Delete (PyBoostGammaObject* o) {
-
   o->distro.reset();
   Py_TYPE(o)->tp_free((PyObject*)o);
-
 }
 
 template <typename T>
@@ -57,10 +56,10 @@ boost::shared_ptr<void> make_gamma(PyObject* alpha) {
 }
 
 PyObject* PyBoostGamma_SimpleNew (int type_num, PyObject* alpha) {
-
+BOB_TRY
   PyBoostGammaObject* retval = (PyBoostGammaObject*)PyBoostGamma_New(&PyBoostGamma_Type, 0, 0);
-
   if (!retval) return 0;
+  auto retval_ = make_safe(retval);
 
   retval->type_num = type_num;
 
@@ -73,26 +72,21 @@ PyObject* PyBoostGamma_SimpleNew (int type_num, PyObject* alpha) {
       break;
     default:
       PyErr_Format(PyExc_NotImplementedError, "cannot create %s(T) with T having an unsupported numpy type number of %d (it only supports numpy.float32 or numpy.float64)", Py_TYPE(retval)->tp_name, retval->type_num);
-      Py_DECREF(retval);
       return 0;
   }
 
   if (!retval->distro) { // a problem occurred
-    Py_DECREF(retval);
     return 0;
   }
 
-  return reinterpret_cast<PyObject*>(retval);
-
+  return Py_BuildValue("O", retval);
+BOB_CATCH_FUNCTION("SimpleNew", 0)
 }
 
 /* Implements the __init__(self) function */
-static
-int PyBoostGamma_Init(PyBoostGammaObject* self, PyObject *args, PyObject* kwds) {
-
-  /* Parses input arguments in a single shot */
-  static const char* const_kwlist[] = {"dtype", "alpha", 0};
-  static char** kwlist = const_cast<char**>(const_kwlist);
+static int PyBoostGamma_Init(PyBoostGammaObject* self, PyObject *args, PyObject* kwds) {
+BOB_TRY
+  static char** kwlist = gamma_doc.kwlist();
 
   PyObject* alpha = 0;
 
@@ -115,6 +109,7 @@ int PyBoostGamma_Init(PyBoostGammaObject* self, PyObject *args, PyObject* kwds) 
   }
 
   return 0; ///< SUCCESS
+BOB_CATCH_MEMBER("constructor", -1)
 }
 
 int PyBoostGamma_Check(PyObject* o) {
@@ -129,14 +124,17 @@ int PyBoostGamma_Converter(PyObject* o, PyBoostGammaObject** a) {
   return 1;
 }
 
+static auto alpha_doc = bob::extension::VariableDoc(
+  "alpha",
+  "dtype",
+  "The alpha parameter that the distribution currently has"
+);
 template <typename T> PyObject* get_alpha(PyBoostGammaObject* self) {
   return PyBlitzArrayCxx_FromCScalar(boost::static_pointer_cast<bob::core::random::gamma_distribution<T>>(self->distro)->alpha());
 }
 
-/**
- * Accesses the alpha value
- */
 static PyObject* PyBoostGamma_GetAlpha(PyBoostGammaObject* self) {
+BOB_TRY
   switch (self->type_num) {
     case NPY_FLOAT32:
       return get_alpha<float>(self);
@@ -146,25 +144,55 @@ static PyObject* PyBoostGamma_GetAlpha(PyBoostGammaObject* self) {
       PyErr_Format(PyExc_NotImplementedError, "cannot get alpha parameter of %s(T) with T having an unsupported numpy type number of %d (DEBUG ME)", Py_TYPE(self)->tp_name, self->type_num);
       return 0;
   }
+BOB_CATCH_MEMBER("alpha", 0)
 }
 
-/**
- * Accesses the datatype
- */
+static auto dtype_doc = bob::extension::VariableDoc(
+  "dtype",
+  ":py:class:`numpy.dtype`",
+  "The type of scalars produced by this normal distribution"
+);
 static PyObject* PyBoostGamma_GetDtype(PyBoostGammaObject* self) {
+BOB_TRY
   return reinterpret_cast<PyObject*>(PyArray_DescrFromType(self->type_num));
+BOB_CATCH_MEMBER("dtype", 0)
 }
 
+
+static PyGetSetDef PyBoostGamma_getseters[] = {
+    {
+      dtype_doc.name(),
+      (getter)PyBoostGamma_GetDtype,
+      0,
+      dtype_doc.doc(),
+      0,
+    },
+    {
+      alpha_doc.name(),
+      (getter)PyBoostGamma_GetAlpha,
+      0,
+      alpha_doc.doc(),
+      0,
+    },
+    {0}  /* Sentinel */
+};
+
+
+static auto reset_doc = bob::extension::FunctionDoc(
+  "reset",
+  "Resets this distribution",
+  "After calling this method, subsequent uses of the distribution do not depend on values produced by any random number generator prior to invoking reset",
+  true
+)
+.add_prototype("")
+;
 template <typename T> PyObject* reset(PyBoostGammaObject* self) {
   boost::static_pointer_cast<bob::core::random::gamma_distribution<T>>(self->distro)->reset();
   Py_RETURN_NONE;
 }
 
-/**
- * Resets the distribution - this is a noop for gamma distributions, here
- * only for compatibility reasons
- */
 static PyObject* PyBoostGamma_Reset(PyBoostGammaObject* self) {
+BOB_TRY
   switch (self->type_num) {
     case NPY_FLOAT32:
       return reset<float>(self);
@@ -174,8 +202,20 @@ static PyObject* PyBoostGamma_Reset(PyBoostGammaObject* self) {
       PyErr_Format(PyExc_NotImplementedError, "cannot reset %s(T) with T having an unsupported numpy type number of %d (DEBUG ME)", Py_TYPE(self)->tp_name, self->type_num);
       return 0;
   }
+BOB_CATCH_MEMBER("reset", 0)
 }
 
+
+static auto call_doc = bob::extension::FunctionDoc(
+  "draw",
+  "Draws one random number from this distribution using the given ``rng``",
+  ".. note:: The :py:meth:`__call__` function is a synonym for this ``draw``.",
+  true
+)
+.add_prototype("rng", "value")
+.add_parameter("rng", ":py:class:`mt19937`", "The random number generator to use")
+.add_return("value", "dtype", "A random value that follows the gamma distribution")
+;
 template <typename T> PyObject* call(PyBoostGammaObject* self, PyBoostMt19937Object* rng) {
   typedef bob::core::random::gamma_distribution<T> distro_t;
   return PyBlitzArrayCxx_FromCScalar((*boost::static_pointer_cast<distro_t>(self->distro))(*rng->rng));
@@ -184,14 +224,11 @@ template <typename T> PyObject* call(PyBoostGammaObject* self, PyBoostMt19937Obj
 /**
  * Calling a PyBoostGammaObject to generate a random number
  */
-static
-PyObject* PyBoostGamma_Call(PyBoostGammaObject* self, PyObject *args, PyObject* kwds) {
+static PyObject* PyBoostGamma_Call(PyBoostGammaObject* self, PyObject *args, PyObject* kwds) {
+BOB_TRY
+  char** kwlist = call_doc.kwlist();
 
-  /* Parses input arguments in a single shot */
-  static const char* const_kwlist[] = {"rng", 0};
-  static char** kwlist = const_cast<char**>(const_kwlist);
-
-  PyBoostMt19937Object* rng = 0;
+  PyBoostMt19937Object* rng;
 
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!", kwlist, &PyBoostMt19937_Type, &rng)) return 0; ///< FAILURE
 
@@ -207,59 +244,22 @@ PyObject* PyBoostGamma_Call(PyBoostGammaObject* self, PyObject *args, PyObject* 
   }
 
   return 0; ///< FAILURE
+BOB_CATCH_MEMBER("call", 0)
 }
 
-PyDoc_STRVAR(s_reset_str, "reset");
-PyDoc_STRVAR(s_reset_doc,
-"x.reset() -> None\n\
-\n\
-After calling this method, subsequent uses of the distribution do\n\
-not depend on values produced by any random number generator prior\n\
-to invoking reset.\n\
-"
-);
 
 static PyMethodDef PyBoostGamma_methods[] = {
     {
-      s_reset_str,
+      call_doc.name(),
+      (PyCFunction)PyBoostGamma_Call,
+      METH_VARARGS|METH_KEYWORDS,
+      call_doc.doc(),
+    },
+    {
+      reset_doc.name(),
       (PyCFunction)PyBoostGamma_Reset,
       METH_NOARGS,
-      s_reset_doc,
-    },
-    {0}  /* Sentinel */
-};
-
-PyDoc_STRVAR(s_dtype_str, "dtype");
-PyDoc_STRVAR(s_dtype_doc,
-"x.dtype -> numpy dtype\n\
-\n\
-The type of scalars produced by this gamma distribution.\n\
-"
-);
-
-PyDoc_STRVAR(s_alpha_str, "alpha");
-PyDoc_STRVAR(s_alpha_doc,
-"x.alpha -> scalar\n\
-\n\
-This value corresponds to the alpha parameter the\n\
-distribution current has.\n\
-"
-);
-
-static PyGetSetDef PyBoostGamma_getseters[] = {
-    {
-      s_dtype_str,
-      (getter)PyBoostGamma_GetDtype,
-      0,
-      s_dtype_doc,
-      0,
-    },
-    {
-      s_alpha_str,
-      (getter)PyBoostGamma_GetAlpha,
-      0,
-      s_alpha_doc,
-      0,
+      reset_doc.doc(),
     },
     {0}  /* Sentinel */
 };
@@ -268,6 +268,7 @@ static PyGetSetDef PyBoostGamma_getseters[] = {
  * Converts a scalar, that will be stolen, into a str/bytes
  */
 static PyObject* scalar_to_bytes(PyObject* s) {
+  if (!s) return s;
 # if PY_VERSION_HEX >= 0x03000000
   PyObject* b = PyObject_Bytes(s);
 # else
@@ -278,82 +279,49 @@ static PyObject* scalar_to_bytes(PyObject* s) {
 }
 
 /**
- * Accesses the char* buffer on a str/bytes object
- */
-static const char* bytes_to_charp(PyObject* s) {
-# if PY_VERSION_HEX >= 0x03000000
-  return PyBytes_AS_STRING(s);
-# else
-  return PyString_AS_STRING(s);
-# endif
-}
-
-/**
  * String representation and print out
  */
 static PyObject* PyBoostGamma_Repr(PyBoostGammaObject* self) {
 
-  PyObject* alpha = PyBoostGamma_GetAlpha(self);
-  if (!alpha) return 0;
-
-  PyObject* salpha = scalar_to_bytes(alpha);
+  PyObject* salpha = scalar_to_bytes(PyBoostGamma_GetAlpha(self));
   if (!salpha) return 0;
+  auto salpha_ = make_safe(salpha);
 
-  PyObject* retval =
-# if PY_VERSION_HEX >= 0x03000000
-    PyUnicode_FromFormat
-#else
+  return
     PyString_FromFormat
-#endif
       (
        "%s(dtype='%s', alpha=%s)",
        Py_TYPE(self)->tp_name, PyBlitzArray_TypenumAsString(self->type_num),
-       bytes_to_charp(salpha)
+       PyString_AS_STRING(salpha)
        );
-
-  Py_DECREF(salpha);
-
-  return retval;
-
 }
 
 PyTypeObject PyBoostGamma_Type = {
-    PyVarObject_HEAD_INIT(0, 0)
-    s_gamma_str,                                /*tp_name*/
-    sizeof(PyBoostGammaObject),                 /*tp_basicsize*/
-    0,                                          /*tp_itemsize*/
-    (destructor)PyBoostGamma_Delete,            /*tp_dealloc*/
-    0,                                          /*tp_print*/
-    0,                                          /*tp_getattr*/
-    0,                                          /*tp_setattr*/
-    0,                                          /*tp_compare*/
-    (reprfunc)PyBoostGamma_Repr,                /*tp_repr*/
-    0,                                          /*tp_as_number*/
-    0,                                          /*tp_as_sequence*/
-    0,                                          /*tp_as_mapping*/
-    0,                                          /*tp_hash */
-    (ternaryfunc)PyBoostGamma_Call,             /*tp_call*/
-    (reprfunc)PyBoostGamma_Repr,                /*tp_str*/
-    0,                                          /*tp_getattro*/
-    0,                                          /*tp_setattro*/
-    0,                                          /*tp_as_buffer*/
-    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,   /*tp_flags*/
-    s_gamma_doc,                                /* tp_doc */
-    0,		                                      /* tp_traverse */
-    0,		                                      /* tp_clear */
-    0,                                          /* tp_richcompare */
-    0,		                                      /* tp_weaklistoffset */
-    0,		                                      /* tp_iter */
-    0,		                                      /* tp_iternext */
-    PyBoostGamma_methods,                       /* tp_methods */
-    0,                                          /* tp_members */
-    PyBoostGamma_getseters,                     /* tp_getset */
-    0,                                          /* tp_base */
-    0,                                          /* tp_dict */
-    0,                                          /* tp_descr_get */
-    0,                                          /* tp_descr_set */
-    0,                                          /* tp_dictoffset */
-    (initproc)PyBoostGamma_Init,                /* tp_init */
-    0,                                          /* tp_alloc */
-    PyBoostGamma_New,                           /* tp_new */
+  PyVarObject_HEAD_INIT(0,0)
+  0
 };
+
+bool init_BoostGamma(PyObject* module)
+{
+  // initialize the type struct
+  PyBoostGamma_Type.tp_name = gamma_doc.name();
+  PyBoostGamma_Type.tp_basicsize = sizeof(PyBoostGammaObject);
+  PyBoostGamma_Type.tp_flags = Py_TPFLAGS_DEFAULT;
+  PyBoostGamma_Type.tp_doc = gamma_doc.doc();
+  PyBoostGamma_Type.tp_str = reinterpret_cast<reprfunc>(PyBoostGamma_Repr);
+  PyBoostGamma_Type.tp_repr = reinterpret_cast<reprfunc>(PyBoostGamma_Repr);
+
+  // set the functions
+  PyBoostGamma_Type.tp_new = PyBoostGamma_New;
+  PyBoostGamma_Type.tp_init = reinterpret_cast<initproc>(PyBoostGamma_Init);
+  PyBoostGamma_Type.tp_dealloc = reinterpret_cast<destructor>(PyBoostGamma_Delete);
+  PyBoostGamma_Type.tp_methods = PyBoostGamma_methods;
+  PyBoostGamma_Type.tp_getset = PyBoostGamma_getseters;
+  PyBoostGamma_Type.tp_call = reinterpret_cast<ternaryfunc>(PyBoostGamma_Call);
+
+  // check that everything is fine
+  if (PyType_Ready(&PyBoostGamma_Type) < 0) return false;
+
+  // add the type to the module
+  return PyModule_AddObject(module, "gamma", Py_BuildValue("O", &PyBoostGamma_Type)) >= 0;
+}
