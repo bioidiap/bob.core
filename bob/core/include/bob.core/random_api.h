@@ -38,7 +38,7 @@ typedef struct {
   PyObject_HEAD
 
   /* Type-specific fields go here. */
-  boost::mt19937* rng;
+  boost::shared_ptr<boost::mt19937> rng;
 
 } PyBoostMt19937Object;
 

@@ -60,10 +60,10 @@ powerful random number generator available within the Boost_ C++ library.
 
       typedef struct {
         PyObject_HEAD
-        boost::mt19937* rng;
+        boost::shared_ptr<boost::mt19937> rng;
       } PyBoostMt19937Object;
 
-   .. c:member:: boost::mt19937* rng
+   .. c:member:: boost::shared_ptr<boost::mt19937> rng
 
       A direct pointer to the boost random number generator. You can use this
       pointer in your C/C++ code if required.
@@ -429,25 +429,25 @@ support a different set of scalar types:
 
 .. cpp:function:: PyObject* PyBoostLogNormal_SimpleNew(int type_num, PyObject* mean, PyObject* sigma)
 
-.. cpp:function:: PyObject* PyBoostGamma_SimpleNew(int type_num, PyObject* alpha, PyObject* beta)
+.. cpp:function:: PyObject* PyBoostGamma_SimpleNew(int type_num, PyObject* alpha)
 
 .. cpp:function:: PyObject* PyBoostBinomial_SimpleNew(int type_num, PyObject* t, PyObject* p)
 
-.. cpp:function:: PyObject* PyBoostDiscrete_SimpleNew(int type_num, PyObject* t, PyObject* p)
+.. cpp:function:: PyObject* PyBoostDiscrete_SimpleNew(int type_num, PyObject* probs)
 
    Depending on the distribution, which may be one of ``Normal``,
-   ``LogNormal``, ``Gamma`` or ``Binomial``, each of the parameters assume a
+   ``LogNormal``, ``Gamma``, ``Binomial`` or ``Discrete``, each of the parameters assume a
    different function:
 
-     ============== ============= ============================
+     ============== ============= =============
       Distribution   Parameter 1   Parameter 2
-     ============== ============= ============================
-      Normal         mean          sigma (standard deviation)
-      LogNormal      mean          sigma (standard deviation)
-      Gamma          alpha         beta
+     ============== ============= =============
+      Normal         mean          sigma
+      LogNormal      mean          sigma
+      Gamma          alpha
       Binomial       t             p
-      Discrete       probs         ``None``
-     ============== ============= ============================
+      Discrete       probs
+     ============== ============= =============
 
    The parameter ``type_num`` may be set to one of the supported ``NPY_``
    enumeration values (e.g. ``NPY_FLOAT64``).
