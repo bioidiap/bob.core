@@ -18,6 +18,18 @@ static PyMethodDef module_methods[] = {
     {0}  /* Sentinel */
 };
 
+/**
+ * Converts a scalar, that will be stolen, into a str/bytes
+ * This function will be used in the bindings of all Boost classes
+ */
+PyObject* scalar_to_bytes(PyObject* s) {
+  if (!s) return s;
+  auto s_ = make_safe(s);
+  PyObject* b = PyObject_Str(s);
+  return b;
+}
+
+
 PyDoc_STRVAR(module_docstr,
 "boost::random classes and methods"
 );

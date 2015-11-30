@@ -264,19 +264,7 @@ static PyMethodDef PyBoostGamma_methods[] = {
     {0}  /* Sentinel */
 };
 
-/**
- * Converts a scalar, that will be stolen, into a str/bytes
- */
-static PyObject* scalar_to_bytes(PyObject* s) {
-  if (!s) return s;
-# if PY_VERSION_HEX >= 0x03000000
-  PyObject* b = PyObject_Bytes(s);
-# else
-  PyObject* b = PyObject_Str(s);
-# endif
-  Py_DECREF(s);
-  return b;
-}
+extern PyObject* scalar_to_bytes(PyObject* s);
 
 /**
  * String representation and print out

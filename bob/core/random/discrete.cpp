@@ -341,12 +341,6 @@ static PyMethodDef PyBoostDiscrete_methods[] = {
 };
 
 
-#if PY_VERSION_HEX >= 0x03000000
-#  define PYOBJECT_STR PyObject_Str
-#else
-#  define PYOBJECT_STR PyObject_Unicode
-#endif
-
 /**
  * String representation and print out
  */
@@ -355,26 +349,16 @@ static PyObject* PyBoostDiscrete_Repr(PyBoostDiscreteObject* self) {
   PyObject* probabilities = PyBoostDiscrete_GetProbabilities(self);
   if (!probabilities) return 0;
   auto probabilities_ = make_safe(probabilities);
-  PyObject* prob_str = PYOBJECT_STR(probabilities);
+  PyObject* prob_str = PyObject_Str(probabilities);
   if (!prob_str) return 0;
   auto prob_str_ = make_safe(prob_str);
 
-  PyObject* retval = PyUnicode_FromFormat(
+  return PyString_FromFormat(
       "%s(dtype='%s' , probabilities=%U)",
       Py_TYPE(self)->tp_name,
       PyBlitzArray_TypenumAsString(self->type_num),
       prob_str
       );
-
-#if PYTHON_VERSION_HEX < 0x03000000
-  if (!retval) return 0;
-  PyObject* tmp = PyObject_Str(retval);
-  Py_DECREF(retval);
-  retval = tmp;
-#endif
-
-  return retval;
-
 }
 
 PyTypeObject PyBoostDiscrete_Type = {
