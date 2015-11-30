@@ -354,10 +354,10 @@ static PyObject* PyBoostDiscrete_Repr(PyBoostDiscreteObject* self) {
   auto prob_str_ = make_safe(prob_str);
 
   return PyString_FromFormat(
-      "%s(dtype='%s' , probabilities=%U)",
+      "%s(dtype='%s' , probabilities=%s)",
       Py_TYPE(self)->tp_name,
       PyBlitzArray_TypenumAsString(self->type_num),
-      prob_str
+      PyString_AS_STRING(prob_str)
       );
 }
 
