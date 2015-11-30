@@ -35,17 +35,17 @@ PyObject* inner_convert (PyBlitzArrayObject* src,
 
     if (dst_min) { //both src_range and dst_range are valid
       auto bz_dst = convert<Tdst,Tsrc>(*bz_src, c_dst_min, c_dst_max, c_src_min, c_src_max);
-      return PyBlitzArrayCxx_NewFromArray(bz_dst);
+      return PyBlitzArrayCxx_AsNumpy(bz_dst);
     }
 
     //only src_range is valid
     auto bz_dst = convertFromRange<Tdst,Tsrc>(*bz_src, c_src_min, c_src_max);
-    return PyBlitzArrayCxx_NewFromArray(bz_dst);
+    return PyBlitzArrayCxx_AsNumpy(bz_dst);
   }
 
   else if (dst_min) { //only dst_range is valid
     auto bz_dst = convertToRange<Tdst,Tsrc>(*bz_src, c_dst_min, c_dst_max);
-    return PyBlitzArrayCxx_NewFromArray(bz_dst);
+    return PyBlitzArrayCxx_AsNumpy(bz_dst);
   }
 
   //use all defaults
