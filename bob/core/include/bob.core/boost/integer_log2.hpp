@@ -23,6 +23,7 @@ namespace core {
 namespace random {
 namespace detail {
 
+#ifndef BOOST_RANDOM_DETAIL_CONSTEXPR
 #if !defined(BOOST_NO_CXX11_CONSTEXPR)
 #define BOOST_RANDOM_DETAIL_CONSTEXPR constexpr
 #elif defined(BOOST_MSVC)
@@ -31,6 +32,7 @@ namespace detail {
 #define BOOST_RANDOM_DETAIL_CONSTEXPR inline __attribute__((__const__)) __attribute__((__always_inline__))
 #else
 #define BOOST_RANDOM_DETAIL_CONSTEXPR inline
+#endif
 #endif
 
 template<int Shift>
