@@ -20,7 +20,7 @@ setup(
     name='bob.core',
     version=version,
     description='Core utilities required on all Bob modules',
-    url='http://github.com/bioidiap/bob.core',
+    url='http://gitlab.idiap.ch/bob/bob.core',
     license='BSD',
     author='Andre Anjos',
     author_email='andre.anjos@idiap.ch',
