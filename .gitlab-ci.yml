@@ -65,6 +65,7 @@ variables:
     MACOSX_DEPLOYMENT_TARGET: "10.9"
     CFLAGS: "-pthread -coverage"
     CXXFLAGS: "-pthread -coverage"
+    LDFLAGS: "-lpthread"
 
 
 # Template for the test stage - re-install from uploaded wheels
