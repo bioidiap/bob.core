@@ -19,12 +19,22 @@ namespace bob { namespace core {
 
   namespace array {
 
-    template<typename T, typename U> T scalar_cast(const U& u) {
-      return static_cast<T>(u);
-    }
+    template<typename T, typename U>
+      struct scalar_cast_impl {
+        static T f(const U& u) {
+          return static_cast<T>(u);
+        }
+      };
 
-    template<typename T, typename U> T scalar_cast(const std::complex<U>& u) {
-      return static_cast<T>(u.real());
+    template<typename T, typename U>
+      struct scalar_cast_impl<T, std::complex<U> > {
+        static T f(const std::complex<U>& u) {
+          return static_cast<T>(u.real());
+        }
+      };
+
+    template<typename T, typename U> T scalar_cast(const U& u) {
+      return scalar_cast_impl<T,U>::f(u);
     }
 
     // when using matching complex or non-complex T and U
