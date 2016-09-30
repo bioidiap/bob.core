@@ -140,12 +140,7 @@ bob::core::AutoOutputDevice::AutoOutputDevice()
 bob::core::AutoOutputDevice::AutoOutputDevice(const std::string& configuration)
 : m_device()
 {
-  std::string str(configuration);
-  str.erase(std::remove_if(str.begin(), str.end(), ::isspace), str.end());
-  if (str == "null" || str.size()==0) m_device.reset(new NullOutputDevice);
-  else if (str == "stdout") m_device.reset(new StdoutOutputDevice);
-  else if (str == "stderr") m_device.reset(new StderrOutputDevice);
-  else m_device.reset(new FileOutputDevice(configuration));
+  reset(configuration);
 }
 
 bob::core::AutoOutputDevice::AutoOutputDevice(boost::shared_ptr<OutputDevice> d)
@@ -154,6 +149,16 @@ bob::core::AutoOutputDevice::AutoOutputDevice(boost::shared_ptr<OutputDevice> d)
 }
 
 bob::core::AutoOutputDevice::~AutoOutputDevice() {
+}
+
+void bob::core::AutoOutputDevice::reset(const std::string& configuration)
+{
+  std::string str(configuration);
+  str.erase(std::remove_if(str.begin(), str.end(), ::isspace), str.end());
+  if (str == "null" || str.size()==0) m_device.reset(new NullOutputDevice);
+  else if (str == "stdout") m_device.reset(new StdoutOutputDevice);
+  else if (str == "stderr") m_device.reset(new StderrOutputDevice);
+  else m_device.reset(new FileOutputDevice(configuration));
 }
 
 std::streamsize bob::core::AutoOutputDevice::write(const char* s, std::streamsize n) {
@@ -168,3 +173,10 @@ boost::iostreams::stream<bob::core::AutoOutputDevice> bob::core::debug("stdout")
 boost::iostreams::stream<bob::core::AutoOutputDevice> bob::core::info("stdout");
 boost::iostreams::stream<bob::core::AutoOutputDevice> bob::core::warn("stderr");
 boost::iostreams::stream<bob::core::AutoOutputDevice> bob::core::error("stderr");
+
+void bob::core::log_level(bob::core::LOG_LEVEL level){
+  bob::core::debug->reset(level == DEBUG ?  "stdout" : "null");
+  bob::core::info->reset(level >= INFO && level < DISABLE ?  "stdout" : "null");
+  bob::core::warn->reset(level >= WARNING && level < DISABLE ?  "stderr" : "null");
+  bob::core::error->reset(level >= ERROR && level < DISABLE ?  "stderr" : "null");
+}
