@@ -131,7 +131,7 @@ pygments_style = 'sphinx'
 
 # Some variables which are useful for generated material
 project_variable = project.replace('.', '_')
-short_description = u''
+short_description = u'Core utilities required on all Bob modules'
 owner = [u'Idiap Research Institute']
 
 
