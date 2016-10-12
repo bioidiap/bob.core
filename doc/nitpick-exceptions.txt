@@ -7,4 +7,7 @@ c:type mt19937
 cpp:type PyObject
 cpp:type Py_ssize_t
 
+# exceptions are not found in python 2.7
+py:exc ValueError
+
 py:meth __call__
