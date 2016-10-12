@@ -1,0 +1,10 @@
+# no sphinx correlation for these
+c:type boost
+c:type shared_ptr
+c:type mt19937
+
+# this is actually a c type
+cpp:type PyObject
+cpp:type Py_ssize_t
+
+py:meth __call__
