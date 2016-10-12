@@ -1,0 +1,13 @@
+# no sphinx correlation for these
+c:type boost
+c:type shared_ptr
+c:type mt19937
+
+# this is actually a c type
+cpp:type PyObject
+cpp:type Py_ssize_t
+
+# exceptions are not found in python 2.7
+py:exc ValueError
+
+py:meth __call__
