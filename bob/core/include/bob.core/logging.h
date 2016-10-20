@@ -141,7 +141,7 @@ namespace bob { namespace core {
    *
    * warning: This function should only be used in pure C++ code, as Python uses its own log level handling
   */
-  void log_level(LOG_LEVEL level=DEBUG);
+  void log_level(LOG_LEVEL level=WARNING);
 
 }}
 
