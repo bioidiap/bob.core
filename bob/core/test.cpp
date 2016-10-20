@@ -206,7 +206,8 @@ static auto _output_disable_doc = bob::extension::FunctionDoc(
   "_test_output_disable",
   "Writes C++ messages with and without being visible"
 )
-.add_prototype("")
+.add_prototype("", "success")
+.add_return("success", "bool", "The success of the test")
 ;
 PyObject* output_disable(PyObject*, PyObject* args, PyObject* kwds) {
 BOB_TRY
@@ -214,27 +215,56 @@ BOB_TRY
 
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist)) return 0;
 
+  // redirect std::cout and std::cerr, see http://stackoverflow.com/a/5419388/3301902
+  std::stringstream out, err;
+  std::streambuf * oldout = std::cout.rdbuf(out.rdbuf());
+  std::streambuf * olderr = std::cerr.rdbuf(err.rdbuf());
+
+  bool success = true;
+
+  try {
+    bob::core::log_level(bob::core::DEBUG);
+    bob::core::debug << "This is a debug message" << std::endl;
+    bob::core::info << "This is an info message" << std::endl;
+    bob::core::warn << "This is a warning message" << std::endl;
+    bob::core::error << "This is an error message" << std::endl;
+    success = success && out.str() == "This is a debug message\nThis is an info message\n";
+    success = success && err.str() == "This is a warning message\nThis is an error message\n";
+
+    out.str("");
+    err.str("");
+    bob::core::log_level(bob::core::ERROR);
+    bob::core::debug << "This is a debug message" << std::endl;
+    bob::core::info << "This is an info message" << std::endl;
+    bob::core::warn << "This is a warning message" << std::endl;
+    bob::core::error << "This is an error message" << std::endl;
+    success = success && out.str() == "";
+    success = success && err.str() == "This is an error message\n";
+
+    out.str("");
+    err.str("");
+    bob::core::log_level(bob::core::DISABLE);
+    bob::core::debug << "This is a debug message" << std::endl;
+    bob::core::info << "This is an info message" << std::endl;
+    bob::core::warn << "This is a warning message" << std::endl;
+    bob::core::error << "This is an error message" << std::endl;
+    success = success && out.str() == "";
+    success = success && err.str() == "";
+
+  } catch(...){
+    success = false;
+  }
+
+  // make sure that cout and cerr are redirected to their original streams
+  std::cout.rdbuf( oldout );
+  std::cerr.rdbuf( olderr );
+
   bob::core::log_level(bob::core::DEBUG);
-  bob::core::debug << "This is a debug message" << std::endl;
-  bob::core::info << "This is an info message" << std::endl;
-  bob::core::warn << "This is a warning message" << std::endl;
-  bob::core::error << "This is an error message" << std::endl;
 
-  bob::core::log_level(bob::core::ERROR);
-  bob::core::debug << "This is a debug message" << std::endl;
-  bob::core::info << "This is an info message" << std::endl;
-  bob::core::warn << "This is a warning message" << std::endl;
-  bob::core::error << "This is an error message" << std::endl;
-
-  bob::core::log_level(bob::core::DISABLE);
-  bob::core::debug << "This is a debug message" << std::endl;
-  bob::core::info << "This is an info message" << std::endl;
-  bob::core::warn << "This is a warning message" << std::endl;
-  bob::core::error << "This is an error message" << std::endl;
-
-  bob::core::log_level(bob::core::DEBUG);
-
-  Py_RETURN_NONE;
+  if (success)
+    Py_RETURN_TRUE;
+  else
+    Py_RETURN_FALSE;
 
 BOB_CATCH_FUNCTION("_test_output_disable", 0)
 }
