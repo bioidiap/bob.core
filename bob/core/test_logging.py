@@ -66,9 +66,15 @@ def test_from_python_output():
 
 
 def test_from_cxx():
-
-  bob.core._logging._log_message(1, 'error', 'this is a test message')
+  from bob.core._test import _test_log_message
+  _test_log_message(1, 'error', 'this is a test message')
 
 def test_from_cxx_multithreaded():
+  from bob.core._test import _test_log_message_mt
+  _test_log_message_mt(2, 1, 'error', 'this is a test message')
 
-  bob.core._logging._log_message_mt(2, 1, 'error', 'this is a test message')
+
+
+def test_from_cxx_disable():
+  from bob.core._test import _test_output_disable
+  assert _test_output_disable(), "The C++ test function returned false, indicating an (unknonw) error"

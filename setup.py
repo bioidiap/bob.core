@@ -87,6 +87,14 @@ setup(
         packages = packages,
         boost_modules = ['system', 'iostreams', 'filesystem'],
       ),
+
+      Extension("bob.core._test",        [
+          "bob/core/test.cpp",
+        ],
+        version = version,
+        packages = packages,
+        boost_modules = ['system', 'iostreams', 'filesystem'],
+      ),
     ],
 
     cmdclass = {
