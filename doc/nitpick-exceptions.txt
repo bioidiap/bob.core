@@ -6,6 +6,8 @@ c:type mt19937
 # this is actually a c type
 cpp:type PyObject
 cpp:type Py_ssize_t
+cpp:typeOrConcept PyObject
+cpp:typeOrConcept Py_ssize_t
 
 # exceptions are not found in python 2.7
 py:exc ValueError
