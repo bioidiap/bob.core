@@ -77,4 +77,4 @@ def test_from_cxx_multithreaded():
 
 def test_from_cxx_disable():
   from bob.core._test import _test_output_disable
-  assert _test_output_disable(), "The C++ test function returned false, indicating an (unknonw) error"
+  _test_output_disable()
