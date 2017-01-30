@@ -10,6 +10,7 @@
 #include <bob.extension/documentation.h>
 
 #include <bob.core/logging.h>
+#include <boost/format.hpp>
 
 #include <boost/shared_array.hpp>
 
@@ -201,13 +202,16 @@ BOB_CATCH_FUNCTION("_log_message_mt", 0)
 }
 
 
+static void _test(const std::string& expected, const std::string& obtained, const std::string& step){
+  if (expected != obtained)
+    throw std::runtime_error((boost::format("The string '%s' in step %swas not '%s' as expected") % obtained % step % expected).str());
+}
 
 static auto _output_disable_doc = bob::extension::FunctionDoc(
   "_test_output_disable",
-  "Writes C++ messages with and without being visible"
+  "Writes C++ messages with and without being visible and raises exceptions when an error occurs."
 )
-.add_prototype("", "success")
-.add_return("success", "bool", "The success of the test")
+.add_prototype("", "")
 ;
 PyObject* output_disable(PyObject*, PyObject* args, PyObject* kwds) {
 BOB_TRY
@@ -220,40 +224,33 @@ BOB_TRY
   std::streambuf * oldout = std::cout.rdbuf(out.rdbuf());
   std::streambuf * olderr = std::cerr.rdbuf(err.rdbuf());
 
-  bool success = true;
+  bob::core::log_level(bob::core::DEBUG);
+  bob::core::debug << "This is a debug message" << std::endl;
+  bob::core::info << "This is an info message" << std::endl;
+  bob::core::warn << "This is a warning message" << std::endl;
+  bob::core::error << "This is an error message" << std::endl;
+  _test(out.str(), "This is a debug message\nThis is an info message\n", "debug");
+  _test(err.str(), "This is a warning message\nThis is an error message\n", "debug");
 
-  try {
-    bob::core::log_level(bob::core::DEBUG);
-    bob::core::debug << "This is a debug message" << std::endl;
-    bob::core::info << "This is an info message" << std::endl;
-    bob::core::warn << "This is a warning message" << std::endl;
-    bob::core::error << "This is an error message" << std::endl;
-    success = success && out.str() == "This is a debug message\nThis is an info message\n";
-    success = success && err.str() == "This is a warning message\nThis is an error message\n";
+  out.str("");
+  err.str("");
+  bob::core::log_level(bob::core::ERROR);
+  bob::core::debug << "This is a debug message" << std::endl;
+  bob::core::info << "This is an info message" << std::endl;
+  bob::core::warn << "This is a warning message" << std::endl;
+  bob::core::error << "This is an error message" << std::endl;
+  _test(out.str(), "", "error");
+  _test(err.str(), "This is an error message\n", "error");
 
-    out.str("");
-    err.str("");
-    bob::core::log_level(bob::core::ERROR);
-    bob::core::debug << "This is a debug message" << std::endl;
-    bob::core::info << "This is an info message" << std::endl;
-    bob::core::warn << "This is a warning message" << std::endl;
-    bob::core::error << "This is an error message" << std::endl;
-    success = success && out.str() == "";
-    success = success && err.str() == "This is an error message\n";
-
-    out.str("");
-    err.str("");
-    bob::core::log_level(bob::core::DISABLE);
-    bob::core::debug << "This is a debug message" << std::endl;
-    bob::core::info << "This is an info message" << std::endl;
-    bob::core::warn << "This is a warning message" << std::endl;
-    bob::core::error << "This is an error message" << std::endl;
-    success = success && out.str() == "";
-    success = success && err.str() == "";
-
-  } catch(...){
-    success = false;
-  }
+  out.str("");
+  err.str("");
+  bob::core::log_level(bob::core::DISABLE);
+  bob::core::debug << "This is a debug message" << std::endl;
+  bob::core::info << "This is an info message" << std::endl;
+  bob::core::warn << "This is a warning message" << std::endl;
+  bob::core::error << "This is an error message" << std::endl;
+  _test(out.str(), "", "disable");
+  _test(err.str(), "", "disable");
 
   // make sure that cout and cerr are redirected to their original streams
   std::cout.rdbuf( oldout );
@@ -261,10 +258,7 @@ BOB_TRY
 
   bob::core::log_level(bob::core::DEBUG);
 
-  if (success)
-    Py_RETURN_TRUE;
-  else
-    Py_RETURN_FALSE;
+  Py_RETURN_NONE;
 
 BOB_CATCH_FUNCTION("_test_output_disable", 0)
 }
