@@ -202,10 +202,41 @@ BOB_CATCH_FUNCTION("_log_message_mt", 0)
 }
 
 
-static void _test(const std::string& expected, const std::string& obtained, const std::string& step){
+static void _test(const std::string& obtained, const std::string& expected, const std::string& step){
   if (expected != obtained)
-    throw std::runtime_error((boost::format("The string '%s' in step %swas not '%s' as expected") % obtained % step % expected).str());
+    throw std::runtime_error((boost::format("The string \"%s\" in step %s was not \"%s\" as expected") % obtained % step % expected).str());
 }
+
+// Proper redirection of a stream. If exception or similar is thrown, correctly
+// resets the modified standard stream.
+// See: http://stackoverflow.com/questions/5419356/redirect-stdout-stderr-to-a-string
+class _ostream_redirect {
+
+  public:
+
+    _ostream_redirect(std::ostream& s)
+      : m_stream(s), m_buffer(), m_old(m_stream.rdbuf(m_buffer.rdbuf()))
+    { }
+
+    void str(const char* v) {
+      m_buffer.str(v);
+    }
+
+    std::string str() {
+      return m_buffer.str();
+    }
+
+    ~_ostream_redirect() {
+      m_stream.rdbuf(m_old);
+    }
+
+  private:
+
+    std::ostream& m_stream;
+    std::stringstream m_buffer;
+    std::streambuf* m_old;
+};
+
 
 static auto _output_disable_doc = bob::extension::FunctionDoc(
   "_test_output_disable",
@@ -219,10 +250,8 @@ BOB_TRY
 
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist)) return 0;
 
-  // redirect std::cout and std::cerr, see http://stackoverflow.com/a/5419388/3301902
-  std::stringstream out, err;
-  std::streambuf * oldout = std::cout.rdbuf(out.rdbuf());
-  std::streambuf * olderr = std::cerr.rdbuf(err.rdbuf());
+  _ostream_redirect out(std::cout);
+  _ostream_redirect err(std::cerr);
 
   bob::core::log_level(bob::core::DEBUG);
   bob::core::debug << "This is a debug message" << std::endl;
@@ -251,10 +280,6 @@ BOB_TRY
   bob::core::error << "This is an error message" << std::endl;
   _test(out.str(), "", "disable");
   _test(err.str(), "", "disable");
-
-  // make sure that cout and cerr are redirected to their original streams
-  std::cout.rdbuf( oldout );
-  std::cerr.rdbuf( olderr );
 
   bob::core::log_level(bob::core::DEBUG);
 
