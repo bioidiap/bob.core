@@ -52,6 +52,7 @@ struct StdoutOutputDevice: public bob::core::OutputDevice {
 #if ((BOOST_VERSION / 100) % 1000) > 35
     boost::lock_guard<boost::mutex> lock(mutex);
 #endif
+    std::cout << "[XX] writing to cout at " << (void*)&std::cout << std::endl;
     std::cout.write(s, n);
     return n;
   }
@@ -64,6 +65,7 @@ struct StderrOutputDevice: public bob::core::OutputDevice {
 #if ((BOOST_VERSION / 100) % 1000) > 35
     boost::lock_guard<boost::mutex> lock(mutex);
 #endif
+    std::cout << "[XX] writing to cerr at " << (void*)&std::cerr << std::endl;
     std::cerr.write(s, n);
     return n;
   }
