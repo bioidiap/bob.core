@@ -250,7 +250,6 @@ BOB_TRY
 
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist)) return 0;
 
-
   //local streams to test C++ use cases
   //necessary because of issue #6
   //bottom line: cannot reliably test streams which are declared (as globals)
