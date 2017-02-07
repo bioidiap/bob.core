@@ -207,34 +207,24 @@ static void _test(const std::string& obtained, const std::string& expected, cons
     throw std::runtime_error((boost::format("The string \"%s\" in step %s was not \"%s\" as expected") % obtained % step % expected).str());
 }
 
-// Proper redirection of a stream. If exception or similar is thrown, correctly
-// resets the modified standard stream.
-// See: http://stackoverflow.com/questions/5419356/redirect-stdout-stderr-to-a-string
-class _ostream_redirect {
+
+class StringStreamOutputDevice: public boost::iostreams::sink {
 
   public:
 
-    _ostream_redirect(std::ostream& s)
-      : m_stream(s), m_buffer(), m_old(m_stream.rdbuf(m_buffer.rdbuf()))
-    { }
-
-    void str(const char* v) {
-      m_buffer.str(v);
+    StringStreamOutputDevice(boost::shared_ptr<std::stringstream> d)
+      : m_buffer(d) { }
+    virtual ~StringStreamOutputDevice() { }
+    virtual std::streamsize write(const char* s, std::streamsize n) {
+      if (m_buffer) m_buffer->write(s, n);
+      return n;
     }
-
-    std::string str() {
-      return m_buffer.str();
-    }
-
-    ~_ostream_redirect() {
-      m_stream.rdbuf(m_old);
-    }
+    virtual void close() { m_buffer.reset(); }
 
   private:
 
-    std::ostream& m_stream;
-    std::stringstream m_buffer;
-    std::streambuf* m_old;
+    boost::shared_ptr<std::stringstream> m_buffer;
+
 };
 
 
@@ -258,45 +248,44 @@ BOB_TRY
   //libbob_core.so may be loaded from another module and, because of python's
   //insular loading system, this and the other module may not share the same
   //pointers to those streams.
-  boost::iostreams::stream<bob::core::AutoOutputDevice> debug("stdout");
-  boost::iostreams::stream<bob::core::AutoOutputDevice> info("stdout");
-  boost::iostreams::stream<bob::core::AutoOutputDevice> warn("stderr");
-  boost::iostreams::stream<bob::core::AutoOutputDevice> error("stderr");
-
-  _ostream_redirect out(std::cout);
-  _ostream_redirect err(std::cerr);
+  boost::shared_ptr<std::stringstream> out(new std::stringstream(""));
+  boost::shared_ptr<std::stringstream> err(new std::stringstream(""));
+  boost::iostreams::stream<StringStreamOutputDevice> debug(out);
+  boost::iostreams::stream<StringStreamOutputDevice> info(out);
+  boost::iostreams::stream<StringStreamOutputDevice> warn(err);
+  boost::iostreams::stream<StringStreamOutputDevice> error(err);
 
   //equivalent to: bob::core::log_level(bob::core::DEBUG);
   debug << "This is a debug message" << std::endl;
   info << "This is an info message" << std::endl;
   warn << "This is a warning message" << std::endl;
   error << "This is an error message" << std::endl;
-  _test(out.str(), "This is a debug message\nThis is an info message\n", "debug");
-  _test(err.str(), "This is a warning message\nThis is an error message\n", "debug");
+  _test(out->str(), "This is a debug message\nThis is an info message\n", "debug");
+  _test(err->str(), "This is a warning message\nThis is an error message\n", "debug");
 
   //equivalent to: bob::core::log_level(bob::core::ERROR);
-  out.str("");
-  err.str("");
-  debug->reset("null");
-  info->reset("null");
-  warn->reset("null");
+  out->str("");
+  err->str("");
+  debug->close();
+  info->close();
+  warn->close();
   debug << "This is a debug message" << std::endl;
   info << "This is an info message" << std::endl;
   warn << "This is a warning message" << std::endl;
   error << "This is an error message" << std::endl;
-  _test(out.str(), "", "error");
-  _test(err.str(), "This is an error message\n", "error");
+  _test(out->str(), "", "error");
+  _test(err->str(), "This is an error message\n", "error");
 
   //equivalent to: bob::core::log_level(bob::core::DISABLE);
-  out.str("");
-  err.str("");
-  error->reset("null");
+  out->str("");
+  err->str("");
+  error->close();
   debug << "This is a debug message" << std::endl;
   info << "This is an info message" << std::endl;
   warn << "This is a warning message" << std::endl;
   error << "This is an error message" << std::endl;
-  _test(out.str(), "", "disable");
-  _test(err.str(), "", "disable");
+  _test(out->str(), "", "disable");
+  _test(err->str(), "", "disable");
 
   Py_RETURN_NONE;
 
