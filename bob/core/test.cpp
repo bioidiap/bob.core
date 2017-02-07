@@ -250,40 +250,53 @@ BOB_TRY
 
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist)) return 0;
 
-  std::cout << "[XX] redirecting cout at " << (void*)&std::cout << std::endl;
-  std::cout << "[XX] redirecting cerr at " << (void*)&std::cerr << std::endl;
+  //local streams to test C++ use cases
+  //necessary because of issue #6
+  //bottom line: cannot reliably test streams which are declared (as globals)
+  //inside libbob_core.so as there are no guarantees this module and that
+  //library will share the same pointers to std::cout and std::cerr.
+  //libbob_core.so may be loaded from another module and, because of python's
+  //insular loading system, this and the other module may not share the same
+  //pointers to those streams.
+  boost::iostreams::stream<bob::core::AutoOutputDevice> debug("stdout");
+  boost::iostreams::stream<bob::core::AutoOutputDevice> info("stdout");
+  boost::iostreams::stream<bob::core::AutoOutputDevice> warn("stderr");
+  boost::iostreams::stream<bob::core::AutoOutputDevice> error("stderr");
+
   _ostream_redirect out(std::cout);
   _ostream_redirect err(std::cerr);
 
-  bob::core::log_level(bob::core::DEBUG);
-  bob::core::debug << "This is a debug message" << std::endl;
-  bob::core::info << "This is an info message" << std::endl;
-  bob::core::warn << "This is a warning message" << std::endl;
-  bob::core::error << "This is an error message" << std::endl;
+  //equivalent to: bob::core::log_level(bob::core::DEBUG);
+  debug << "This is a debug message" << std::endl;
+  info << "This is an info message" << std::endl;
+  warn << "This is a warning message" << std::endl;
+  error << "This is an error message" << std::endl;
   _test(out.str(), "This is a debug message\nThis is an info message\n", "debug");
   _test(err.str(), "This is a warning message\nThis is an error message\n", "debug");
 
+  //equivalent to: bob::core::log_level(bob::core::ERROR);
   out.str("");
   err.str("");
-  bob::core::log_level(bob::core::ERROR);
-  bob::core::debug << "This is a debug message" << std::endl;
-  bob::core::info << "This is an info message" << std::endl;
-  bob::core::warn << "This is a warning message" << std::endl;
-  bob::core::error << "This is an error message" << std::endl;
+  debug->reset("null");
+  info->reset("null");
+  warn->reset("null");
+  debug << "This is a debug message" << std::endl;
+  info << "This is an info message" << std::endl;
+  warn << "This is a warning message" << std::endl;
+  error << "This is an error message" << std::endl;
   _test(out.str(), "", "error");
   _test(err.str(), "This is an error message\n", "error");
 
+  //equivalent to: bob::core::log_level(bob::core::DISABLE);
   out.str("");
   err.str("");
-  bob::core::log_level(bob::core::DISABLE);
-  bob::core::debug << "This is a debug message" << std::endl;
-  bob::core::info << "This is an info message" << std::endl;
-  bob::core::warn << "This is a warning message" << std::endl;
-  bob::core::error << "This is an error message" << std::endl;
+  error->reset("null");
+  debug << "This is a debug message" << std::endl;
+  info << "This is an info message" << std::endl;
+  warn << "This is a warning message" << std::endl;
+  error << "This is an error message" << std::endl;
   _test(out.str(), "", "disable");
   _test(err.str(), "", "disable");
-
-  bob::core::log_level(bob::core::DEBUG);
 
   Py_RETURN_NONE;
 
