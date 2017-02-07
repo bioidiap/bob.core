@@ -250,8 +250,6 @@ BOB_TRY
 
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "", kwlist)) return 0;
 
-  std::cout << "[XX] redirecting cout at " << (void*)&std::cout << std::endl;
-  std::cout << "[XX] redirecting cerr at " << (void*)&std::cerr << std::endl;
   _ostream_redirect out(std::cout);
   _ostream_redirect err(std::cerr);
 
