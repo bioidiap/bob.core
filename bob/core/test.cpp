@@ -212,18 +212,22 @@ class StringStreamOutputDevice: public boost::iostreams::sink {
 
   public:
 
-    StringStreamOutputDevice(boost::shared_ptr<std::stringstream> d)
-      : m_buffer(d) { }
+    StringStreamOutputDevice(boost::shared_ptr<std::stringstream> d,
+        bob::core::LOG_LEVEL level) : m_buffer(d), m_level(level) { }
     virtual ~StringStreamOutputDevice() { }
     virtual std::streamsize write(const char* s, std::streamsize n) {
-      if (m_buffer) m_buffer->write(s, n);
+      if (m_buffer && should_log()) m_buffer->write(s, n);
       return n;
     }
     virtual void close() { m_buffer.reset(); }
+    bool should_log() const {
+      return m_level >= bob::core::log_level();
+    }
 
   private:
 
     boost::shared_ptr<std::stringstream> m_buffer;
+    bob::core::LOG_LEVEL m_level;
 
 };
 
@@ -250,12 +254,12 @@ BOB_TRY
   //pointers to those streams.
   boost::shared_ptr<std::stringstream> out(new std::stringstream(""));
   boost::shared_ptr<std::stringstream> err(new std::stringstream(""));
-  boost::iostreams::stream<StringStreamOutputDevice> debug(out);
-  boost::iostreams::stream<StringStreamOutputDevice> info(out);
-  boost::iostreams::stream<StringStreamOutputDevice> warn(err);
-  boost::iostreams::stream<StringStreamOutputDevice> error(err);
+  boost::iostreams::stream<StringStreamOutputDevice> debug(out, bob::core::DEBUG);
+  boost::iostreams::stream<StringStreamOutputDevice> info(out, bob::core::INFO);
+  boost::iostreams::stream<StringStreamOutputDevice> warn(err, bob::core::WARNING);
+  boost::iostreams::stream<StringStreamOutputDevice> error(err, bob::core::ERROR);
 
-  //equivalent to: bob::core::log_level(bob::core::DEBUG);
+  bob::core::log_level(bob::core::DEBUG);
   debug << "This is a debug message" << std::endl;
   info << "This is an info message" << std::endl;
   warn << "This is a warning message" << std::endl;
@@ -263,12 +267,9 @@ BOB_TRY
   _test(out->str(), "This is a debug message\nThis is an info message\n", "debug");
   _test(err->str(), "This is a warning message\nThis is an error message\n", "debug");
 
-  //equivalent to: bob::core::log_level(bob::core::ERROR);
+  bob::core::log_level(bob::core::ERROR);
   out->str("");
   err->str("");
-  debug->close();
-  info->close();
-  warn->close();
   debug << "This is a debug message" << std::endl;
   info << "This is an info message" << std::endl;
   warn << "This is a warning message" << std::endl;
@@ -276,10 +277,9 @@ BOB_TRY
   _test(out->str(), "", "error");
   _test(err->str(), "This is an error message\n", "error");
 
-  //equivalent to: bob::core::log_level(bob::core::DISABLE);
+  bob::core::log_level(bob::core::DISABLED);
   out->str("");
   err->str("");
-  error->close();
   debug << "This is a debug message" << std::endl;
   info << "This is an info message" << std::endl;
   warn << "This is a warning message" << std::endl;
