@@ -26,6 +26,29 @@
  */
 namespace bob { namespace core {
 
+  /** enum defining levels of logs in C++;
+  they are the same as in the Python bindings, except for DISABLE, which is None in Python*/
+  typedef enum {
+    NOTSET = 0,
+    DEBUG = 10,
+    INFO = 20,
+    WARNING = 30,
+    ERROR = 40,
+    CRITICAL = 50,
+    DISABLED = 60,
+  } LOG_LEVEL;
+
+  /**
+   * brief This method will set up our default log streams to the given log
+   * level, or retrieve the currently set log-level
+   *
+   * warning: These functions should only be used in pure C++ code, as Python
+   * uses its own log level handling
+  */
+  void log_level(LOG_LEVEL level);
+  LOG_LEVEL log_level();
+
+
   /**
    * @brief The device is what tells the sink where to actually send the
    * messages to. If the AutoOutputDevice does not have a device, the
@@ -72,20 +95,23 @@ namespace bob { namespace core {
        *
        * @param configuration The configuration string to use for this sink
        * as declared above
+       *
+       * @param level The logging level to which this stream will output data.
+       * If the current globally set log level is bigger or equal than the
+       * level on the current stream, then we don't output data
        */
-      AutoOutputDevice(const std::string& configuration);
+      AutoOutputDevice(const std::string& configuration, LOG_LEVEL level);
 
       /**
        * @brief Intializes with a device.
        */
-      AutoOutputDevice(boost::shared_ptr<OutputDevice> device);
+      AutoOutputDevice(boost::shared_ptr<OutputDevice> device, LOG_LEVEL level);
 
       /**
        * @brief Updates with the given configuration;
        * see constructor documentation for supported values
       */
-      void reset(const std::string& configuration);
-
+      void reset(const std::string& configuration, LOG_LEVEL level);
 
       /**
        * @brief D'tor
@@ -104,6 +130,7 @@ namespace bob { namespace core {
 
     private:
 
+      LOG_LEVEL m_level; ///< current output level set for this stream
       boost::shared_ptr<OutputDevice> m_device; ///< Who does the real job.
 
   };
@@ -124,24 +151,6 @@ namespace bob { namespace core {
    * the value collected from the environment. Otherwise, returns false.
    */
   bool debug_level(unsigned int i);
-
-
-  /** enum defining levels of logs in C++;
-  they are the same as in the Python bindings, except for DISABLE, which is None in Python*/
-  typedef enum {
-    ERROR = 0, // only errors are printed
-    WARNING = 1, // errors and warnings are printed
-    INFO = 2, // errors, warnings and info messages are printed
-    DEBUG = 3, // all messages are printed
-    DISABLE = 9 // no message is printed
-  } LOG_LEVEL;
-
-  /**
-   * brief This method will set up our default log streams to the given log level
-   *
-   * warning: This function should only be used in pure C++ code, as Python uses its own log level handling
-  */
-  void log_level(LOG_LEVEL level=WARNING);
 
 }}
 

@@ -188,7 +188,7 @@ static int set_stream(boost::iostreams::stream<bob::core::AutoOutputDevice>& s, 
                << ") Resetting stream `" << n << "' to stderr" << std::endl;
 #endif
     s.close();
-    s.open("stderr");
+    s.open("stderr", bob::core::DISABLED);
     return 1;
   }
 
@@ -204,7 +204,11 @@ static int set_stream(boost::iostreams::stream<bob::core::AutoOutputDevice>& s, 
 #endif
 
       s.close();
-      s.open(boost::make_shared<PythonLoggingOutputDevice>(o, n));
+      //we set the stream to output everything to the Python callable by
+      //setting the log-level of the stream to the highest possible value.
+      //it is the job of the python logging system to figure out if the data
+      //should be output or not.
+      s.open(boost::make_shared<PythonLoggingOutputDevice>(o, n), bob::core::DISABLED);
       return 1;
     }
   }

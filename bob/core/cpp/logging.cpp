@@ -36,7 +36,20 @@
 
 #include <bob.core/logging.h>
 
+// This static variable holds the current log level setting for all modules
+static bob::core::LOG_LEVEL _CURRENT_LOG_LEVEL = bob::core::WARNING;
+
+void bob::core::log_level(bob::core::LOG_LEVEL level) {
+  _CURRENT_LOG_LEVEL = level;
+}
+
+bob::core::LOG_LEVEL bob::core::log_level() {
+  return _CURRENT_LOG_LEVEL;
+}
+
+
 bob::core::OutputDevice::~OutputDevice() {}
+
 
 struct NullOutputDevice: public bob::core::OutputDevice {
   virtual ~NullOutputDevice() {}
@@ -44,6 +57,7 @@ struct NullOutputDevice: public bob::core::OutputDevice {
     return n;
   }
 };
+
 
 struct StdoutOutputDevice: public bob::core::OutputDevice {
   virtual ~StdoutOutputDevice() {}
@@ -57,6 +71,7 @@ struct StdoutOutputDevice: public bob::core::OutputDevice {
   }
 };
 
+
 struct StderrOutputDevice: public bob::core::OutputDevice {
   virtual ~StderrOutputDevice() {}
   virtual std::streamsize write(const char* s, std::streamsize n) {
@@ -68,6 +83,7 @@ struct StderrOutputDevice: public bob::core::OutputDevice {
     return n;
   }
 };
+
 
 /**
  * Determines if the input filename ends in ".gz"
@@ -123,36 +139,31 @@ struct FileOutputDevice: public bob::core::OutputDevice {
 
 };
 
-bool bob::core::debug_level(unsigned int i) {
-  const char* value = getenv("BOB_DEBUG");
-  if (!value) return false;
-  unsigned long v = strtoul(value, 0, 0);
-  if (v < 1 || v > 3) v = 0;
-  return (i <= v);
-}
-
 
 bob::core::AutoOutputDevice::AutoOutputDevice()
-: m_device(new NullOutputDevice)
+: m_level(bob::core::DISABLED), m_device(new NullOutputDevice)
 {
 }
 
-bob::core::AutoOutputDevice::AutoOutputDevice(const std::string& configuration)
-: m_device()
+bob::core::AutoOutputDevice::AutoOutputDevice(const std::string& configuration,
+    bob::core::LOG_LEVEL level)
+: m_level(level), m_device()
 {
-  reset(configuration);
+  reset(configuration, level);
 }
 
-bob::core::AutoOutputDevice::AutoOutputDevice(boost::shared_ptr<OutputDevice> d)
-: m_device(d)
+bob::core::AutoOutputDevice::AutoOutputDevice(boost::shared_ptr<OutputDevice> d,
+    bob::core::LOG_LEVEL level)
+: m_level(level), m_device(d)
 {
 }
 
 bob::core::AutoOutputDevice::~AutoOutputDevice() {
 }
 
-void bob::core::AutoOutputDevice::reset(const std::string& configuration)
+void bob::core::AutoOutputDevice::reset(const std::string& configuration, bob::core::LOG_LEVEL level)
 {
+  m_level = level;
   std::string str(configuration);
   str.erase(std::remove_if(str.begin(), str.end(), ::isspace), str.end());
   if (str == "null" || str.size()==0) m_device.reset(new NullOutputDevice);
@@ -162,21 +173,32 @@ void bob::core::AutoOutputDevice::reset(const std::string& configuration)
 }
 
 std::streamsize bob::core::AutoOutputDevice::write(const char* s, std::streamsize n) {
-  return m_device->write(s, n);
+  if (m_level >= _CURRENT_LOG_LEVEL) return m_device->write(s, n);
+  /* else */ return n;
 }
 
 void bob::core::AutoOutputDevice::close() {
+  m_level = bob::core::DISABLED;
   m_device->close();
 }
 
-boost::iostreams::stream<bob::core::AutoOutputDevice> bob::core::debug("stdout");
-boost::iostreams::stream<bob::core::AutoOutputDevice> bob::core::info("stdout");
-boost::iostreams::stream<bob::core::AutoOutputDevice> bob::core::warn("stderr");
-boost::iostreams::stream<bob::core::AutoOutputDevice> bob::core::error("stderr");
 
-void bob::core::log_level(bob::core::LOG_LEVEL level){
-  bob::core::debug->reset(level == DEBUG ?  "stdout" : "null");
-  bob::core::info->reset(level >= INFO && level < DISABLE ?  "stdout" : "null");
-  bob::core::warn->reset(level >= WARNING && level < DISABLE ?  "stderr" : "null");
-  bob::core::error->reset(level >= ERROR && level < DISABLE ?  "stderr" : "null");
+boost::iostreams::stream<bob::core::AutoOutputDevice>
+  bob::core::debug("stdout", bob::core::DEBUG);
+boost::iostreams::stream<bob::core::AutoOutputDevice>
+  bob::core::info("stdout", bob::core::INFO);
+boost::iostreams::stream<bob::core::AutoOutputDevice>
+  bob::core::warn("stderr", bob::core::WARNING);
+boost::iostreams::stream<bob::core::AutoOutputDevice>
+  bob::core::error("stderr", bob::core::ERROR);
+
+
+bool bob::core::debug_level(unsigned int i) {
+  const char* value = getenv("BOB_DEBUG");
+  if (!value) return false;
+  unsigned long v = strtoul(value, 0, 0);
+  if (v < 1 || v > 3) v = 0;
+  return (i <= v);
 }
+
+
