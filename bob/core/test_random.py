@@ -205,7 +205,11 @@ def test_consistent_lognormal_float64():
 
 def test_consistent_gamma_float64():
   x = random.variate_generator(random.mt19937(42), random.gamma('float64'))
-  expected = [ 0.46926808, 1.59230052, 3.01012154]
+  # from Boost >= 1.64, the underlying implementation of
+  # exponential_distribution (on which the gamma_distribution is based on)
+  # changed
+  #expected = [ 0.46926808, 1.59230052, 3.01012154]
+  expected = [ 0.75272492, 1.01650773, 0.46642008]
   values = x(3)
   assert numpy.allclose(expected, values), \
       '%s not close to %s' % (expected, values)
