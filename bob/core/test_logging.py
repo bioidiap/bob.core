@@ -6,6 +6,7 @@
 """Tests for the logging subsystem
 """
 
+import bob.extension.log
 import bob.core
 
 def test_from_python():
@@ -38,7 +39,7 @@ def test_from_python_output():
 
   _debug_info = logging.StreamHandler(out)
   _debug_info.setLevel(logging.DEBUG)
-  _debug_info.addFilter(bob.core.log._InfoFilter())
+  _debug_info.addFilter(bob.extension.log._InfoFilter())
   logger.addHandler(_debug_info)
 
   # now, set up the logger
