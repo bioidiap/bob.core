@@ -18,7 +18,7 @@ def get_config():
 def get_macros():
   """get_macros() -> macros
 
-  Returns a list of preprocessor macros, such as ``[(HAVE_BOOST, 1), (BOOST_VERSION,xx)]``.
+  Returns a list of preprocessor macros, such as ``[(HAVE_BOOST, 1)]``.
   This function is automatically used by :py:func:`bob.extension.get_bob_libraries` to retrieve the prerpocessor definitions that are required to use the C bindings of this library in dependent classes.
   You shouldn't normally need to call this function by hand.
 
