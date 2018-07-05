@@ -41,8 +41,8 @@ example:
    :options: +NORMALIZE_WHITESPACE
 
    >>> x = numpy.array([0, 10, 20, 30, 40], 'uint8')
-   >>> bob.core.convert(x, 'float64', source_range=(0,40), dest_range=(0.,1.))
-   array([ 0.  ,  0.25,  0.5 ,  0.75,  1.  ])
+   >>> numpy.allclose(bob.core.convert(x, 'float64', source_range=(0,40), dest_range=(0.,1.)),numpy. array([ 0.  ,  0.25,  0.5 ,  0.75,  1.  ]))
+   True
 
 Any range not specified is assumed to default on the type range.
 
