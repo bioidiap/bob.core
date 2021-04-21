@@ -13,7 +13,7 @@ build_requires = load_requirements()
 # Define package version
 version = open("version.txt").read().rstrip()
 
-packages = ['blitz >= 0.10', 'boost']
+packages = ['zlib', 'blitz >= 0.10', 'boost', 'pthreads']
 
 setup(
 
@@ -48,6 +48,7 @@ setup(
 
       Library("bob.core.bob_core",
         [
+          "bob/core/cpp/zlib.cpp",
           "bob/core/cpp/logging.cpp",
         ],
         version = version,
