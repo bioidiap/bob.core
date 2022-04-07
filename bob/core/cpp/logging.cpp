@@ -12,7 +12,7 @@
 #include <fstream>
 #include <algorithm>
 #include <boost/filesystem.hpp>
-#include <boost/iostreams/filter/gzip.hpp>
+//#include <boost/iostreams/filter/gzip.hpp>
 #include <boost/iostreams/filtering_stream.hpp>
 #include <boost/shared_array.hpp>
 #include <boost/make_shared.hpp>
@@ -105,10 +105,11 @@ struct FileOutputDevice: public bob::core::OutputDevice {
     std::ios_base::openmode mode = std::ios_base::out | std::ios_base::trunc;
     if (is_dot_gz(filename)) mode |= std::ios_base::binary;
     m_file = boost::make_shared<std::ofstream>(filename.c_str(), mode);
-    //this second part configures gzip'ing if necessary and associates the
+    //this second part configures gzip'ing if necessary and associates the    
     //output file with the filtering stream.
-    if (is_dot_gz(filename))
-      m_ostream->push(boost::iostreams::basic_gzip_compressor<>());
+    // TODO: Tiago disabled this
+    //if (is_dot_gz(filename))
+    //  m_ostream->push(boost::iostreams::basic_gzip_compressor<>());
     m_ostream->push(*m_file);
   }
 
